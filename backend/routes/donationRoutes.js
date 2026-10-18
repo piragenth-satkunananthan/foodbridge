@@ -1,19 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
-const { createDonation } = require('../controllers/donationController');
+const {
+  createDonation,
+  getDonations,
+  getDonationById,
+  updateDonation,
+  cancelDonation,
+  getDonorStats
+} = require('../controllers/donationController');
 
-// Module 1 - Donor & Surplus Posting
-router.post('/', protect, authorize('donor'), createDonation);
+// All donation routes require authentication
+router.use(protect);
 
-// TODO (Module 1 - Donor & Surplus Posting): build these out
-// router.get('/', protect, getDonations);
-// router.get('/:id', protect, getDonationById);
-// router.put('/:id', protect, authorize('donor'), updateDonation);
-// router.delete('/:id', protect, authorize('donor'), cancelDonation);
+// Donor stats overview
+router.get('/stats', getDonorStats);
 
-router.get('/', protect, (req, res) => {
-  res.json({ message: 'Donation routes placeholder - build me out!' });
-});
+// Donation CRUD operations
+router.post('/', authorize('donor'), createDonation);
+router.get('/', getDonations);
+router.get('/:id', getDonationById);
+router.put('/:id', authorize('donor'), updateDonation);
+router.delete('/:id', authorize('donor'), cancelDonation);
+router.put('/:id/cancel', authorize('donor'), cancelDonation);
 
 module.exports = router;
