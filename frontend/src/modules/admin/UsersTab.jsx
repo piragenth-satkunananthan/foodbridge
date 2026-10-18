@@ -13,8 +13,10 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { fetchAllUsers, updateUserStatus, deleteUser } from '../../api/client';
+import { useToast } from '../../components/Toast';
 
 export default function UsersTab({ currentAdminId }) {
+  const { addToast } = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState('all');
@@ -59,9 +61,10 @@ export default function UsersTab({ currentAdminId }) {
 
     try {
       await updateUserStatus(user._id, newStatus, reason);
+      addToast(`Account for ${user.name} is now ${newStatus}.`, 'success');
       loadUsers();
     } catch (err) {
-      alert(`Failed to update status: ${err.message}`);
+      addToast(`Failed to update status: ${err.message}`, 'error');
     }
   };
 
@@ -72,9 +75,10 @@ export default function UsersTab({ currentAdminId }) {
 
     try {
       await deleteUser(user._id);
+      addToast(`User account "${user.name}" successfully removed.`, 'info');
       loadUsers();
     } catch (err) {
-      alert(`Failed to delete user: ${err.message}`);
+      addToast(`Failed to delete user: ${err.message}`, 'error');
     }
   };
 
@@ -172,9 +176,16 @@ export default function UsersTab({ currentAdminId }) {
                 return (
                   <tr key={u._id} style={{ background: isSuspended ? '#fff5f5' : 'inherit' }}>
                     <td>
-                      <div>
-                        <div style={{ fontWeight: '700', color: '#0f172a' }}>{u.name}</div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>{u.email}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div className="avatar-badge" style={{
+                          background: u.role === 'admin' ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)' : 'linear-gradient(135deg, #059669 0%, #0284c7 100%)'
+                        }}>
+                          {u.name.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: '700', color: '#0f172a' }}>{u.name}</div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>{u.email}</div>
+                        </div>
                       </div>
                     </td>
 

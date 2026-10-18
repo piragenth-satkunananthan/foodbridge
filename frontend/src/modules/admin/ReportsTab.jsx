@@ -9,8 +9,10 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { fetchReports } from '../../api/client';
+import { useToast } from '../../components/Toast';
 
 export default function ReportsTab() {
+  const { addToast } = useToast();
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fromDate, setFromDate] = useState('');
@@ -51,6 +53,7 @@ export default function ReportsTab() {
     a.download = `foodbridge-report-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    addToast('Audit report downloaded successfully (JSON).', 'success');
   };
 
   return (

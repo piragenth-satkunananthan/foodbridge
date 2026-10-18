@@ -14,6 +14,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { fetchOrganizations, verifyOrganization } from '../../api/client';
+import { useToast } from '../../components/Toast';
 
 export default function VerificationTab({ onVerificationUpdated }) {
   const [organizations, setOrganizations] = useState([]);
@@ -59,17 +60,25 @@ export default function VerificationTab({ onVerificationUpdated }) {
     setRemarks('');
   };
 
+  const { addToast } = useToast();
+
   const handleConfirmAction = async () => {
     if (!selectedOrg) return;
     setSubmitting(true);
     try {
       const targetStatus = actionType === 'verify' ? 'verified' : 'rejected';
       await verifyOrganization(selectedOrg._id, targetStatus, remarks);
+      addToast(
+        targetStatus === 'verified'
+          ? `Organization "${selectedOrg.name}" successfully verified!`
+          : `Organization "${selectedOrg.name}" has been rejected.`,
+        targetStatus === 'verified' ? 'success' : 'info'
+      );
       setSelectedOrg(null);
       loadData();
       if (onVerificationUpdated) onVerificationUpdated();
     } catch (err) {
-      alert(`Action failed: ${err.message}`);
+      addToast(`Action failed: ${err.message}`, 'error');
     } finally {
       setSubmitting(false);
     }
@@ -171,17 +180,8 @@ export default function VerificationTab({ onVerificationUpdated }) {
                   <tr key={org._id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{
-                          width: '34px',
-                          height: '34px',
-                          borderRadius: '8px',
-                          background: '#f1f5f9',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#475569'
-                        }}>
-                          <Building size={18} />
+                        <div className="avatar-badge">
+                          {org.name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
                           <div style={{ fontWeight: '700', color: '#0f172a' }}>{org.name}</div>
@@ -228,10 +228,10 @@ export default function VerificationTab({ onVerificationUpdated }) {
 
                     <td>
                       <span className={`badge ${org.verificationStatus}`}>
-                        {isVerified && <CheckCircle size={12} />}
-                        {isPending && <Clock size={12} />}
+                        {isVerified && <span className="pulse-dot green" />}
+                        {isPending && <span className="pulse-dot amber" />}
                         {isRejected && <XCircle size={12} />}
-                        {org.verificationStatus}
+                        <span>{org.verificationStatus}</span>
                       </span>
                       {org.verificationRemarks && (
                         <div style={{ fontSize: '11px', color: '#64748b', marginTop: '3px', maxWidth: '180px' }}>
