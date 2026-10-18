@@ -9,13 +9,23 @@ import {
   ShieldCheck,
   Truck,
   HeartHandshake,
-  ArrowRight
+  ArrowRight,
+  Calculator,
+  Droplets,
+  CloudRain,
+  Sparkles,
+  CheckCircle2,
+  Boxes
 } from 'lucide-react';
 import { fetchPublicImpact } from '../api/client';
 
 export default function LandingPage() {
   const [impact, setImpact] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Impact Estimator State
+  const [estimatedKg, setEstimatedKg] = useState(60);
+  const [foodType, setFoodType] = useState('cooked');
 
   useEffect(() => {
     const loadImpact = async () => {
@@ -62,6 +72,12 @@ export default function LandingPage() {
     activeVolunteers: 0
   };
 
+  // Environmental Impact Calculations (FAO / EPA Standard Models)
+  const multiplier = foodType === 'cooked' ? 2.5 : foodType === 'bakery' ? 3.0 : 2.0;
+  const estimatedMeals = Math.round(estimatedKg * multiplier);
+  const co2AvoidedKg = Math.round(estimatedKg * 2.5);
+  const waterSavedLiters = Math.round(estimatedKg * 850);
+
   return (
     <div style={{ paddingBottom: '60px' }}>
       {/* Hero Section */}
@@ -69,34 +85,39 @@ export default function LandingPage() {
         background: 'linear-gradient(135deg, #064e3b 0%, #065f46 60%, #047857 100%)',
         color: 'white',
         padding: '64px 24px',
-        textAlign: 'center'
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '850px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
           <span style={{
             background: 'rgba(255, 255, 255, 0.15)',
-            padding: '4px 14px',
+            padding: '5px 16px',
             borderRadius: '9999px',
             fontSize: '12px',
             fontWeight: '700',
             letterSpacing: '0.05em',
-            textTransform: 'uppercase'
+            textTransform: 'uppercase',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px'
           }}>
-            Sri Lanka’s Smart Food Rescue & Waste Platform
+            <Sparkles size={14} color="#6ee7b7" /> Sri Lanka’s Smart Food Rescue & Waste Platform
           </span>
 
-          <h1 style={{ fontSize: '42px', fontWeight: '800', margin: '18px 0 14px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+          <h1 style={{ fontSize: '44px', fontWeight: '800', margin: '18px 0 14px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
             Bridging Surplus Food to Those in Need, Diverting Waste to Recyclers.
           </h1>
 
-          <p style={{ fontSize: '16px', color: '#d1fae5', maxWidth: '640px', margin: '0 auto 28px', lineHeight: 1.6 }}>
-            Connecting hotels, bakeries, and event caterers with verified charities, certified recycling operators, and community volunteers through district-based matching.
+          <p style={{ fontSize: '16.5px', color: '#d1fae5', maxWidth: '660px', margin: '0 auto 28px', lineHeight: 1.6 }}>
+            Connecting wedding halls, hotels, and restaurants with verified charities, certified recycling operators, and community volunteers through district-based matching.
           </p>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <Link to="/register" className="btn btn-primary" style={{ background: '#10b981', padding: '12px 24px', fontSize: '15px', textDecoration: 'none' }}>
+            <Link to="/register" className="btn btn-primary" style={{ background: '#10b981', padding: '12px 26px', fontSize: '15px', textDecoration: 'none', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)' }}>
               <span>Join FoodBridge Today</span> <ArrowRight size={16} />
             </Link>
-            <Link to="/login" className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.3)', padding: '12px 24px', fontSize: '15px', textDecoration: 'none' }}>
+            <Link to="/login" className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.12)', color: 'white', borderColor: 'rgba(255,255,255,0.3)', padding: '12px 26px', fontSize: '15px', textDecoration: 'none' }}>
               Sign In to Your Dashboard
             </Link>
           </div>
@@ -105,7 +126,7 @@ export default function LandingPage() {
 
       {/* Public Impact Section */}
       <section className="main-content" style={{ marginTop: '-40px' }}>
-        <div className="card" style={{ boxShadow: '0 10px 25px -5px rgba(0,0,0,0.08)', borderRadius: '18px', padding: '28px' }}>
+        <div className="card" style={{ boxShadow: '0 12px 30px -5px rgba(0,0,0,0.08)', borderRadius: '18px', padding: '28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ background: '#ecfdf5', color: '#059669', padding: '8px', borderRadius: '10px' }}>
@@ -121,8 +142,9 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <span className="badge verified" style={{ fontSize: '12px', padding: '4px 10px' }}>
-              ● Live Platform Aggregation
+            <span className="badge verified" style={{ fontSize: '12px', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="pulse-dot green" />
+              <span>Live Platform Aggregation</span>
             </span>
           </div>
 
@@ -206,10 +228,105 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* NEW: Interactive Impact Estimator Widget */}
+      <section className="main-content" style={{ marginTop: '28px' }}>
+        <div className="estimator-card">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ background: '#10b981', color: 'white', padding: '8px', borderRadius: '10px' }}>
+                <Calculator size={22} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#064e3b' }}>
+                  Interactive Surplus Impact Calculator
+                </h3>
+                <p style={{ fontSize: '12.5px', color: '#047857' }}>
+                  Estimate the humanitarian and ecological benefits of your surplus food before logging a posting.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={() => setFoodType('cooked')}
+                className={`btn btn-sm ${foodType === 'cooked' ? 'btn-primary' : 'btn-secondary'}`}
+              >
+                Cooked Meals
+              </button>
+              <button
+                type="button"
+                onClick={() => setFoodType('bakery')}
+                className={`btn btn-sm ${foodType === 'bakery' ? 'btn-primary' : 'btn-secondary'}`}
+              >
+                Bakery & Breads
+              </button>
+              <button
+                type="button"
+                onClick={() => setFoodType('staples')}
+                className={`btn btn-sm ${foodType === 'staples' ? 'btn-primary' : 'btn-secondary'}`}
+              >
+                Dry Staples
+              </button>
+            </div>
+          </div>
+
+          <div style={{ margin: '16px 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', fontSize: '14px', color: '#064e3b' }}>
+              <span>Surplus Food Quantity:</span>
+              <span style={{ fontSize: '16px', color: '#059669' }}>{estimatedKg} kg</span>
+            </div>
+            <input
+              type="range"
+              min="5"
+              max="500"
+              step="5"
+              value={estimatedKg}
+              onChange={(e) => setEstimatedKg(Number(e.target.value))}
+              className="estimator-slider"
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b' }}>
+              <span>5 kg (Small Cafe)</span>
+              <span>250 kg (Hotel Buffet)</span>
+              <span>500 kg (Large Wedding)</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+            <div className="estimator-metric-box">
+              <Utensils size={20} color="#059669" style={{ margin: '0 auto 4px' }} />
+              <div style={{ fontSize: '24px', fontWeight: '800', color: '#064e3b' }}>
+                ~{estimatedMeals.toLocaleString()}
+              </div>
+              <div style={{ fontSize: '12px', color: '#059669', fontWeight: '600' }}>Nutritious Meals Rescued</div>
+            </div>
+
+            <div className="estimator-metric-box">
+              <CloudRain size={20} color="#0284c7" style={{ margin: '0 auto 4px' }} />
+              <div style={{ fontSize: '24px', fontWeight: '800', color: '#0c4a6e' }}>
+                ~{co2AvoidedKg.toLocaleString()} kg
+              </div>
+              <div style={{ fontSize: '12px', color: '#0284c7', fontWeight: '600' }}>CO₂ Emissions Averted</div>
+            </div>
+
+            <div className="estimator-metric-box">
+              <Droplets size={20} color="#0d9488" style={{ margin: '0 auto 4px' }} />
+              <div style={{ fontSize: '24px', fontWeight: '800', color: '#134e4a' }}>
+                ~{waterSavedLiters.toLocaleString()} L
+              </div>
+              <div style={{ fontSize: '12px', color: '#0d9488', fontWeight: '600' }}>Water Footprint Conserved</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 5 Modules Overview Grid */}
-      <section className="main-content" style={{ marginTop: '20px' }}>
+      <section className="main-content" style={{ marginTop: '28px' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a' }}>
+          <span style={{ fontSize: '12px', fontWeight: '700', color: '#059669', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Architecture Overview
+          </span>
+          <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', marginTop: '4px' }}>
             5 Role-Based Functional Modules
           </h2>
           <p style={{ fontSize: '13.5px', color: '#64748b' }}>
@@ -250,9 +367,9 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="card" style={{ border: '2px solid #10b981' }}>
-            <span className="badge admin" style={{ marginBottom: '8px', background: '#ecfdf5', color: '#047857' }}>
-              Module 5 (Active)
+          <div className="card" style={{ border: '2px solid #10b981', background: '#f0fdf4' }}>
+            <span className="badge admin" style={{ marginBottom: '8px', background: '#d1fae5', color: '#047857' }}>
+              Module 5 (Completed)
             </span>
             <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Admin, Verification & Impact</h3>
             <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>

@@ -12,8 +12,10 @@ import {
   X
 } from 'lucide-react';
 import { fetchPublicImpact, snapshotImpact } from '../../api/client';
+import { useToast } from '../../components/Toast';
 
 export default function PublicImpactModal({ isOpen, onClose }) {
+  const { addToast } = useToast();
   const [impactData, setImpactData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [snapshotPeriod, setSnapshotPeriod] = useState(new Date().toISOString().slice(0, 7));
@@ -45,9 +47,11 @@ export default function PublicImpactModal({ isOpen, onClose }) {
     try {
       const res = await snapshotImpact(snapshotPeriod);
       setSnapshotMsg(`✔ Official Impact Record saved for period ${snapshotPeriod}`);
+      addToast(`Official Impact snapshot saved for ${snapshotPeriod}!`, 'success');
       loadImpact();
     } catch (err) {
       setSnapshotMsg(`Failed to save record: ${err.message}`);
+      addToast(`Failed to save record: ${err.message}`, 'error');
     } finally {
       setSnapshotting(false);
     }
