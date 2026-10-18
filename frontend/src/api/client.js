@@ -42,15 +42,28 @@ export const apiFetch = async (endpoint, options = {}) => {
 };
 
 // ==========================================
-// Admin API Functions
+// Authentication APIs
 // ==========================================
 
-export const loginAdmin = (email, password) => {
+export const loginUser = (email, password) => {
   return apiFetch('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password })
   });
 };
+
+export const registerUser = (userData) => {
+  return apiFetch('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(userData)
+  });
+};
+
+export const getMe = () => apiFetch('/auth/me');
+
+// ==========================================
+// Module 5: Admin & Verification APIs
+// ==========================================
 
 export const fetchAdminStats = () => apiFetch('/admin/stats');
 
@@ -105,6 +118,10 @@ export const fetchReports = (params = {}) => {
   const query = new URLSearchParams(params).toString();
   return apiFetch(`/admin/reports${query ? '?' + query : ''}`);
 };
+
+// ==========================================
+// Public Impact & Notification APIs
+// ==========================================
 
 export const fetchPublicImpact = () => apiFetch('/impact');
 

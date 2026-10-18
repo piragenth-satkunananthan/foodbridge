@@ -13,7 +13,7 @@ import {
   FileText,
   AlertCircle
 } from 'lucide-react';
-import { fetchOrganizations, verifyOrganization } from '../api';
+import { fetchOrganizations, verifyOrganization } from '../../api/client';
 
 export default function VerificationTab({ onVerificationUpdated }) {
   const [organizations, setOrganizations] = useState([]);

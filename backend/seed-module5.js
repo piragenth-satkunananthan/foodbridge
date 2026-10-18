@@ -10,11 +10,13 @@ const Pickup = require('./models/Pickup');
 const Notification = require('./models/Notification');
 const ImpactRecord = require('./models/ImpactRecord');
 
+const connectDB = require('./config/db');
+
 const seedData = async () => {
   try {
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('Connected! Clearing existing collections...');
+    await connectDB();
+    console.log('Clearing existing collections...');
 
     await Promise.all([
       User.deleteMany({}),

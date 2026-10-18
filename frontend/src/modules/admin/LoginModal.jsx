@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, Mail, ArrowRight, Sparkles } from 'lucide-react';
-import { loginAdmin, setAuthToken, saveUser } from '../api';
+import { loginAdmin, setAuthToken, saveUser } from '../../api/client';
 
 export default function LoginModal({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
