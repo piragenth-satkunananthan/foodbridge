@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const donationSchema = new mongoose.Schema(
   {
     donor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true
     },
     foodType: {
@@ -12,7 +12,7 @@ const donationSchema = new mongoose.Schema(
       required: true
     },
     quantity: {
-      type: String,
+      type: String, // e.g. "20 kg" or "50 plates" - kept flexible per proposal
       required: true
     },
     preparedTime: {
@@ -21,7 +21,7 @@ const donationSchema = new mongoose.Schema(
     },
     storageCondition: {
       type: String,
-      enum: ["refrigerated", "room_temperature", "frozen"],
+      enum: ['refrigerated', 'room_temperature', 'frozen'],
       required: true
     },
     pickupDeadline: {
@@ -29,7 +29,7 @@ const donationSchema = new mongoose.Schema(
       required: true
     },
     photo: {
-      type: String,
+      type: String, // URL from cloud image storage
       default: null
     },
     district: {
@@ -38,20 +38,20 @@ const donationSchema = new mongoose.Schema(
     },
     specialInstructions: {
       type: String,
-      default: ""
+      default: ''
     },
     status: {
       type: String,
-      enum: ["posted", "matched", "pickup_scheduled", "picked_up", "delivered", "completed", "cancelled", "expired"],
-      default: "posted"
+      enum: ['posted', 'matched', 'pickup_scheduled', 'picked_up', 'delivered', 'completed', 'cancelled', 'expired'],
+      default: 'posted'
     },
     matchedRecipient: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Organization",
+      ref: 'Organization',
       default: null
     }
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Donation", donationSchema);
+module.exports = mongoose.model('Donation', donationSchema);
