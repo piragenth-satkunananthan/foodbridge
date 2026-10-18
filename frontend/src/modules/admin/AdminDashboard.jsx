@@ -1,24 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import OverviewTab from './components/OverviewTab';
-import VerificationTab from './components/VerificationTab';
-import MonitoringTab from './components/MonitoringTab';
-import UsersTab from './components/UsersTab';
-import ReportsTab from './components/ReportsTab';
-import PublicImpactModal from './components/PublicImpactModal';
-import LoginModal from './components/LoginModal';
+import Navbar from './Navbar';
+import OverviewTab from './OverviewTab';
+import VerificationTab from './VerificationTab';
+import MonitoringTab from './MonitoringTab';
+import UsersTab from './UsersTab';
+import ReportsTab from './ReportsTab';
+import PublicImpactModal from './PublicImpactModal';
+import { useAuth } from '../../context/AuthContext';
 import {
-  getSavedUser,
-  getAuthToken,
-  removeAuthToken,
   fetchAdminStats,
   fetchNotifications,
   markNotificationRead,
   markAllNotificationsRead
-} from './api';
-import { Bell, Check, X } from 'lucide-react';
+} from '../../api/client';
+import { Bell, X } from 'lucide-react';
 
-// Fallback demo stats if backend isn't connected to DB yet
 const FALLBACK_STATS = {
   kpis: {
     totalUsers: 14,
@@ -44,12 +40,9 @@ const FALLBACK_STATS = {
   }
 };
 
-export default function App() {
-  const [adminUser, setAdminUser] = useState(getSavedUser());
-  const [token, setToken] = useState(getAuthToken());
+export default function AdminDashboard() {
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
-
-  // Dashboard Stats
   const [stats, setStats] = useState(FALLBACK_STATS);
   const [loadingStats, setLoadingStats] = useState(false);
 
@@ -57,31 +50,26 @@ export default function App() {
   const [isImpactOpen, setIsImpactOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(2);
-
-  const isLoggedIn = !!token && !!adminUser;
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const loadStats = async () => {
-    if (!token) return;
     setLoadingStats(true);
     try {
       const data = await fetchAdminStats();
       setStats(data);
     } catch (err) {
-      console.warn('Using local fallback stats (backend DB pending):', err.message);
+      console.warn('Using local fallback stats:', err.message);
     } finally {
       setLoadingStats(false);
     }
   };
 
   const loadNotificationsData = async () => {
-    if (!token) return;
     try {
       const res = await fetchNotifications();
       setNotifications(res.notifications || []);
       setUnreadCount(res.unreadCount || 0);
     } catch {
-      // Mock initial notifications for demonstration
       setNotifications([
         {
           _id: 'n1',
@@ -101,17 +89,9 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (isLoggedIn) {
-      loadStats();
-      loadNotificationsData();
-    }
-  }, [isLoggedIn]);
-
-  const handleLogout = () => {
-    removeAuthToken();
-    setToken(null);
-    setAdminUser(null);
-  };
+    loadStats();
+    loadNotificationsData();
+  }, []);
 
   const handleMarkAllRead = async () => {
     try {
@@ -136,18 +116,8 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
-      {/* Show login if not authenticated */}
-      {!isLoggedIn && (
-        <LoginModal
-          onLoginSuccess={(user) => {
-            setAdminUser(user);
-            setToken(getAuthToken());
-          }}
-        />
-      )}
-
-      {/* Main Top Navigation */}
+    <div>
+      {/* Top Admin Sub-Navbar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -155,8 +125,8 @@ export default function App() {
         unreadCount={unreadCount}
         toggleNotifications={() => setIsNotificationsOpen((v) => !v)}
         openPublicImpact={() => setIsImpactOpen(true)}
-        adminUser={adminUser}
-        onLogout={handleLogout}
+        adminUser={user}
+        onLogout={logout}
       />
 
       {/* Notifications Drawer */}
@@ -219,7 +189,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Body Content based on active tab */}
+      {/* Active Tab View */}
       <main className="main-content">
         {activeTab === 'overview' && (
           <OverviewTab
@@ -240,7 +210,7 @@ export default function App() {
 
         {activeTab === 'monitoring' && <MonitoringTab />}
 
-        {activeTab === 'users' && <UsersTab currentAdminId={adminUser?._id} />}
+        {activeTab === 'users' && <UsersTab currentAdminId={user?._id} />}
 
         {activeTab === 'reports' && <ReportsTab />}
       </main>

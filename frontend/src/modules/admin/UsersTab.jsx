@@ -12,7 +12,7 @@ import {
   Building2,
   AlertTriangle
 } from 'lucide-react';
-import { fetchAllUsers, updateUserStatus, deleteUser } from '../api';
+import { fetchAllUsers, updateUserStatus, deleteUser } from '../../api/client';
 
 export default function UsersTab({ currentAdminId }) {
   const [users, setUsers] = useState([]);

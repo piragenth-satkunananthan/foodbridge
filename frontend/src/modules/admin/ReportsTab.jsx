@@ -8,7 +8,7 @@ import {
   TrendingUp,
   FileSpreadsheet
 } from 'lucide-react';
-import { fetchReports } from '../api';
+import { fetchReports } from '../../api/client';
 
 export default function ReportsTab() {
   const [reportData, setReportData] = useState(null);

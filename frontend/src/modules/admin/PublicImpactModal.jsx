@@ -11,7 +11,7 @@ import {
   Camera,
   X
 } from 'lucide-react';
-import { fetchPublicImpact, snapshotImpact } from '../api';
+import { fetchPublicImpact, snapshotImpact } from '../../api/client';
 
 export default function PublicImpactModal({ isOpen, onClose }) {
   const [impactData, setImpactData] = useState(null);

@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   AlertTriangle
 } from 'lucide-react';
-import { fetchAllDonations, fetchAllWasteRequests, fetchAllPickups } from '../api';
+import { fetchAllDonations, fetchAllWasteRequests, fetchAllPickups } from '../../api/client';
 
 export default function MonitoringTab() {
   const [subTab, setSubTab] = useState('donations'); // 'donations' | 'waste' | 'pickups'
