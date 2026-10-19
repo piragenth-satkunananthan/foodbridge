@@ -135,3 +135,55 @@ export const snapshotImpact = (period) => {
 export const fetchNotifications = () => apiFetch('/notifications');
 export const markNotificationRead = (id) => apiFetch(`/notifications/${id}/read`, { method: 'PUT' });
 export const markAllNotificationsRead = () => apiFetch('/notifications/read-all', { method: 'PUT' });
+
+// ==========================================
+// Commercial Donor & Surplus Dispatch APIs
+// ==========================================
+
+export const fetchDonorStats = () => apiFetch('/donations/stats');
+
+export const fetchDonations = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return apiFetch(`/donations${query ? '?' + query : ''}`);
+};
+
+export const fetchDonationById = (id) => apiFetch(`/donations/${id}`);
+
+export const createDonation = (donationData) => {
+  return apiFetch('/donations', {
+    method: 'POST',
+    body: JSON.stringify(donationData)
+  });
+};
+
+export const updateDonation = (id, donationData) => {
+  return apiFetch(`/donations/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(donationData)
+  });
+};
+
+export const cancelDonation = (id) => {
+  return apiFetch(`/donations/${id}`, {
+    method: 'DELETE'
+  });
+};
+
+export const fetchWasteRequests = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return apiFetch(`/waste${query ? '?' + query : ''}`);
+};
+
+export const createWasteRequest = (wasteData) => {
+  return apiFetch('/waste', {
+    method: 'POST',
+    body: JSON.stringify(wasteData)
+  });
+};
+
+export const cancelWasteRequest = (id) => {
+  return apiFetch(`/waste/${id}`, {
+    method: 'DELETE'
+  });
+};
+

@@ -1,16 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
+const {
+  createDonation,
+  getDonations,
+  getDonationById,
+  updateDonation,
+  cancelDonation,
+  getDonorStats
+} = require('../controllers/donationController');
 
-// Commercial Food Donor & Surplus Posting Pipeline
-// router.post('/', protect, authorize('donor'), createDonation);
-// router.get('/', protect, getDonations);
-// router.get('/:id', protect, getDonationById);
-// router.put('/:id', protect, authorize('donor'), updateDonation);
-// router.delete('/:id', protect, authorize('donor'), cancelDonation);
+// All donation routes require authentication
+router.use(protect);
 
-router.get('/', (req, res) => {
-  res.json({ message: 'Donation routes placeholder - build me out!' });
-});
+// Donor stats overview
+router.get('/stats', getDonorStats);
+
+// Donation CRUD operations
+router.post('/', authorize('donor'), createDonation);
+router.get('/', getDonations);
+router.get('/:id', getDonationById);
+router.put('/:id', authorize('donor'), updateDonation);
+router.delete('/:id', authorize('donor'), cancelDonation);
+router.put('/:id/cancel', authorize('donor'), cancelDonation);
 
 module.exports = router;

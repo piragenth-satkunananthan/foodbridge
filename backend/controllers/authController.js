@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const generateToken = require('../config/generateToken');
 
+const publicRoles = ['donor', 'recipient', 'volunteer', 'recycler'];
+
 // @route POST /api/auth/register
 const registerUser = async (req, res) => {
   try {
@@ -11,7 +13,12 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const existingUser = await User.findOne({ email });
+    if (!publicRoles.includes(role)) {
+      return res.status(400).json({ message: 'This role cannot be registered publicly' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: 'Email is already registered' });
     }
@@ -21,7 +28,7 @@ const registerUser = async (req, res) => {
 
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
       role,
       district,
@@ -35,6 +42,7 @@ const registerUser = async (req, res) => {
       role: user.role,
       district: user.district,
       verificationStatus: user.verificationStatus,
+      status: user.status,
       token: generateToken(user._id, user.role)
     });
   } catch (error) {
@@ -47,7 +55,12 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -57,6 +70,10 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    if (user.status === 'suspended') {
+      return res.status(403).json({ message: 'Account has been suspended by an administrator' });
+    }
+
     res.json({
       _id: user._id,
       name: user.name,
@@ -64,6 +81,7 @@ const loginUser = async (req, res) => {
       role: user.role,
       district: user.district,
       verificationStatus: user.verificationStatus,
+      status: user.status,
       token: generateToken(user._id, user.role)
     });
   } catch (error) {

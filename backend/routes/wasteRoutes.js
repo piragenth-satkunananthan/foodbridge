@@ -1,14 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
+const {
+  createWasteRequest,
+  getWasteRequests,
+  getWasteRequestById,
+  updateWasteRequest,
+  cancelWasteRequest
+} = require('../controllers/wasteController');
 
-// Circular Waste Stream & Industrial Recycler Routing Pipeline
-// router.post('/', protect, authorize('donor'), createWasteRequest);
-// router.get('/', protect, getWasteRequests);
-// router.put('/:id/accept', protect, authorize('recycler'), acceptWasteRequest);
+router.use(protect);
 
-router.get('/', (req, res) => {
-  res.json({ message: 'Waste request routes placeholder - build me out!' });
-});
+router.post('/', authorize('donor'), createWasteRequest);
+router.get('/', getWasteRequests);
+router.get('/:id', getWasteRequestById);
+router.put('/:id', authorize('donor'), updateWasteRequest);
+router.delete('/:id', authorize('donor'), cancelWasteRequest);
+router.put('/:id/cancel', authorize('donor'), cancelWasteRequest);
 
 module.exports = router;
