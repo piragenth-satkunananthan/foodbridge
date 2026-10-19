@@ -35,7 +35,7 @@ const runMonthlyImpactSnapshot = async () => {
     const existingSnapshot = await ImpactRecord.findOne({ period: currentPeriod });
 
     if (!existingSnapshot) {
-      const stats = await calculateAggregatedImpact();
+      const stats = await calculateImpactMetrics();
       await ImpactRecord.create({
         period: currentPeriod,
         mealsRescued: stats.mealsRescued,
