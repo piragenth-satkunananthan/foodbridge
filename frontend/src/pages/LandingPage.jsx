@@ -15,9 +15,13 @@ import {
   CloudRain,
   Sparkles,
   CheckCircle2,
-  Boxes
+  Boxes,
+  Download
 } from 'lucide-react';
 import { fetchPublicImpact } from '../api/client';
+import ImpactCharts from '../components/ImpactCharts';
+import ImpactMap from '../components/ImpactMap';
+import { exportImpactMetricsCSV } from '../utils/exportUtils';
 
 export default function LandingPage() {
   const [impact, setImpact] = useState(null);
@@ -142,10 +146,21 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <span className="badge verified" style={{ fontSize: '12px', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className="pulse-dot green" />
-              <span>Live Platform Aggregation</span>
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => exportImpactMetricsCSV(s, e)}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '12px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Download size={14} /> Download ESG Report (CSV)
+              </button>
+
+              <span className="badge verified" style={{ fontSize: '12px', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="pulse-dot green" />
+                <span>Live Platform Aggregation</span>
+              </span>
+            </div>
           </div>
 
           <div className="kpi-grid">
@@ -225,6 +240,12 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+
+          {/* Interactive Trajectory Charts */}
+          <ImpactCharts summary={s} ecosystem={e} />
+
+          {/* Interactive Regional Hubs & Logistics Corridors Map */}
+          <ImpactMap />
         </div>
       </section>
 

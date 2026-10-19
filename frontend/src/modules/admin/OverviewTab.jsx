@@ -9,8 +9,10 @@ import {
   TrendingUp,
   Package,
   Truck,
-  ArrowRight
+  ArrowRight,
+  Download
 } from 'lucide-react';
+import { exportImpactMetricsCSV } from '../../utils/exportUtils';
 
 export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
   const kpis = stats?.kpis || {
@@ -76,6 +78,36 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
           </button>
         </div>
       )}
+
+      {/* Quick Action & ESG Export Bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ fontSize: '13px', fontWeight: '700', color: '#475569' }}>
+          Platform Impact & Operational Overview
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            exportImpactMetricsCSV(
+              {
+                mealsRescued: kpis.totalMealsRescued,
+                totalKgRecycled: kpis.totalKgRecycled,
+                kgRecycled: wasteByCategory,
+                kgOrganicDiverted: kpis.totalOrganicKg,
+                districtsCoveredCount: 5
+              },
+              {
+                verifiedNGOs: userCounts.recipient,
+                verifiedRecyclers: userCounts.recycler,
+                activeVolunteers: userCounts.volunteer
+              }
+            );
+          }}
+          className="btn btn-secondary btn-sm"
+          style={{ fontSize: '12.5px', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
+        >
+          <Download size={14} /> Export ESG Metrics (CSV)
+        </button>
+      </div>
 
       {/* KPI Cards Grid */}
       <div className="kpi-grid">

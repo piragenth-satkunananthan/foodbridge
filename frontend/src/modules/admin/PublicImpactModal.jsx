@@ -9,10 +9,12 @@ import {
   Users,
   CheckCircle,
   Camera,
-  X
+  X,
+  Download
 } from 'lucide-react';
 import { fetchPublicImpact, snapshotImpact } from '../../api/client';
 import { useToast } from '../../components/Toast';
+import { exportImpactMetricsCSV } from '../../utils/exportUtils';
 
 export default function PublicImpactModal({ isOpen, onClose }) {
   const { addToast } = useToast();
@@ -242,6 +244,16 @@ export default function PublicImpactModal({ isOpen, onClose }) {
                 >
                   <Camera size={14} />
                   <span>{snapshotting ? 'Saving...' : 'Snapshot Period'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => exportImpactMetricsCSV(s, e)}
+                  className="btn btn-sm btn-secondary"
+                  style={{ background: 'white' }}
+                >
+                  <Download size={14} />
+                  <span>Export CSV</span>
                 </button>
               </div>
             </div>

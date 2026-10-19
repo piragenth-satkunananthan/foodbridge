@@ -89,6 +89,17 @@
 
 ## ⚡ Quickstart Guide
 
+### Option A: 1-Command Full Stack Launch (Docker Compose)
+To run the entire ecosystem (MongoDB, Node.js Backend API, and Nginx-served Frontend):
+```bash
+docker compose up --build
+```
+Then visit **`http://localhost:5173`** in your browser.
+
+---
+
+### Option B: Local Development Setup
+
 ### Prerequisites
 - Node.js (v18 or v20+)
 - MongoDB (Local service, Docker container, or MongoDB Atlas / remote EC2 URI)

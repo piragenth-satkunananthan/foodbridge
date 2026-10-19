@@ -11,10 +11,12 @@ import {
   Phone,
   MapPin,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Download
 } from 'lucide-react';
 import { fetchOrganizations, verifyOrganization } from '../../api/client';
 import { useToast } from '../../components/Toast';
+import { exportOrganizationsCSV } from '../../utils/exportUtils';
 
 export default function VerificationTab({ onVerificationUpdated }) {
   const [organizations, setOrganizations] = useState([]);
@@ -135,6 +137,16 @@ export default function VerificationTab({ onVerificationUpdated }) {
 
           <button onClick={loadData} className="btn btn-secondary btn-sm">
             Refresh
+          </button>
+
+          <button
+            type="button"
+            onClick={() => exportOrganizationsCSV(organizations)}
+            className="btn btn-secondary btn-sm"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            disabled={organizations.length === 0}
+          >
+            <Download size={14} /> Export CSV
           </button>
         </div>
       </div>
