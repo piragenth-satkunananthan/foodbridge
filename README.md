@@ -1,5 +1,6 @@
 # FoodBridge™ — Smart Food Rescue & Circular Waste Network
 
+[![CI/CD Pipeline](https://github.com/piragenth-satkunananthan/foodbridge/actions/workflows/ci.yml/badge.svg)](https://github.com/piragenth-satkunananthan/foodbridge/actions/workflows/ci.yml)
 [![Platform Status](https://img.shields.io/badge/status-production--ready-059669.svg)](#)
 [![Stack](https://img.shields.io/badge/stack-MERN-10b981.svg)](#)
 [![UN SDG 2](https://img.shields.io/badge/UN%20SDG-Zero%20Hunger-eab308.svg)](https://sdgs.un.org/goals/goal2)

@@ -5,11 +5,23 @@ on:
     branches: [ develop, main, 'feature/**' ]
   pull_request:
     branches: [ develop, main ]
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
   backend-tests:
-    name: Backend Lint, Security & Tests
+    name: Backend Security, DB & Integration Tests
     runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
+    env:
+      MONGO_URI: mongodb://127.0.0.1:27017/foodbridge
+      JWT_SECRET: foodbridge_ci_secret_token_2026
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -26,13 +38,18 @@ jobs:
           cd backend
           npm ci
 
-      - name: Run Core Platform Tests
+      - name: Run Core Platform & Governance Tests
         run: |
           cd backend
           npm test
 
+      - name: Run Donor & Surplus Dispatch Tests
+        run: |
+          cd backend
+          npm run test:module1
+
   frontend-build:
-    name: Frontend Build & Asset Verification
+    name: Frontend Vite Production Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
