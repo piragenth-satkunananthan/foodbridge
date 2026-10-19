@@ -2,9 +2,9 @@ name: FoodBridge CI/CD Pipeline
 
 on:
   push:
-    branches: [ develop, main, 'feature/**' ]
+    branches: [ develop, main, production, 'feature/**' ]
   pull_request:
-    branches: [ develop, main ]
+    branches: [ develop, main, production ]
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
