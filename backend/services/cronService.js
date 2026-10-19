@@ -5,7 +5,7 @@
 
 const Donation = require('../models/Donation');
 const ImpactRecord = require('../models/ImpactRecord');
-const { calculateAggregatedImpact } = require('../controllers/impactController');
+const { calculateImpactMetrics } = require('../controllers/impactController');
 
 const runPeriodicFreshnessCheck = async () => {
   try {

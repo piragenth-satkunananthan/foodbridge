@@ -127,51 +127,58 @@ const getPublicImpact = async (req, res) => {
   }
 };
 
+const calculateImpactMetrics = async () => {
+  const [completedDonations, completedWaste] = await Promise.all([
+    Donation.find({ status: { $in: ['delivered', 'completed'] } }).select('quantity district'),
+    WasteRequest.find({ status: { $in: ['recycled', 'completed'] } }).select('wasteCategory quantity district')
+  ]);
+
+  let mealsRescued = 0;
+  const districts = new Set();
+  completedDonations.forEach((d) => {
+    mealsRescued += parseMealsCount(d.quantity);
+    if (d.district) districts.add(d.district);
+  });
+
+  const kgRecycled = {
+    plastic: 0,
+    glass: 0,
+    paper: 0,
+    metal: 0
+  };
+  let kgOrganicDiverted = 0;
+
+  completedWaste.forEach((w) => {
+    const kg = parseWeightKg(w.quantity);
+    if (w.district) districts.add(w.district);
+
+    if (w.wasteCategory === 'organic') {
+      kgOrganicDiverted += kg;
+    } else if (kgRecycled[w.wasteCategory] !== undefined) {
+      kgRecycled[w.wasteCategory] += kg;
+    }
+  });
+
+  return {
+    mealsRescued,
+    kgRecycled,
+    kgOrganicDiverted,
+    districtsCovered: Array.from(districts).sort()
+  };
+};
+
 // @desc    Record/Snapshot current month metrics into ImpactRecord collection
 // @route   POST /api/admin/impact/snapshot
 // @access  Private/Admin
 const recordMonthlySnapshot = async (req, res) => {
   try {
     const currentPeriod = req.body.period || new Date().toISOString().slice(0, 7); // e.g. "2026-10"
-
-    const [completedDonations, completedWaste] = await Promise.all([
-      Donation.find({ status: { $in: ['delivered', 'completed'] } }).select('quantity district'),
-      WasteRequest.find({ status: { $in: ['recycled', 'completed'] } }).select('wasteCategory quantity district')
-    ]);
-
-    let mealsRescued = 0;
-    const districts = new Set();
-    completedDonations.forEach((d) => {
-      mealsRescued += parseMealsCount(d.quantity);
-      if (d.district) districts.add(d.district);
-    });
-
-    const kgRecycled = {
-      plastic: 0,
-      glass: 0,
-      paper: 0,
-      metal: 0
-    };
-    let kgOrganicDiverted = 0;
-
-    completedWaste.forEach((w) => {
-      const kg = parseWeightKg(w.quantity);
-      if (w.district) districts.add(w.district);
-
-      if (w.wasteCategory === 'organic') {
-        kgOrganicDiverted += kg;
-      } else if (kgRecycled[w.wasteCategory] !== undefined) {
-        kgRecycled[w.wasteCategory] += kg;
-      }
-    });
+    const metrics = await calculateImpactMetrics();
 
     const record = await ImpactRecord.findOneAndUpdate(
       { period: currentPeriod },
       {
-        mealsRescued,
-        kgRecycled,
-        kgOrganicDiverted,
-        districtsCovered: Array.from(districts),
+        ...metrics,
         period: currentPeriod
       },
       { new: true, upsert: true }
@@ -189,6 +196,7 @@ const recordMonthlySnapshot = async (req, res) => {
 module.exports = {
   getPublicImpact,
   recordMonthlySnapshot,
+  calculateImpactMetrics,
   parseMealsCount,
   parseWeightKg
 };
