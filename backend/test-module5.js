@@ -6,7 +6,7 @@ const Organization = require('./models/Organization');
 const ImpactRecord = require('./models/ImpactRecord');
 const app = require('./server');
 
-console.log('🧪 Starting Module 5 Tests (Admin, Verification & Impact)...\n');
+console.log('🧪 Starting FoodBridge Platform Core & Governance Integration Tests...\n');
 
 // 1. Test Impact Parser Helpers
 console.log('--- 1. Testing Impact Quantity Parsers ---');
@@ -72,5 +72,5 @@ console.log('--- 3. Testing Route Bindings in Express Server ---');
 assert.ok(app, 'Express app instance exists');
 assert.ok(typeof app.listen === 'function', 'app has listen method');
 console.log('✔ Express app successfully loaded and initialized without runtime syntax errors');
-console.log('\n🎉 ALL MODULE 5 BACKEND INTEGRATION TESTS PASSED SUCCESSFULLY!');
+console.log('\n🎉 ALL FOODBRIDGE PLATFORM INTEGRATION TESTS PASSED SUCCESSFULLY!');
 process.exit(0);

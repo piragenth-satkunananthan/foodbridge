@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
 
-// TODO (Module 3 - Waste Classification & Recycler): build these out
+// Circular Waste Stream & Industrial Recycler Routing Pipeline
 // router.post('/', protect, authorize('donor'), createWasteRequest);
 // router.get('/', protect, getWasteRequests);
 // router.put('/:id/accept', protect, authorize('recycler'), acceptWasteRequest);

@@ -25,7 +25,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Module 5: Admin & Impact Dashboard */}
+        {/* Governance, Verification & ESG Impact Command Center */}
         <Route
           path="/admin/*"
           element={
@@ -35,7 +35,7 @@ export default function App() {
           }
         />
 
-        {/* Module 1: Donor & Surplus Posting */}
+        {/* Commercial Surplus Food & Waste Dispatch (Donor Portal) */}
         <Route
           path="/donor/*"
           element={
@@ -45,7 +45,7 @@ export default function App() {
           }
         />
 
-        {/* Module 2: Recipient Smart Matching */}
+        {/* Charity Allocation & Proximity Matching (Recipient Portal) */}
         <Route
           path="/recipient/*"
           element={
@@ -55,7 +55,7 @@ export default function App() {
           }
         />
 
-        {/* Module 3: Waste Classification & Recycler */}
+        {/* Circular Waste Stream & Industrial Recycling (Recycler Hub) */}
         <Route
           path="/recycler/*"
           element={
@@ -65,7 +65,7 @@ export default function App() {
           }
         />
 
-        {/* Module 4: Volunteer Pickup & Tracking */}
+        {/* Community Courier Fleet & Route Logistics (Volunteer Hub) */}
         <Route
           path="/volunteer/*"
           element={

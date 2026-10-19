@@ -320,60 +320,60 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5 Modules Overview Grid */}
+      {/* Integrated Ecosystem Overview Grid */}
       <section className="main-content" style={{ marginTop: '28px' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <span style={{ fontSize: '12px', fontWeight: '700', color: '#059669', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Architecture Overview
+            Platform Ecosystem
           </span>
           <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', marginTop: '4px' }}>
-            5 Role-Based Functional Modules
+            5 Interconnected Enterprise Portals
           </h2>
           <p style={{ fontSize: '13.5px', color: '#64748b' }}>
-            Built as part of SWT22022 Group I MERN-stack practical assignment.
+            Engineered for seamless collaboration between food donors, non-profits, industrial recyclers, and volunteer courier fleets.
           </p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
           <div className="card">
-            <span className="badge donor" style={{ marginBottom: '8px' }}>Module 1</span>
-            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Donor Surplus Posting</h3>
+            <span className="badge donor" style={{ marginBottom: '8px' }}>Surplus Rescue</span>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Commercial Donor Portal</h3>
             <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
-              Hotels, restaurants, and individuals log food or waste with photos, quantities, and freshness windows.
+              Hotels, restaurants, bakeries, and banquet centers log surplus meals or organic items with photos, expiry timers, and safe packaging tags.
             </p>
           </div>
 
           <div className="card">
-            <span className="badge recipient" style={{ marginBottom: '8px' }}>Module 2</span>
+            <span className="badge recipient" style={{ marginBottom: '8px' }}>Charity Allocation</span>
             <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Smart Proximity Matching</h3>
             <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
-              Ranked discovery by district and distance for verified charities and shelters to claim surplus before spoilage.
+              Algorithmic discovery ranked by travel radius and capacity for verified orphanages, shelters, and relief charities to claim meals before expiry.
             </p>
           </div>
 
           <div className="card">
-            <span className="badge recycler" style={{ marginBottom: '8px' }}>Module 3</span>
-            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Waste Classification</h3>
+            <span className="badge recycler" style={{ marginBottom: '8px' }}>Circular Bio-Economy</span>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Waste Stream Logistics</h3>
             <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
-              Automatic classification of non-donatable items into plastic, glass, paper, metal, or organic pathways.
+              Direct classification and routing of non-donatable items into certified industrial recycling, anaerobic digestion, and composting pipelines.
             </p>
           </div>
 
           <div className="card">
-            <span className="badge volunteer" style={{ marginBottom: '8px' }}>Module 4</span>
-            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Volunteer Route Tracking</h3>
+            <span className="badge volunteer" style={{ marginBottom: '8px' }}>Fleet Logistics</span>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Volunteer Courier Dispatch</h3>
             <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
-              Volunteers accept pickup jobs, follow route navigation, and provide timestamped status tracking.
+              Crowdsourced and dedicated courier fleets accept rescue jobs, follow turn-by-turn route coordinates, and verify cold-chain handovers.
             </p>
           </div>
 
           <div className="card" style={{ border: '2px solid #10b981', background: '#f0fdf4' }}>
             <span className="badge admin" style={{ marginBottom: '8px', background: '#d1fae5', color: '#047857' }}>
-              Module 5 (Completed)
+              Trust & Governance
             </span>
-            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Admin, Verification & Impact</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '6px' }}>Admin & Impact Command</h3>
             <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>
-              Organization credential verification, fake account removal, in-app notification alerts, and impact aggregation.
+              KYC organization credential verification, real-time platform moderation, event notifications, and auditable public ESG impact aggregation.
             </p>
           </div>
         </div>

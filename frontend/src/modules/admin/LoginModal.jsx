@@ -82,7 +82,7 @@ export default function LoginModal({ onLoginSuccess }) {
             FoodBridge Admin
           </h2>
           <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-            Module 5 • Verification, Monitoring & Impact
+            Trust, Safety & Governance Portal
           </p>
         </div>
 

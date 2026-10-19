@@ -19,12 +19,12 @@ frontend/
     ├── components/            # Shared Header, ProtectedRoute
     ├── pages/                 # Public Landing Page, Login & Register
     │
-    └── modules/               # 👈 EACH TEAM MEMBER WORKS IN THEIR MODULE FOLDER
-        ├── admin/             # 🛡️ Module 5 (Admin, Verification & Impact Portal)
-        ├── donor/             # 📦 Module 1 (Donor & Surplus Posting)
-        ├── recipient/         # 🤝 Module 2 (Recipient Matching Engine)
-        ├── recycler/          # ♻️ Module 3 (Waste Classification & Recycler)
-        └── volunteer/         # 🚚 Module 4 (Volunteer Pickup & Tracking)
+    └── modules/               # Enterprise Domain Portals
+        ├── admin/             # 🛡️ Governance, Verification & ESG Impact Portal
+        ├── donor/             # 📦 Commercial Surplus Food & Waste Dispatch
+        ├── recipient/         # 🤝 Charity & NGO Proximity Allocation
+        ├── recycler/          # ♻️ Circular Waste Stream & Composting Logistics
+        └── volunteer/         # 🚚 Volunteer Courier Fleet & Route Tracking
 ```
 
 ---

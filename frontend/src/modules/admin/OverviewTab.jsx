@@ -130,7 +130,7 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
         <div className="card">
           <div className="card-header">
             <h2 className="card-title">Waste Material Stream Breakdown</h2>
-            <span style={{ fontSize: '12px', color: '#64748b' }}>Module 3 Stream</span>
+            <span style={{ fontSize: '12px', color: '#64748b' }}>Circular Recycling Stream</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

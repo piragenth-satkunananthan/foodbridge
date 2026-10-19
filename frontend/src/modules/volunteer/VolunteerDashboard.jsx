@@ -9,7 +9,7 @@ export default function VolunteerDashboard() {
     <div className="main-content">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <span className="badge volunteer" style={{ marginBottom: '6px' }}>Module 4 • Volunteer</span>
+          <span className="badge volunteer" style={{ marginBottom: '6px' }}>Community Fleet & Logistics Hub</span>
           <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a' }}>
             Volunteer Hub — {user?.name || 'Volunteer'}
           </h2>
@@ -32,9 +32,9 @@ export default function VolunteerDashboard() {
 
         <div className="empty-state">
           <Truck size={40} color="#cbd5e1" style={{ margin: '0 auto' }} />
-          <h3>Module 4: Volunteer Pickup & Route Tracking</h3>
+          <h3>Active Transport & Route Dispatch</h3>
           <p>
-            This module is designated for pickup job discovery, step-by-step pipeline updates (Scheduled &rarr; Picked Up &rarr; Delivered), and map display.
+            Discover nearby rescue jobs, navigate optimized routes between donor and charity hubs, and log verified handovers.
           </p>
         </div>
       </div>

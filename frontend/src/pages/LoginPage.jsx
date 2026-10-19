@@ -115,11 +115,11 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* 1-Click Demo Login Shortcuts for Evaluation */}
+        {/* 1-Click Demo Login Shortcuts for Interactive Role Exploration */}
         <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '12px' }}>
             <Sparkles size={14} color="#059669" />
-            <span>1-Click Fast Demo Logins (Viva & Testing):</span>
+            <span>Instant Role Switcher • Live Demo Accounts:</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>

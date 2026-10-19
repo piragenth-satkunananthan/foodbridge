@@ -9,7 +9,7 @@ export default function RecipientDashboard() {
     <div className="main-content">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <span className="badge recipient" style={{ marginBottom: '6px' }}>Module 2 • Food Recipient</span>
+          <span className="badge recipient" style={{ marginBottom: '6px' }}>Charity & Shelter Allocation Portal</span>
           <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a' }}>
             Recipient Portal — {user?.name || 'NGO / Charity'}
           </h2>
@@ -37,9 +37,9 @@ export default function RecipientDashboard() {
 
         <div className="empty-state">
           <HeartHandshake size={40} color="#cbd5e1" style={{ margin: '0 auto' }} />
-          <h3>Module 2: Smart Matching & Recipient Flow</h3>
+          <h3>Smart Proximity Matching Engine</h3>
           <p>
-            This module is designated for recipient browsing, distance ranking, requesting food donations, and receiving notifications.
+            Discover verified food surplus in your district, submit instant allocation requests, and coordinate volunteer courier logistics.
           </p>
         </div>
       </div>

@@ -10,7 +10,7 @@ export default function DonorDashboard() {
     <div className="main-content">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <span className="badge donor" style={{ marginBottom: '6px' }}>Module 1 • Food Donor</span>
+          <span className="badge donor" style={{ marginBottom: '6px' }}>Donor Operations Hub • Commercial & Retail</span>
           <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a' }}>
             Welcome, {user?.name || 'Food Donor'}
           </h2>
@@ -64,9 +64,9 @@ export default function DonorDashboard() {
 
         <div className="empty-state">
           <Utensils size={40} color="#cbd5e1" style={{ margin: '0 auto' }} />
-          <h3>Module 1: Donor & Surplus Posting</h3>
+          <h3>Surplus Food & Material Dispatch Stream</h3>
           <p>
-            This module is designated for donor registration, multi-step food and waste posting forms, photo uploads, and lifecycle tracking.
+            Manage active surplus listings, multi-step nutritional and packaging logs, pickup scheduling, and track meal handovers to verified charities.
           </p>
         </div>
       </div>

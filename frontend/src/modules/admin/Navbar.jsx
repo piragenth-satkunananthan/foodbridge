@@ -40,7 +40,7 @@ export default function Navbar({
           </div>
           <div className="logo-text">
             <h1>FoodBridge</h1>
-            <p>Module 5 • Admin & Impact</p>
+            <p>Governance, Trust & Impact</p>
           </div>
         </div>
 

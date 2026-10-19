@@ -202,7 +202,7 @@ export default function PublicImpactModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Admin Snapshot Trigger (Module 5 Requirement) */}
+            {/* Admin Snapshot Trigger (Official Monthly ESG Impact Snapshot) */}
             <div style={{
               background: '#ecfdf5',
               border: '1px solid #a7f3d0',

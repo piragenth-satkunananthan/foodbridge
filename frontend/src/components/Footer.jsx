@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, Shield, Heart, GraduationCap } from 'lucide-react';
+import { Building2, Shield, Heart, Award, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Footer() {
@@ -16,34 +16,34 @@ export default function Footer() {
               <span style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>FoodBridge</span>
             </div>
             <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.6, maxWidth: '320px' }}>
-              Smart food rescue and waste routing platform connecting surplus donors with verified charity recipients, licensed recycling facilities, and volunteer logistics.
+              Enterprise food rescue and circular waste routing network connecting hospitality donors with verified charities, certified recycling operators, and volunteer logistics.
             </p>
           </div>
 
-          {/* Academic Project Info */}
+          {/* Standards & Governance */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '700', color: '#0f172a', marginBottom: '12px' }}>
-              <GraduationCap size={16} color="#059669" />
-              <span>University Course Information</span>
+              <Shield size={16} color="#059669" />
+              <span>Standards & Compliance</span>
             </div>
             <div style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.8 }}>
-              <div><strong>Course:</strong> SWT22022 Practical for Internet Application Development</div>
-              <div><strong>Institution:</strong> South Eastern University of Sri Lanka (SEU)</div>
-              <div><strong>Group:</strong> Group I • Group Assignment CA1</div>
+              <div><strong>ESG Impact:</strong> UN SDG 2 (Zero Hunger) & SDG 12 (Responsible Consumption)</div>
+              <div><strong>Safety:</strong> Cold-Chain Guidelines & Donor Verification Protocols</div>
+              <div><strong>Governance:</strong> Organization Credential Verification & Audit Logging</div>
             </div>
           </div>
 
-          {/* Functional Modules Map */}
+          {/* Platform Solutions & Portals */}
           <div>
             <div style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', marginBottom: '12px' }}>
-              Platform Functional Modules
+              Platform Solutions & Portals
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12.5px', color: '#64748b' }}>
-              <Link to="/donor" style={{ color: '#475569', textDecoration: 'none' }}>• Module 1: Donor & Surplus Posting</Link>
-              <Link to="/recipient" style={{ color: '#475569', textDecoration: 'none' }}>• Module 2: Proximity & Smart Matching</Link>
-              <Link to="/recycler" style={{ color: '#475569', textDecoration: 'none' }}>• Module 3: Waste Stream Classification</Link>
-              <Link to="/volunteer" style={{ color: '#475569', textDecoration: 'none' }}>• Module 4: Volunteer Route Tracking</Link>
-              <Link to="/admin" style={{ color: '#059669', fontWeight: '600', textDecoration: 'none' }}>• Module 5: Admin, Verification & Impact</Link>
+              <Link to="/donor" style={{ color: '#475569', textDecoration: 'none' }}>• Commercial Food Donor Portal</Link>
+              <Link to="/recipient" style={{ color: '#475569', textDecoration: 'none' }}>• Charity & Shelter Allocation Engine</Link>
+              <Link to="/recycler" style={{ color: '#475569', textDecoration: 'none' }}>• Circular Materials & Composting Hub</Link>
+              <Link to="/volunteer" style={{ color: '#475569', textDecoration: 'none' }}>• Volunteer Logistics & Courier Fleet</Link>
+              <Link to="/admin" style={{ color: '#059669', fontWeight: '600', textDecoration: 'none' }}>• Trust, Safety & ESG Command Center</Link>
             </div>
           </div>
         </div>
@@ -61,10 +61,10 @@ export default function Footer() {
           color: '#94a3b8'
         }}>
           <div>
-            © {new Date().getFullYear()} FoodBridge Platform • South Eastern University of Sri Lanka. All rights reserved.
+            © {new Date().getFullYear()} FoodBridge Platform • Nationwide Food Rescue & Circular Waste Network. All rights reserved.
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>Built with MERN Stack (MongoDB, Express, React, Node.js)</span>
+            <span>Powered by Enterprise MERN Architecture (Express, MongoDB, React, Node.js)</span>
           </div>
         </div>
       </div>

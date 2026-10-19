@@ -9,7 +9,7 @@ export default function RecyclerDashboard() {
     <div className="main-content">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <span className="badge recycler" style={{ marginBottom: '6px' }}>Module 3 • Recycler & Composter</span>
+          <span className="badge recycler" style={{ marginBottom: '6px' }}>Circular Materials & Bio-Economy Facility</span>
           <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a' }}>
             Recycling Facility — {user?.name || 'Recycler'}
           </h2>
@@ -37,9 +37,9 @@ export default function RecyclerDashboard() {
 
         <div className="empty-state">
           <Recycle size={40} color="#cbd5e1" style={{ margin: '0 auto' }} />
-          <h3>Module 3: Waste Classification & Recycler Routing</h3>
+          <h3>Circular Waste Stream Routing Hub</h3>
           <p>
-            This module is designated for waste classification, stream routing (plastic/glass/paper/metal/organic), and collector job claims.
+            Receive categorized industrial waste batches, schedule bulk pickups, and log diversion metrics for environmental compliance and recycling certificates.
           </p>
         </div>
       </div>

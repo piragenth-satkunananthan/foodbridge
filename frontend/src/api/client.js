@@ -62,7 +62,7 @@ export const registerUser = (userData) => {
 export const getMe = () => apiFetch('/auth/me');
 
 // ==========================================
-// Module 5: Admin & Verification APIs
+// Governance, Organization Verification & Impact APIs
 // ==========================================
 
 export const fetchAdminStats = () => apiFetch('/admin/stats');

@@ -28,14 +28,14 @@ app.get('/', (req, res) => {
 });
 
 // Mounted routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);                  // Module 5 (Admin & Verification)
-app.use('/api/impact', impactRoutes);                // Module 5 (Public Impact Dashboard)
-app.use('/api/notifications', notificationRoutes);    // Module 5 (In-app Notification Layer)
-app.use('/api/donations', donationRoutes);           // Module 1 (Donor & Surplus Posting)
-app.use('/api/waste', wasteRoutes);                  // Module 3 (Waste Classification)
-app.use('/api/match', matchRoutes);                  // Module 2 (Matching Engine)
-app.use('/api/pickups', pickupRoutes);               // Module 4 (Volunteer & Pickup Tracking)
+app.use('/api/auth', authRoutes);                      // Authentication & JWT Sessions
+app.use('/api/admin', adminRoutes);                    // Platform Governance & Compliance
+app.use('/api/impact', impactRoutes);                  // Public ESG & Ecological Impact Analytics
+app.use('/api/notifications', notificationRoutes);     // Real-time Event Notification Engine
+app.use('/api/donations', donationRoutes);             // Surplus Food Dispatch
+app.use('/api/waste', wasteRoutes);                    // Circular Waste Stream Routing
+app.use('/api/match', matchRoutes);                    // Proximity-Based Smart Matching
+app.use('/api/pickups', pickupRoutes);                 // Volunteer Logistics & Last-Mile Delivery
 
 const PORT = process.env.PORT || 5000;
 
