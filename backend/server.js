@@ -17,6 +17,7 @@ const wasteRoutes = require('./routes/wasteRoutes');
 const matchRoutes = require('./routes/matchRoutes');
 const pickupRoutes = require('./routes/pickupRoutes');
 
+const mongoSanitize = require('express-mongo-sanitize');
 const app = express();
 
 // Security Headers
@@ -40,8 +41,34 @@ const authLimiter = rateLimit({
 });
 
 app.use(globalLimiter);
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+
+// Secure CORS Whitelist
+const defaultAllowedOrigins = [
+  'http://localhost',
+  'http://localhost:80',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://54.234.233.124'
+];
+const configuredOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+  : [];
+const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...configuredOrigins]));
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*') || /^http:\/\/localhost:\d+$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS policy violation: origin ${origin} not permitted`));
+  },
+  credentials: true
+}));
+
+app.use(express.json({ limit: '5mb' }));
+// NoSQL Query Injection Defense
+app.use(mongoSanitize());
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
