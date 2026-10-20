@@ -55,14 +55,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="main-content" style={{ maxWidth: '520px', margin: '40px auto' }}>
-      <div className="card" style={{ padding: '32px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a' }}>
-            Sign In to FoodBridge
+    <div className="main-content" style={{ maxWidth: '540px', margin: '48px auto' }}>
+      <div className="card" style={{
+        padding: '36px',
+        boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.05)',
+        borderRadius: '20px'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+            color: 'white',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '14px',
+            boxShadow: '0 8px 16px -4px rgba(5, 150, 105, 0.3)'
+          }}>
+            <ShieldCheck size={24} />
+          </div>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em' }}>
+            Sign In to FoodBridge Console
           </h2>
-          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-            Access your role-based dashboard and active surplus workflows
+          <p style={{ fontSize: '13.5px', color: '#64748b', marginTop: '6px' }}>
+            Enterprise surplus logistics, KYC verification & ESG impact tracking
           </p>
         </div>
 
@@ -72,9 +90,10 @@ export default function LoginPage() {
             border: '1px solid #fecaca',
             color: '#b91c1c',
             fontSize: '13px',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            marginBottom: '16px'
+            padding: '11px 16px',
+            borderRadius: '10px',
+            marginBottom: '20px',
+            fontWeight: '500'
           }}>
             {error}
           </div>
@@ -82,11 +101,11 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label className="form-label">Email Address</label>
+            <label className="form-label">Work / Organizational Email</label>
             <input
               type="email"
               className="form-input"
-              placeholder="user@foodbridge.com"
+              placeholder="name@organization.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -94,11 +113,13 @@ export default function LoginPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className="form-label">Password</label>
+            </div>
             <input
               type="password"
               className="form-input"
-              placeholder="••••••••"
+              placeholder="••••••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -107,68 +128,82 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '10px', marginTop: '6px' }}
+            className="btn btn-primary btn-executive"
+            style={{ width: '100%', padding: '12px', marginTop: '8px', fontSize: '14px' }}
             disabled={submitting}
           >
-            {submitting ? 'Authenticating...' : 'Sign In'} <ArrowRight size={15} />
+            {submitting ? 'Authenticating...' : 'Sign In to Portal'} <ArrowRight size={16} />
           </button>
         </form>
 
-        {/* 1-Click Demo Login Shortcuts for Interactive Role Exploration */}
-        <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '12px' }}>
-            <Sparkles size={14} color="#059669" />
-            <span>Instant Role Switcher • Live Demo Accounts:</span>
+        {/* 1-Click Interactive Persona Switcher for Quick Exploration */}
+        <div style={{ marginTop: '28px', paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Sparkles size={14} color="#059669" /> Demo Persona Quick-Switch:
+            </span>
+            <span style={{ fontSize: '11px', color: '#94a3b8' }}>1-Click Login</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <button
               type="button"
               onClick={() => handleDemoLogin('admin@foodbridge.com', 'admin123')}
-              className="btn btn-secondary btn-sm"
-              style={{ justifyContent: 'flex-start', background: '#ecfdf5', borderColor: '#a7f3d0', color: '#047857' }}
+              className="persona-chip"
               disabled={submitting}
             >
-              <ShieldCheck size={14} /> Admin Portal
+              <div style={{ color: '#059669', display: 'flex' }}><ShieldCheck size={16} /></div>
+              <div>
+                <div>Platform Admin</div>
+                <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '400' }}>Full Governance</div>
+              </div>
             </button>
 
             <button
               type="button"
               onClick={() => handleDemoLogin('cinnamon@hotel.com', 'user123')}
-              className="btn btn-secondary btn-sm"
-              style={{ justifyContent: 'flex-start' }}
+              className="persona-chip"
               disabled={submitting}
             >
-              <Utensils size={14} /> Food Donor
+              <div style={{ color: '#0284c7', display: 'flex' }}><Utensils size={16} /></div>
+              <div>
+                <div>Grand Hotel</div>
+                <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '400' }}>Commercial Donor</div>
+              </div>
             </button>
 
             <button
               type="button"
               onClick={() => handleDemoLogin('carehome@ngo.org', 'user123')}
-              className="btn btn-secondary btn-sm"
-              style={{ justifyContent: 'flex-start' }}
+              className="persona-chip"
               disabled={submitting}
             >
-              <HeartHandshake size={14} /> NGO Recipient
+              <div style={{ color: '#7c3aed', display: 'flex' }}><HeartHandshake size={16} /></div>
+              <div>
+                <div>Hope Haven NGO</div>
+                <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '400' }}>Verified Recipient</div>
+              </div>
             </button>
 
             <button
               type="button"
               onClick={() => handleDemoLogin('info@ecocycle.lk', 'user123')}
-              className="btn btn-secondary btn-sm"
-              style={{ justifyContent: 'flex-start' }}
+              className="persona-chip"
               disabled={submitting}
             >
-              <Recycle size={14} /> Recycler
+              <div style={{ color: '#0d9488', display: 'flex' }}><Recycle size={16} /></div>
+              <div>
+                <div>EcoCycle Bio</div>
+                <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '400' }}>Circular Recycler</div>
+              </div>
             </button>
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#64748b' }}>
-          Don't have an account yet?{' '}
-          <Link to="/register" style={{ color: '#059669', fontWeight: '600', textDecoration: 'none' }}>
-            Register here
+        <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: '#64748b' }}>
+          Need to onboard your organization?{' '}
+          <Link to="/register" style={{ color: '#059669', fontWeight: '700', textDecoration: 'none' }}>
+            Register Organization
           </Link>
         </div>
       </div>

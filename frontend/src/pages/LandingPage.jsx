@@ -84,46 +84,73 @@ export default function LandingPage() {
 
   return (
     <div style={{ paddingBottom: '60px' }}>
-      {/* Hero Section */}
-      <section style={{
-        background: 'linear-gradient(135deg, #064e3b 0%, #065f46 60%, #047857 100%)',
-        color: 'white',
-        padding: '64px 24px',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{ maxWidth: '850px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
-          <span style={{
-            background: 'rgba(255, 255, 255, 0.15)',
-            padding: '5px 16px',
-            borderRadius: '9999px',
-            fontSize: '12px',
-            fontWeight: '700',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}>
-            <Sparkles size={14} color="#6ee7b7" /> Sri Lanka’s Smart Food Rescue & Waste Platform
-          </span>
+      {/* Executive Hero Section */}
+      <section className="hero-executive">
+        <div className="hero-glow-blob" />
+        <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 10, textAlign: 'center' }}>
+          <div style={{ marginBottom: '18px' }}>
+            <span className="status-pill">
+              <span className="pulse-dot green" />
+              <span>National Circular Food Rescue & ESG Network</span>
+            </span>
+          </div>
 
-          <h1 style={{ fontSize: '44px', fontWeight: '800', margin: '18px 0 14px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-            Bridging Surplus Food to Those in Need, Diverting Waste to Recyclers.
+          <h1 style={{
+            fontSize: '48px',
+            fontWeight: '800',
+            letterSpacing: '-0.03em',
+            lineHeight: 1.15,
+            marginBottom: '18px',
+            textShadow: '0 2px 20px rgba(0,0,0,0.2)'
+          }}>
+            Decarbonizing Surplus Food with Precision Redistribution
           </h1>
 
-          <p style={{ fontSize: '16.5px', color: '#d1fae5', maxWidth: '660px', margin: '0 auto 28px', lineHeight: 1.6 }}>
-            Connecting wedding halls, hotels, and restaurants with verified charities, certified recycling operators, and community volunteers through district-based matching.
+          <p style={{
+            fontSize: '17px',
+            color: '#d1fae5',
+            maxWidth: '700px',
+            margin: '0 auto 32px',
+            lineHeight: 1.6
+          }}>
+            Connecting enterprise donors, commercial kitchens, and event halls with verified NGOs and certified circular recyclers across Sri Lanka through cold-chain compliance and real-time GIS dispatch.
           </p>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <Link to="/register" className="btn btn-primary" style={{ background: '#10b981', padding: '12px 26px', fontSize: '15px', textDecoration: 'none', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)' }}>
-              <span>Join FoodBridge Today</span> <ArrowRight size={16} />
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
+            <Link
+              to="/register"
+              className="btn btn-primary btn-executive"
+              style={{ padding: '13px 28px', fontSize: '15px', textDecoration: 'none' }}
+            >
+              <span>Join FoodBridge Platform</span> <ArrowRight size={16} />
             </Link>
-            <Link to="/login" className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.12)', color: 'white', borderColor: 'rgba(255,255,255,0.3)', padding: '12px 26px', fontSize: '15px', textDecoration: 'none' }}>
-              Sign In to Your Dashboard
+            <Link
+              to="/login"
+              className="btn btn-glass"
+              style={{ padding: '13px 28px', fontSize: '15px', textDecoration: 'none' }}
+            >
+              Sign In to Console
             </Link>
+          </div>
+
+          {/* Real-time Glassmorphism Metrics Ribbon */}
+          <div className="glass-ribbon">
+            <div className="glass-ribbon-item">
+              <div className="glass-ribbon-value">{s.mealsRescued.toLocaleString()}+</div>
+              <div className="glass-ribbon-label">Nutritious Meals Rescued</div>
+            </div>
+            <div className="glass-ribbon-item">
+              <div className="glass-ribbon-value">{s.totalKgRecycled} kg</div>
+              <div className="glass-ribbon-label">Materials Upcycled</div>
+            </div>
+            <div className="glass-ribbon-item">
+              <div className="glass-ribbon-value">{s.kgOrganicDiverted} kg</div>
+              <div className="glass-ribbon-label">Organic Waste Diverted</div>
+            </div>
+            <div className="glass-ribbon-item">
+              <div className="glass-ribbon-value">{s.districtsCoveredCount || 3} Districts</div>
+              <div className="glass-ribbon-label">Active Logistics Grid</div>
+            </div>
           </div>
         </div>
       </section>
