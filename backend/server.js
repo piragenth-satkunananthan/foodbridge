@@ -20,6 +20,9 @@ const pickupRoutes = require('./routes/pickupRoutes');
 const mongoSanitize = require('express-mongo-sanitize');
 const app = express();
 
+// Trust reverse proxy (Nginx container in front of Express)
+app.set('trust proxy', 1);
+
 // Security Headers
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 
