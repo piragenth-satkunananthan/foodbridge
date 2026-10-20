@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Utensils, PlusCircle, History, Clock, MapPin, Package, 
   Search, Filter, Eye, Edit3, Trash2, CheckCircle2, 
-  AlertCircle, Recycle, Sparkles, RefreshCw, XCircle 
+  AlertCircle, Recycle, Sparkles, RefreshCw, XCircle, ArrowRight 
 } from 'lucide-react';
 import { 
   fetchDonorStats, fetchDonations, fetchWasteRequests, 
@@ -12,6 +13,7 @@ import {
 import NewSurplusModal from './NewSurplusModal';
 import DonationDetailsModal from './DonationDetailsModal';
 import EditDonationModal from './EditDonationModal';
+import AnimatedCounter from '../../components/AnimatedCounter';
 
 export default function DonorDashboard() {
   const { user } = useAuth();
@@ -158,63 +160,85 @@ export default function DonorDashboard() {
           <button 
             type="button" 
             onClick={loadAllData} 
-            className="btn btn-outline"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            className="plaid-btn-light"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '9px 15px' }}
             title="Refresh data"
           >
             <RefreshCw size={15} className={loading ? 'spin' : ''} />
             <span>Refresh</span>
           </button>
 
-          <button 
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="button" 
-            className="btn btn-primary" 
+            className="plaid-btn-emerald" 
             onClick={() => setIsNewModalOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 6px -1px rgba(5, 150, 105, 0.3)' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', padding: '9px 18px' }}
           >
             <PlusCircle size={18} />
             <span style={{ fontWeight: '700' }}>Post New Surplus</span>
-          </button>
+          </motion.button>
         </div>
       </div>
 
-      {/* KPI Overview Grid */}
+      {/* KPI Overview Grid with Motion and AnimatedCounter */}
       <div className="kpi-grid" style={{ marginBottom: '28px' }}>
-        <div className="kpi-card green">
+        <motion.div
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className="kpi-card green"
+        >
           <div className="kpi-icon green"><Utensils size={22} /></div>
           <div className="kpi-details">
             <h3>Active Food Donations</h3>
-            <div className="kpi-value">{stats.activeDonations}</div>
+            <div className="kpi-value">
+              <AnimatedCounter value={stats.activeDonations} />
+            </div>
             <div className="kpi-sub">Ready for NGO matching & pickup</div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="kpi-card blue">
+        <motion.div
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className="kpi-card blue"
+        >
           <div className="kpi-icon blue"><Recycle size={22} /></div>
           <div className="kpi-details">
             <h3>Waste Collection Requests</h3>
-            <div className="kpi-value">{stats.activeWasteRequests || wasteRequests.filter(w => w.status === 'posted').length}</div>
+            <div className="kpi-value">
+              <AnimatedCounter value={stats.activeWasteRequests || wasteRequests.filter(w => w.status === 'posted').length} />
+            </div>
             <div className="kpi-sub">Organic & recyclable streams</div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="kpi-card amber">
+        <motion.div
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className="kpi-card amber"
+        >
           <div className="kpi-icon amber"><History size={22} /></div>
           <div className="kpi-details">
             <h3>Estimated Meals Rescued</h3>
-            <div className="kpi-value">{stats.estimatedMeals}</div>
+            <div className="kpi-value">
+              <AnimatedCounter value={stats.estimatedMeals} />
+            </div>
             <div className="kpi-sub">Diverted to local charities & shelters</div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="kpi-card purple">
+        <motion.div
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className="kpi-card purple"
+        >
           <div className="kpi-icon purple"><CheckCircle2 size={22} /></div>
           <div className="kpi-details">
             <h3>Completed Rescues</h3>
-            <div className="kpi-value">{stats.completedDonations}</div>
+            <div className="kpi-value">
+              <AnimatedCounter value={stats.completedDonations} />
+            </div>
             <div className="kpi-sub">Verified safe food deliveries</div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Main Tabbed Navigation Container */}
