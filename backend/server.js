@@ -67,8 +67,12 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '5mb' }));
-// NoSQL Query Injection Defense
-app.use(mongoSanitize());
+// NoSQL Query Injection Defense (Express 5 compatible)
+app.use((req, res, next) => {
+  if (req.body) mongoSanitize.sanitize(req.body);
+  if (req.params) mongoSanitize.sanitize(req.params);
+  next();
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
