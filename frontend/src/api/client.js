@@ -187,37 +187,3 @@ export const cancelWasteRequest = (id) => {
   });
 };
 
-
-// ==========================================
-// Smart Proximity Matching & Recipient Allocation APIs (Module 2)
-// ==========================================
-
-export const fetchNearbyDonations = (params = {}) => {
-  const query = new URLSearchParams(params).toString();
-  return apiFetch(`/match/nearby-donations${query ? '?' + query : ''}`);
-};
-
-export const fetchRecipientStats = () => apiFetch('/match/stats');
-
-export const fetchRecipientClaims = (params = {}) => {
-  const query = new URLSearchParams(params).toString();
-  return apiFetch(`/match/my-claims${query ? '?' + query : ''}`);
-};
-
-export const claimDonation = (donationId, notes = '') => {
-  return apiFetch(`/match/${donationId}/claim`, {
-    method: 'POST',
-    body: JSON.stringify({ notes })
-  });
-};
-
-export const cancelDonationClaim = (donationId, reason = '') => {
-  return apiFetch(`/match/${donationId}/cancel-claim`, {
-    method: 'PUT',
-    body: JSON.stringify({ reason })
-  });
-};
-
-export const fetchRecipientsForDonation = (donationId) => {
-  return apiFetch(`/match/recipients-for-donation/${donationId}`);
-};
