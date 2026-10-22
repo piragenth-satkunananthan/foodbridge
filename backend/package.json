@@ -9,6 +9,7 @@
     "dev": "nodemon server.js",
     "test": "node test-module5.js",
     "test:module1": "node test-module1.js",
+    "test:module4": "node test-module4.js",
     "seed": "node seed-module5.js"
   },
   "dependencies": {

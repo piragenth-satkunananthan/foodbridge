@@ -187,3 +187,48 @@ export const cancelWasteRequest = (id) => {
   });
 };
 
+
+
+// ==========================================
+// Volunteer Courier & Route Tracking APIs (Module 4)
+// ==========================================
+
+export const fetchOpenPickups = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return apiFetch(`/pickups/open${query ? '?' + query : ''}`);
+};
+
+export const fetchMyActivePickups = () => apiFetch('/pickups/my-active');
+
+export const fetchPickupHistory = () => apiFetch('/pickups/history');
+
+export const fetchVolunteerStats = () => apiFetch('/pickups/stats');
+
+export const fetchPickupById = (id) => apiFetch(`/pickups/${id}`);
+
+export const acceptPickupJob = (id) => {
+  return apiFetch(`/pickups/${id}/accept`, {
+    method: 'POST'
+  });
+};
+
+export const updatePickupStatus = (id, statusData) => {
+  return apiFetch(`/pickups/${id}/status`, {
+    method: 'PUT',
+    body: JSON.stringify(statusData)
+  });
+};
+
+export const cancelPickupJob = (id, reason = '') => {
+  return apiFetch(`/pickups/${id}/cancel`, {
+    method: 'PUT',
+    body: JSON.stringify({ reason })
+  });
+};
+
+export const updatePickupLocation = (id, coords) => {
+  return apiFetch(`/pickups/${id}/location`, {
+    method: 'PUT',
+    body: JSON.stringify(coords)
+  });
+};

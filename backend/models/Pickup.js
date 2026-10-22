@@ -30,13 +30,26 @@ const pickupSchema = new mongoose.Schema(
     },
     statusHistory: [
       {
-        status: String,
-        timestamp: { type: Date, default: Date.now }
+        status: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+        note: { type: String, default: '' }
       }
     ],
     routeLocation: {
       lat: Number,
       lng: Number
+    },
+    proofNotes: {
+      type: String,
+      default: ''
+    },
+    deliveryNotes: {
+      type: String,
+      default: ''
+    },
+    completionConfirmedAt: {
+      type: Date,
+      default: null
     }
   },
   { timestamps: true }
