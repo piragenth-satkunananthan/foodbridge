@@ -37,10 +37,25 @@ services:
       dockerfile: Dockerfile
     container_name: foodbridge-frontend
     restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - foodbridge-network
+
+  caddy:
+    image: caddy:2
+    container_name: foodbridge-caddy
+    restart: unless-stopped
     ports:
       - "80:80"
-      - "5173:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
+      - frontend
       - backend
     networks:
       - foodbridge-network
@@ -48,6 +63,8 @@ services:
 volumes:
   foodbridge-mongo-data:
     driver: local
+  caddy_data:
+  caddy_config:
 
 networks:
   foodbridge-network:
