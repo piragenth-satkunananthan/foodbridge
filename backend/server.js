@@ -50,8 +50,7 @@ const defaultAllowedOrigins = [
   'http://localhost',
   'http://localhost:80',
   'http://localhost:5173',
-  'http://localhost:3000',
-  'http://54.234.233.124'
+  'http://localhost:3000'
 ];
 const configuredOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
