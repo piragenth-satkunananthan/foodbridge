@@ -19,6 +19,7 @@ export default function UsersTab({ currentAdminId }) {
   const { addToast } = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [districtFilter, setDistrictFilter] = useState('all');
@@ -26,6 +27,8 @@ export default function UsersTab({ currentAdminId }) {
 
   const loadUsers = async () => {
     setLoading(true);
+    setLoadError('');
+    setUsers([]);
     try {
       const data = await fetchAllUsers({
         role: roleFilter,
@@ -35,7 +38,7 @@ export default function UsersTab({ currentAdminId }) {
       });
       setUsers(data);
     } catch (err) {
-      console.error('Failed to load users:', err);
+      setLoadError('Users could not be loaded.');
     } finally {
       setLoading(false);
     }
@@ -84,6 +87,7 @@ export default function UsersTab({ currentAdminId }) {
 
   return (
     <div>
+      {loadError && <div role="alert" className="report-error">{loadError} <button className="btn btn-secondary" onClick={loadUsers}>Try again</button></div>}
       <div style={{ marginBottom: '20px' }}>
         <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
           User & Fake Account Management

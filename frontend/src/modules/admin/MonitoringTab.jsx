@@ -17,6 +17,7 @@ export default function MonitoringTab() {
   const [subTab, setSubTab] = useState('donations'); // 'donations' | 'waste' | 'pickups'
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Filters
   const [statusFilter, setStatusFilter] = useState('all');
@@ -26,6 +27,8 @@ export default function MonitoringTab() {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError('');
+    setData([]);
     try {
       if (subTab === 'donations') {
         const res = await fetchAllDonations({
@@ -49,7 +52,7 @@ export default function MonitoringTab() {
         setData(res);
       }
     } catch (err) {
-      console.error('Failed to load monitoring data:', err);
+      setLoadError('Activity could not be loaded.');
     } finally {
       setLoading(false);
     }
@@ -73,11 +76,12 @@ export default function MonitoringTab() {
 
   return (
     <div>
+      {loadError && <div role="alert" className="report-error">{loadError} <button className="btn btn-secondary" onClick={loadData}>Try again</button></div>}
       {/* Sub navigation header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
           <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
-            Platform Operations & Live Monitoring
+            Platform activity
           </h2>
           <p style={{ fontSize: '13px', color: '#64748b' }}>
             Inspect active postings, waste routing, and volunteer deliveries across all modules.

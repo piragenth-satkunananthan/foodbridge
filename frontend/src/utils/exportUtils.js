@@ -15,6 +15,7 @@ export function downloadCSV(filename, rows) {
         .map((k) => {
           let cell = row[k] === null || row[k] === undefined ? '' : row[k];
           cell = cell instanceof Date ? cell.toLocaleString() : cell.toString();
+          if (/^[=+@\-\t\r]/.test(cell)) cell = `'${cell}`;
           cell = cell.replace(/"/g, '""');
           if (cell.search(/("|,|\n)/g) >= 0) {
             cell = `"${cell}"`;
@@ -38,10 +39,10 @@ export function downloadCSV(filename, rows) {
 
 export function exportImpactMetricsCSV(summary, ecosystem) {
   const rows = [
+    { Metric: 'Reporting Scope', Value: 'All recorded activity; delivered/completed food and recycled/completed waste', Unit: '' },
+    { Metric: 'Quantity Method', Value: '2.5 meals per kg; explicit weight units only; unrecognised quantities excluded', Unit: '' },
     { Metric: 'Report Generation Timestamp', Value: new Date().toISOString(), Unit: 'ISO 8601' },
-    { Metric: 'Total Meals Rescued', Value: summary?.mealsRescued || 0, Unit: 'Meals' },
-    { Metric: 'Estimated CO2e Avoided', Value: Math.round((summary?.mealsRescued || 0) * 0.4 * 2.5), Unit: 'kg CO2e' },
-    { Metric: 'Water Footprint Conserved', Value: Math.round((summary?.mealsRescued || 0) * 0.4 * 850), Unit: 'Liters' },
+    { Metric: 'Estimated Meals Rescued', Value: summary?.mealsRescued || 0, Unit: 'Meals' },
     { Metric: 'Total Recycled Materials', Value: summary?.totalKgRecycled || 0, Unit: 'kg' },
     { Metric: 'Recycled Plastic', Value: summary?.kgRecycled?.plastic || 0, Unit: 'kg' },
     { Metric: 'Recycled Glass', Value: summary?.kgRecycled?.glass || 0, Unit: 'kg' },
@@ -54,7 +55,7 @@ export function exportImpactMetricsCSV(summary, ecosystem) {
     { Metric: 'Active Volunteers Registered', Value: ecosystem?.activeVolunteers || 0, Unit: 'Volunteers' }
   ];
 
-  downloadCSV('FoodBridge_ESG_Impact_Report', rows);
+  downloadCSV('FoodBridge_Impact_Report', rows);
 }
 
 export function exportOrganizationsCSV(organizations) {
