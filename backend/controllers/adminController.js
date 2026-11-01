@@ -103,7 +103,7 @@ const getAdminStats = async (req, res) => {
       const kg = parseWeightKg(w.quantity);
       if (w.wasteCategory === 'organic') {
         totalOrganicKg += kg;
-      } else {
+      } else if (['plastic', 'glass', 'paper', 'metal'].includes(w.wasteCategory)) {
         totalKgRecycled += kg;
       }
     });

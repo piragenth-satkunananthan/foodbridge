@@ -67,9 +67,10 @@ jobs:
           cd frontend
           npm ci
 
-      - name: Build Production Bundle (Vite)
+      - name: Test Exports and Build Production Bundle (Vite)
         run: |
           cd frontend
+          npm test
           npm run build
 
   deploy-to-ec2:
