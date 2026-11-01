@@ -15,12 +15,15 @@ export default function ReportsTab() {
   const { addToast } = useToast();
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [district, setDistrict] = useState('all');
 
   const loadReports = async () => {
     setLoading(true);
+    setLoadError('');
+    setReportData(null);
     try {
       const data = await fetchReports({
         fromDate,
@@ -29,7 +32,7 @@ export default function ReportsTab() {
       });
       setReportData(data);
     } catch (err) {
-      console.error('Failed to load reports:', err);
+      setLoadError('Report data could not be loaded.');
     } finally {
       setLoading(false);
     }
@@ -53,23 +56,24 @@ export default function ReportsTab() {
     a.download = `foodbridge-report-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast('Audit report downloaded successfully (JSON).', 'success');
+    addToast('Report downloaded.', 'success');
   };
 
   return (
     <div>
+      {loadError && <div role="alert" className="report-error">{loadError} <button className="btn btn-secondary" onClick={loadReports}>Try again</button></div>}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
           <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
-            Platform Performance & Impact Reporting
+            Activity reports
           </h2>
           <p style={{ fontSize: '13px', color: '#64748b' }}>
-            Audit metrics, completion success rates, and regional food rescue statistics.
+            Filter donation and waste activity by posting date and district.
           </p>
         </div>
 
         <button onClick={handleExportJSON} className="btn btn-secondary" disabled={!reportData}>
-          <Download size={15} /> Export Audit Report (JSON)
+          <Download size={15} /> Download report (JSON)
         </button>
       </div>
 

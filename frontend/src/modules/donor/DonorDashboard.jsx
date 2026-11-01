@@ -127,8 +127,8 @@ export default function DonorDashboard() {
     }
   };
 
-  // Filter donations for History tab (only delivered/completed or cancelled)
-  const historyDonations = donations.filter(d => ['delivered', 'completed', 'cancelled'].includes(d.status));
+  // Keep finished, cancelled, and expired donations in history.
+  const historyDonations = donations.filter(d => ['delivered', 'completed', 'cancelled', 'expired'].includes(d.status));
   // Active donations for main tab
   const activeDonationsList = statusFilter === 'all' 
     ? donations.filter(d => ['posted', 'matched', 'pickup_scheduled', 'picked_up'].includes(d.status))
@@ -535,7 +535,7 @@ export default function DonorDashboard() {
                   No Past Donation History Yet
                 </h3>
                 <p style={{ color: '#64748b', fontSize: '13.5px', maxWidth: '440px', margin: '0 auto' }}>
-                  Delivered donations and cancelled postings will be archived here for reporting and audit verification.
+                  Delivered, cancelled, and expired donations appear here.
                 </p>
               </div>
             ) : (

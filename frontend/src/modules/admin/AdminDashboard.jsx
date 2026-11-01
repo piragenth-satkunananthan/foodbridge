@@ -15,36 +15,13 @@ import {
 } from '../../api/client';
 import { Bell, X } from 'lucide-react';
 
-const FALLBACK_STATS = {
-  kpis: {
-    totalUsers: 14,
-    pendingVerifications: 2,
-    totalDonations: 8,
-    totalWasteRequests: 6,
-    totalMealsRescued: 1420,
-    totalKgRecycled: 485.5,
-    totalOrganicKg: 320
-  },
-  userCounts: { donor: 5, recipient: 3, volunteer: 4, recycler: 2, admin: 1 },
-  orgCounts: { pending: 2, verified: 3, rejected: 1 },
-  wasteByCategory: { organic: 3, plastic: 4, paper: 2, glass: 2, metal: 1 },
-  recentActivity: {
-    donations: [
-      { _id: '1', foodType: 'Prepared Rice & Curry (Hot)', quantity: '50 plates', district: 'Colombo', status: 'completed', donor: { name: 'Grand Cinnamon Hotel' } },
-      { _id: '2', foodType: 'Bakery Breads & Pastries', quantity: '30 kg', district: 'Kandy', status: 'posted', donor: { name: 'Perera & Sons' } }
-    ],
-    wasteRequests: [
-      { _id: 'w1', wasteCategory: 'plastic', quantity: '45 kg', district: 'Colombo', status: 'recycled', donor: { name: 'Hilton Colombo' } },
-      { _id: 'w2', wasteCategory: 'organic', quantity: '120 kg', district: 'Gampaha', status: 'posted', donor: { name: 'Veggie Market' } }
-    ]
-  }
-};
-
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
-  const [stats, setStats] = useState(FALLBACK_STATS);
-  const [loadingStats, setLoadingStats] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState('');
+  const [notificationError, setNotificationError] = useState('');
 
   // Modals & Panels
   const [isImpactOpen, setIsImpactOpen] = useState(false);
@@ -54,37 +31,28 @@ export default function AdminDashboard() {
 
   const loadStats = async () => {
     setLoadingStats(true);
+    setStatsError('');
     try {
       const data = await fetchAdminStats();
       setStats(data);
     } catch (err) {
-      console.warn('Using local fallback stats:', err.message);
+      setStats(null);
+      setStatsError('Dashboard data could not be loaded.');
     } finally {
       setLoadingStats(false);
     }
   };
 
   const loadNotificationsData = async () => {
+    setNotificationError('');
     try {
       const res = await fetchNotifications();
       setNotifications(res.notifications || []);
       setUnreadCount(res.unreadCount || 0);
     } catch {
-      setNotifications([
-        {
-          _id: 'n1',
-          message: 'New organization "GreenEarth BioCompost Facility" submitted registration details for verification.',
-          readStatus: false,
-          createdAt: new Date().toISOString()
-        },
-        {
-          _id: 'n2',
-          message: 'New organization "Community Food Shelter" submitted registration details for verification.',
-          readStatus: false,
-          createdAt: new Date(Date.now() - 3600000).toISOString()
-        }
-      ]);
-      setUnreadCount(2);
+      setNotificationError('Notifications could not be loaded.');
+      setNotifications([]);
+      setUnreadCount(0);
     }
   };
 
@@ -96,7 +64,7 @@ export default function AdminDashboard() {
   const handleMarkAllRead = async () => {
     try {
       await markAllNotificationsRead();
-    } catch {}
+    } catch { setNotificationError('The notification could not be updated. Please try again.'); return; }
     setNotifications((prev) => prev.map((n) => ({ ...n, readStatus: true })));
     setUnreadCount(0);
   };
@@ -105,18 +73,18 @@ export default function AdminDashboard() {
     if (!notif.readStatus) {
       try {
         await markNotificationRead(notif._id);
-      } catch {}
+      } catch { setNotificationError('The notification could not be updated. Please try again.'); return; }
       setNotifications((prev) =>
         prev.map((n) => (n._id === notif._id ? { ...n, readStatus: true } : n))
       );
       setUnreadCount((c) => Math.max(0, c - 1));
     }
     setIsNotificationsOpen(false);
-    setActiveTab('verification');
+    setActiveTab(notif.relatedType === 'organization' ? 'verification' : 'monitoring');
   };
 
   return (
-    <div>
+    <div className="admin-page">
       {/* Top Admin Sub-Navbar */}
       <Navbar
         activeTab={activeTab}
@@ -154,7 +122,8 @@ export default function AdminDashboard() {
           </div>
 
           <div className="drawer-content">
-            {notifications.length === 0 ? (
+            {notificationError && <div role="alert" className="report-error">{notificationError} <button onClick={loadNotificationsData}>Try again</button></div>}
+            {notificationError ? null : notifications.length === 0 ? (
               <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
                 No notifications right now.
               </div>
@@ -191,7 +160,9 @@ export default function AdminDashboard() {
 
       {/* Active Tab View */}
       <main className="main-content">
-        {activeTab === 'overview' && (
+        {activeTab === 'overview' && loadingStats && <p role="status">Loading dashboard…</p>}
+        {activeTab === 'overview' && statsError && <div className="report-error" role="alert">{statsError} <button className="btn btn-secondary" onClick={loadStats}>Try again</button></div>}
+        {activeTab === 'overview' && !loadingStats && stats && (
           <OverviewTab
             stats={stats}
             setActiveTab={setActiveTab}

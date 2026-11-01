@@ -25,14 +25,14 @@ export default function Navbar({
 }) {
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'verification', label: 'Verification', icon: CheckCircle, badge: pendingCount },
-    { id: 'monitoring', label: 'Monitoring', icon: Activity },
-    { id: 'users', label: 'Users & Accounts', icon: Users },
+    { id: 'verification', label: 'Organisations', icon: CheckCircle, badge: pendingCount },
+    { id: 'monitoring', label: 'Activity', icon: Activity },
+    { id: 'users', label: 'Users', icon: Users },
     { id: 'reports', label: 'Reports', icon: BarChart3 }
   ];
 
   return (
-    <header className="navbar" style={{
+    <header className="navbar admin-navbar" style={{
       background: 'rgba(255, 255, 255, 0.92)',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
@@ -55,7 +55,7 @@ export default function Navbar({
           </motion.div>
           <div className="logo-text">
             <h1 style={{ letterSpacing: '-0.03em', fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>FoodBridge</h1>
-            <p style={{ letterSpacing: '0.04em', fontSize: '11px', color: '#64748b' }}>Governance, Trust & Impact</p>
+            <p style={{ letterSpacing: '0.04em', fontSize: '11px', color: '#64748b' }}>Administration</p>
           </div>
         </div>
 
@@ -88,15 +88,15 @@ export default function Navbar({
 
         {/* Right Action Tools */}
         <div className="nav-actions">
-          {/* Public Impact Preview Button */}
+          {/* Public impact Preview Button */}
           <button
             onClick={openPublicImpact}
             className="plaid-btn-light"
             style={{ fontSize: '12.5px', padding: '6px 14px' }}
-            title="Preview Public Impact View (Citizen perspective)"
+            title="View public impact"
           >
             <Globe size={15} color="#059669" />
-            <span>Public Impact</span>
+            <span>Public impact</span>
           </button>
 
           {/* Notifications Trigger */}
@@ -118,7 +118,7 @@ export default function Navbar({
               </div>
               <div style={{ fontSize: '11px', color: '#059669', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                 <ShieldCheck size={12} />
-                <span>Verified Admin</span>
+                <span>Administrator</span>
               </div>
             </div>
 

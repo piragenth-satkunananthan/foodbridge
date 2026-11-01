@@ -21,6 +21,7 @@ import { exportOrganizationsCSV } from '../../utils/exportUtils';
 export default function VerificationTab({ onVerificationUpdated }) {
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -33,6 +34,8 @@ export default function VerificationTab({ onVerificationUpdated }) {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError('');
+    setOrganizations([]);
     try {
       const data = await fetchOrganizations({
         status: statusFilter,
@@ -41,7 +44,7 @@ export default function VerificationTab({ onVerificationUpdated }) {
       });
       setOrganizations(data);
     } catch (err) {
-      console.error('Failed to load organizations:', err);
+      setLoadError('Organisations could not be loaded.');
     } finally {
       setLoading(false);
     }
@@ -88,13 +91,14 @@ export default function VerificationTab({ onVerificationUpdated }) {
 
   return (
     <div>
+      {loadError && <div role="alert" className="report-error">{loadError} <button className="btn btn-secondary" onClick={loadData}>Try again</button></div>}
       {/* Tab Header */}
       <div style={{ marginBottom: '20px' }}>
         <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
           Organization Verification Center
         </h2>
         <p style={{ fontSize: '13px', color: '#64748b' }}>
-          Review official registration documents and issue verified credentials to NGOs, shelters, and recycling operators.
+          Review registration details for charities, shelters, and recycling facilities.
         </p>
       </div>
 
