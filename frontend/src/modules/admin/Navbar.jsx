@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
   CheckCircle,
@@ -34,27 +33,25 @@ export default function Navbar({
   return (
     <header className="navbar admin-navbar" style={{
       background: 'rgba(255, 255, 255, 0.92)',
-      backdropFilter: 'blur(16px)',
+      backdropFilter: 'none',
       WebkitBackdropFilter: 'blur(16px)',
       borderBottom: '1px solid #e5e7eb'
     }}>
       <div className="navbar-inner">
         {/* Logo and Module info */}
         <div className="logo-group">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <div
             className="logo-badge"
             style={{
-              background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-              boxShadow: '0 4px 10px -2px rgba(5, 150, 105, 0.4)',
+              background: '#f2f5f1',
+              boxShadow: 'none',
               borderRadius: '10px'
             }}
           >
             <Building2 size={20} />
-          </motion.div>
+          </div>
           <div className="logo-text">
-            <h1 style={{ letterSpacing: '-0.03em', fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>FoodBridge</h1>
+            <h1 style={{ letterSpacing: '-0.03em', fontSize: '18px', fontWeight: '650', color: '#0f172a' }}>FoodBridge</h1>
             <p style={{ letterSpacing: '0.04em', fontSize: '11px', color: '#64748b' }}>Administration</p>
           </div>
         </div>
@@ -65,9 +62,8 @@ export default function Navbar({
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
-              <motion.button
+              <button
                 key={item.id}
-                whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveTab(item.id)}
                 className={`nav-item ${isActive ? 'active' : ''}`}
                 style={{
@@ -81,7 +77,7 @@ export default function Navbar({
                 <Icon size={16} />
                 <span>{item.label}</span>
                 {item.badge > 0 && <span className="nav-badge">{item.badge}</span>}
-              </motion.button>
+              </button>
             );
           })}
         </nav>

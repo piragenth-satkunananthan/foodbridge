@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  Utensils, PlusCircle, History, Clock, MapPin, Package, 
-  Search, Filter, Eye, Edit3, Trash2, CheckCircle2, 
-  AlertCircle, Recycle, Sparkles, RefreshCw, XCircle, ArrowRight 
+import {
+  Utensils, PlusCircle, History, Clock, MapPin, Package,
+  Search, Filter, Eye, Edit3, Trash2, CheckCircle2,
+  AlertCircle, Recycle, Sparkles, RefreshCw, XCircle, ArrowRight
 } from 'lucide-react';
-import { 
-  fetchDonorStats, fetchDonations, fetchWasteRequests, 
-  cancelDonation, cancelWasteRequest 
+import {
+  fetchDonorStats, fetchDonations, fetchWasteRequests,
+  cancelDonation, cancelWasteRequest
 } from '../../api/client';
 import NewSurplusModal from './NewSurplusModal';
 import DonationDetailsModal from './DonationDetailsModal';
@@ -18,7 +17,7 @@ import AnimatedCounter from '../../components/AnimatedCounter';
 export default function DonorDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('postings'); // 'postings' | 'waste' | 'history'
-  
+
   // Data states
   const [stats, setStats] = useState({
     activeDonations: 0,
@@ -52,12 +51,12 @@ export default function DonorDashboard() {
     setError(null);
     try {
       const [statsRes, donationsRes, wasteRes] = await Promise.all([
-        fetchDonorStats().catch(() => ({})),
-        fetchDonations({ 
-          status: statusFilter, 
-          search: search || undefined 
-        }).catch(() => ({ donations: [] })),
-        fetchWasteRequests().catch(() => ({ wasteRequests: [] }))
+        fetchDonorStats(),
+        fetchDonations({
+          status: statusFilter,
+          search: search || ''
+        }),
+        fetchWasteRequests()
       ]);
 
       if (statsRes && typeof statsRes.activeDonations === 'number') {
@@ -109,19 +108,19 @@ export default function DonorDashboard() {
   const renderStatusBadge = (status) => {
     switch (status) {
       case 'posted':
-        return <span className="badge amber" style={{ fontSize: '11.5px' }}>🟡 Posted / Searching NGO</span>;
+        return <span className="badge amber" style={{ fontSize: '11.5px' }}> Posted</span>;
       case 'matched':
-        return <span className="badge blue" style={{ fontSize: '11.5px' }}>🔵 Matched to Recipient</span>;
+        return <span className="badge blue" style={{ fontSize: '11.5px' }}> Matched to Recipient</span>;
       case 'pickup_scheduled':
-        return <span className="badge blue" style={{ fontSize: '11.5px' }}>🚚 Volunteer Dispatched</span>;
+        return <span className="badge blue" style={{ fontSize: '11.5px' }}> Pickup scheduled</span>;
       case 'picked_up':
-        return <span className="badge" style={{ background: '#ede9fe', color: '#6d28d9', fontSize: '11.5px' }}>📦 In Transit</span>;
+        return <span className="badge" style={{ background: '#eef1e7', color: '#285943', fontSize: '11.5px' }}> In Transit</span>;
       case 'delivered':
       case 'completed':
       case 'recycled':
-        return <span className="badge green" style={{ fontSize: '11.5px' }}>✅ Completed / Delivered</span>;
+        return <span className="badge green" style={{ fontSize: '11.5px' }}> Completed / Delivered</span>;
       case 'cancelled':
-        return <span className="badge" style={{ background: '#fee2e2', color: '#991b1b', fontSize: '11.5px' }}>❌ Cancelled</span>;
+        return <span className="badge" style={{ background: '#fee2e2', color: '#991b1b', fontSize: '11.5px' }}> Cancelled</span>;
       default:
         return <span className="badge">{status}</span>;
     }
@@ -130,9 +129,11 @@ export default function DonorDashboard() {
   // Keep finished, cancelled, and expired donations in history.
   const historyDonations = donations.filter(d => ['delivered', 'completed', 'cancelled', 'expired'].includes(d.status));
   // Active donations for main tab
-  const activeDonationsList = statusFilter === 'all' 
+  const activeDonationsList = statusFilter === 'all'
     ? donations.filter(d => ['posted', 'matched', 'pickup_scheduled', 'picked_up'].includes(d.status))
     : donations;
+
+  if (error) return <main className="main-content" role="alert"><h1>Donations could not be loaded</h1><p>{error}</p><button className="btn btn-primary" onClick={loadAllData}>Try again</button></main>;
 
   return (
     <div className="main-content">
@@ -143,23 +144,23 @@ export default function DonorDashboard() {
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span className="badge donor">Donor Operations Hub • Commercial & Retail</span>
+            <span className="badge donor">Your donations</span>
             <span style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <MapPin size={13} /> {user?.district || 'Colombo'}, Sri Lanka
             </span>
           </div>
-          <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a' }}>
-            {user?.name || 'Food Donor Portal'}
+          <h2 style={{ fontSize: '26px', fontWeight: '650', color: '#0f172a' }}>
+            {user?.name || 'Donor dashboard'}
           </h2>
           <p style={{ fontSize: '14px', color: '#64748b', marginTop: '2px' }}>
-            Register surplus edible food or recyclable waste for automatic classification and district-based routing.
+            Post surplus food or waste and follow collection progress.
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button 
-            type="button" 
-            onClick={loadAllData} 
+          <button
+            type="button"
+            onClick={loadAllData}
             className="plaid-btn-light"
             style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '9px 15px' }}
             title="Refresh data"
@@ -168,24 +169,21 @@ export default function DonorDashboard() {
             <span>Refresh</span>
           </button>
 
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="button" 
-            className="plaid-btn-emerald" 
+          <button
+            type="button"
+            className="plaid-btn-emerald"
             onClick={() => setIsNewModalOpen(true)}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', padding: '9px 18px' }}
           >
             <PlusCircle size={18} />
-            <span style={{ fontWeight: '700' }}>Post New Surplus</span>
-          </motion.button>
+            <span style={{ fontWeight: '700' }}>Post surplus</span>
+          </button>
         </div>
       </div>
 
       {/* KPI Overview Grid with Motion and AnimatedCounter */}
       <div className="kpi-grid" style={{ marginBottom: '28px' }}>
-        <motion.div
-          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        <div
           className="kpi-card green"
         >
           <div className="kpi-icon green"><Utensils size={22} /></div>
@@ -194,12 +192,11 @@ export default function DonorDashboard() {
             <div className="kpi-value">
               <AnimatedCounter value={stats.activeDonations} />
             </div>
-            <div className="kpi-sub">Ready for NGO matching & pickup</div>
+            <div className="kpi-sub">Open food donations</div>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        <div
           className="kpi-card blue"
         >
           <div className="kpi-icon blue"><Recycle size={22} /></div>
@@ -208,12 +205,11 @@ export default function DonorDashboard() {
             <div className="kpi-value">
               <AnimatedCounter value={stats.activeWasteRequests || wasteRequests.filter(w => w.status === 'posted').length} />
             </div>
-            <div className="kpi-sub">Organic & recyclable streams</div>
+            <div className="kpi-sub">Organic and recyclable waste</div>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        <div
           className="kpi-card amber"
         >
           <div className="kpi-icon amber"><History size={22} /></div>
@@ -222,12 +218,11 @@ export default function DonorDashboard() {
             <div className="kpi-value">
               <AnimatedCounter value={stats.estimatedMeals} />
             </div>
-            <div className="kpi-sub">Diverted to local charities & shelters</div>
+            <div className="kpi-sub">Based on completed donation quantities</div>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+        <div
           className="kpi-card purple"
         >
           <div className="kpi-icon purple"><CheckCircle2 size={22} /></div>
@@ -236,9 +231,9 @@ export default function DonorDashboard() {
             <div className="kpi-value">
               <AnimatedCounter value={stats.completedDonations} />
             </div>
-            <div className="kpi-sub">Verified safe food deliveries</div>
+            <div className="kpi-sub">Donations marked delivered or completed</div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Main Tabbed Navigation Container */}
@@ -256,7 +251,7 @@ export default function DonorDashboard() {
               onClick={() => setActiveTab('postings')}
               style={{ fontSize: '13.5px', padding: '8px 16px' }}
             >
-              🥗 Active Food Donations ({activeDonationsList.length})
+               Active Food Donations ({activeDonationsList.length})
             </button>
             <button
               type="button"
@@ -264,7 +259,7 @@ export default function DonorDashboard() {
               onClick={() => setActiveTab('waste')}
               style={{ fontSize: '13.5px', padding: '8px 16px' }}
             >
-              ♻️ Waste Collection Requests ({wasteRequests.length})
+               Waste Collection Requests ({wasteRequests.length})
             </button>
             <button
               type="button"
@@ -272,7 +267,7 @@ export default function DonorDashboard() {
               onClick={() => setActiveTab('history')}
               style={{ fontSize: '13.5px', padding: '8px 16px' }}
             >
-              📜 Donation History & Impact ({historyDonations.length})
+              Donation history ({historyDonations.length})
             </button>
           </div>
 
@@ -328,14 +323,14 @@ export default function DonorDashboard() {
                 <p style={{ color: '#64748b', fontSize: '13.5px', maxWidth: '440px', margin: '0 auto 20px' }}>
                   You have no pending food surplus postings. Create a post whenever your kitchen has extra prepared meals or fresh produce!
                 </p>
-                <button 
-                  type="button" 
-                  className="btn btn-primary" 
+                <button
+                  type="button"
+                  className="btn btn-primary"
                   onClick={() => setIsNewModalOpen(true)}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                 >
                   <PlusCircle size={16} />
-                  <span>Create First Surplus Post</span>
+                  <span>Post surplus</span>
                 </button>
               </div>
             ) : (
@@ -445,11 +440,11 @@ export default function DonorDashboard() {
                   No Waste Collection Requests
                 </h3>
                 <p style={{ color: '#64748b', fontSize: '13.5px', maxWidth: '440px', margin: '0 auto 20px' }}>
-                  Post recyclable packaging or organic kitchen food scraps to be picked up by certified recycling facilities or composting plants.
+                  Post packaging or organic waste for collection.
                 </p>
-                <button 
-                  type="button" 
-                  className="btn btn-primary" 
+                <button
+                  type="button"
+                  className="btn btn-primary"
                   onClick={() => setIsNewModalOpen(true)}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#0284c7' }}
                 >
@@ -589,7 +584,7 @@ export default function DonorDashboard() {
       </div>
 
       {/* Guided Multi-Step Surplus Post Modal */}
-      <NewSurplusModal 
+      <NewSurplusModal
         isOpen={isNewModalOpen}
         onClose={() => setIsNewModalOpen(false)}
         onCreated={loadAllData}
@@ -597,7 +592,7 @@ export default function DonorDashboard() {
       />
 
       {/* Donation Details & Lifecycle Tracking Modal */}
-      <DonationDetailsModal 
+      <DonationDetailsModal
         donationId={selectedDonationId}
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
@@ -606,7 +601,7 @@ export default function DonorDashboard() {
       />
 
       {/* Edit Donation Modal */}
-      <EditDonationModal 
+      <EditDonationModal
         donation={editingDonation}
         isOpen={isEditOpen}
         onClose={() => {

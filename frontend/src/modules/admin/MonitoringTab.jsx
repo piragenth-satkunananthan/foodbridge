@@ -80,7 +80,7 @@ export default function MonitoringTab() {
       {/* Sub navigation header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '650', color: '#0f172a' }}>
             Platform activity
           </h2>
           <p style={{ fontSize: '13px', color: '#64748b' }}>

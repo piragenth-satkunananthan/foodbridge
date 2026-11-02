@@ -94,7 +94,7 @@ export default function VerificationTab({ onVerificationUpdated }) {
       {loadError && <div role="alert" className="report-error">{loadError} <button className="btn btn-secondary" onClick={loadData}>Try again</button></div>}
       {/* Tab Header */}
       <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '650', color: '#0f172a' }}>
           Organization Verification Center
         </h2>
         <p style={{ fontSize: '13px', color: '#64748b' }}>
@@ -355,7 +355,7 @@ export default function VerificationTab({ onVerificationUpdated }) {
                 {submitting
                   ? 'Processing...'
                   : actionType === 'verify'
-                  ? 'Confirm & Issue Verified Badge'
+                  ? 'Approve organisation'
                   : 'Confirm Rejection'}
               </button>
             </div>

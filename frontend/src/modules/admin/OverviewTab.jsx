@@ -71,7 +71,7 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+            boxShadow: 'none'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 230px' }}>
@@ -100,7 +100,7 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
       {/* Overview actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <div style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.025em' }}>
+          <div style={{ fontSize: '18px', fontWeight: '650', color: '#0f172a', letterSpacing: '-0.025em' }}>
             Admin dashboard
           </div>
           <div style={{ fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
@@ -137,7 +137,7 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
       <div className="plaid-card">
         <div className="card-header" style={{ marginBottom: '16px' }}>
           <div>
-            <h2 className="card-title" style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
+            <h2 className="card-title" style={{ fontSize: '16px', fontWeight: '650', color: '#0f172a' }}>
               Recent submissions
             </h2>
             <span style={{ fontSize: '12px', color: '#64748b' }}>Recent food donations and waste requests</span>
@@ -277,7 +277,7 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
         <div className="plaid-card">
           <div className="card-header">
             <div>
-              <h2 className="card-title" style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
+              <h2 className="card-title" style={{ fontSize: '16px', fontWeight: '650', color: '#0f172a' }}>
                 Waste requests by material
               </h2>
               <span style={{ fontSize: '12px', color: '#64748b' }}>Counts of requests across all statuses</span>
@@ -310,7 +310,7 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
         <div className="plaid-card">
           <div className="card-header">
             <div>
-              <h2 className="card-title" style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
+              <h2 className="card-title" style={{ fontSize: '16px', fontWeight: '650', color: '#0f172a' }}>
                 Registered users by role
               </h2>
               <span style={{ fontSize: '12px', color: '#64748b' }}>All registered accounts</span>
@@ -325,7 +325,7 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
               style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
             >
               <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Food Donors</div>
-              <div style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '4px 0' }}>
+              <div style={{ fontSize: '24px', fontWeight: '650', color: '#0f172a', margin: '4px 0' }}>
                 {Number(userCounts.donor).toLocaleString()}
               </div>
               <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: '600' }}>Hotels, Bakeries, Events</div>
@@ -335,7 +335,7 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
               style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
             >
               <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Recipients (NGOs)</div>
-              <div style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '4px 0' }}>
+              <div style={{ fontSize: '24px', fontWeight: '650', color: '#0f172a', margin: '4px 0' }}>
                 {Number(userCounts.recipient).toLocaleString()}
               </div>
               <div style={{ fontSize: '11px', color: '#2563eb', fontWeight: '600' }}>Charities & Shelters</div>
@@ -345,17 +345,17 @@ export default function OverviewTab({ stats, setActiveTab, onRefresh }) {
               style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
             >
               <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Volunteers</div>
-              <div style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '4px 0' }}>
+              <div style={{ fontSize: '24px', fontWeight: '650', color: '#0f172a', margin: '4px 0' }}>
                 {Number(userCounts.volunteer).toLocaleString()}
               </div>
-              <div style={{ fontSize: '11px', color: '#7c3aed', fontWeight: '600' }}>Logistics & Transport</div>
+              <div style={{ fontSize: '11px', color: '#285943', fontWeight: '600' }}>Logistics & Transport</div>
             </div>
 
             <div
               style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
             >
               <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Recyclers</div>
-              <div style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '4px 0' }}>
+              <div style={{ fontSize: '24px', fontWeight: '650', color: '#0f172a', margin: '4px 0' }}>
                 {Number(userCounts.recycler).toLocaleString()}
               </div>
               <div style={{ fontSize: '11px', color: '#0891b2', fontWeight: '600' }}>Facilities & Composters</div>

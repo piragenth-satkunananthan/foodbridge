@@ -39,6 +39,7 @@ export default function VolunteerDashboard() {
   const [activeTab, setActiveTab] = useState('active'); // 'active' | 'available' | 'route' | 'history'
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState('all');
 
   const [openJobs, setOpenJobs] = useState([]);
@@ -70,6 +71,7 @@ export default function VolunteerDashboard() {
     if (isManualRefresh) setRefreshing(true);
     else setLoading(true);
 
+    setLoadError(null);
     try {
       const [openRes, activeRes, histRes, statsRes] = await Promise.all([
         fetchOpenPickups({ district: selectedDistrict }),
@@ -84,7 +86,7 @@ export default function VolunteerDashboard() {
       if (statsRes.success) setStats(statsRes.stats || {});
     } catch (err) {
       console.error('Failed to load courier data:', err);
-      showToast(err.message || 'Error updating courier dispatch feeds', 'error');
+      setLoadError(err.message || 'Could not load pickups.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -102,7 +104,7 @@ export default function VolunteerDashboard() {
     try {
       const res = await acceptPickupJob(selectedJobToAccept._id);
       if (res.success) {
-        showToast('Mission accepted! Route assigned and donor notified.');
+        showToast('Delivery accepted. The donor has been notified.');
         setSelectedJobToAccept(null);
         setActiveTab('active');
         await loadDashboardData();
@@ -138,14 +140,14 @@ export default function VolunteerDashboard() {
 
   // Handle Releasing / Cancelling Accepted Job
   const handleCancelAssignment = async (jobId) => {
-    if (!window.confirm('Are you sure you want to release this assignment back to the open dispatch board?')) {
+    if (!window.confirm('Release this pickup so another volunteer can accept it?')) {
       return;
     }
     setActionLoading(true);
     try {
-      const res = await cancelPickupJob(jobId, 'Courier emergency re-allocation');
+      const res = await cancelPickupJob(jobId, 'Released by volunteer');
       if (res.success) {
-        showToast('Mission assignment released. Job returned to open board.');
+        showToast('Pickup released. Another volunteer can now accept it.');
         await loadDashboardData();
       }
     } catch (err) {
@@ -188,6 +190,9 @@ export default function VolunteerDashboard() {
     'Kegalle'
   ];
 
+  if (loadError) return <main className="main-content" role="alert"><h1>Pickups could not be loaded</h1><p>{loadError}</p><button className="btn btn-primary" onClick={() => loadDashboardData()}>Try again</button></main>;
+  if (loading) return <main className="main-content" role="status">Loading pickups…</main>;
+
   return (
     <div className="main-content">
       {/* Toast Notification */}
@@ -202,13 +207,13 @@ export default function VolunteerDashboard() {
             color: '#ffffff',
             padding: '12px 20px',
             borderRadius: '8px',
-            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)',
+            boxShadow: 'none',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
             fontSize: '14px',
             fontWeight: '600',
-            animation: 'slideIn 0.2s ease-out'
+            animation: 'none'
           }}
         >
           {toast.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
@@ -230,18 +235,16 @@ export default function VolunteerDashboard() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
             <span className="badge volunteer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Truck size={13} /> Community Courier & Last-Mile Fleet
+              <Truck size={13} /> Volunteer deliveries
             </span>
-            <span className="badge verified" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <ShieldCheck size={13} /> Active Cold-Chain Courier
-            </span>
+
           </div>
 
-          <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em' }}>
-            Courier Hub — {user?.name || 'Volunteer Courier'}
+          <h2 style={{ fontSize: '26px', fontWeight: '650', color: '#0f172a', letterSpacing: '-0.02em' }}>
+            Deliveries · {user?.name || 'Volunteer'}
           </h2>
           <p style={{ fontSize: '13.5px', color: '#64748b' }}>
-            Assigned Operating District: <strong style={{ color: '#0f172a' }}>{user?.district || 'Colombo'}</strong> • Status: Available for Immediate Dispatch
+            District: <strong style={{ color: '#0f172a' }}>{user?.district || 'Colombo'}</strong>
           </p>
         </div>
 
@@ -253,13 +256,13 @@ export default function VolunteerDashboard() {
             style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
             <RefreshCw size={15} className={refreshing ? 'spinning' : ''} />
-            <span>{refreshing ? 'Updating...' : 'Refresh Dispatches'}</span>
+            <span>{refreshing ? 'Updating...' : 'Refresh'}</span>
           </button>
         </div>
       </div>
 
       {/* KPI Stats Grid */}
-      <div
+      <div className="delivery-stats"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -267,59 +270,59 @@ export default function VolunteerDashboard() {
           marginBottom: '28px'
         }}
       >
-        <div className="card" style={{ padding: '18px 20px', borderLeft: '4px solid #7c3aed' }}>
+        <div className="card" style={{ padding: '18px 20px', borderLeft: '4px solid #285943' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>
-              Completed Missions
+            <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#64748b', textTransform: 'none' }}>
+              Completed deliveries
             </span>
-            <Award size={18} color="#7c3aed" />
+            <Award size={18} color="#285943" />
           </div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a' }}>
+          <div style={{ fontSize: '28px', fontWeight: '650', color: '#0f172a' }}>
             {stats.completedMissions || 0}
           </div>
           <div style={{ fontSize: '12px', color: '#059669', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <CheckCircle size={12} /> 100% On-Time Delivery Record
+            Recorded as delivered
           </div>
         </div>
 
         <div className="card" style={{ padding: '18px 20px', borderLeft: '4px solid #059669' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>
-              Meals Transported
+            <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#64748b', textTransform: 'none' }}>
+              Available pickups
             </span>
             <Package size={18} color="#059669" />
           </div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a' }}>
-            {stats.totalMealsTransported || 0}
+          <div style={{ fontSize: '28px', fontWeight: '650', color: '#0f172a' }}>
+            {openJobs.length}
           </div>
           <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-            Safe cold-chain transfers to shelters
+            In the selected district
           </div>
         </div>
 
         <div className="card" style={{ padding: '18px 20px', borderLeft: '4px solid #0284c7' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>
-              Active Runs
+            <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#64748b', textTransform: 'none' }}>
+              Active deliveries
             </span>
             <Truck size={18} color="#0284c7" />
           </div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a' }}>
+          <div style={{ fontSize: '28px', fontWeight: '650', color: '#0f172a' }}>
             {activeJobs.length}
           </div>
           <div style={{ fontSize: '12px', color: activeJobs.length > 0 ? '#0284c7' : '#64748b', marginTop: '4px' }}>
-            {activeJobs.length > 0 ? 'Live in-progress rescue active' : 'Ready for next mission'}
+            {activeJobs.length > 0 ? 'Delivery in progress' : 'No active deliveries'}
           </div>
         </div>
 
         <div className="card" style={{ padding: '18px 20px', borderLeft: '4px solid #f59e0b' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>
-              Transit Distance
+            <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#64748b', textTransform: 'none' }}>
+              Estimated distance
             </span>
             <RouteIcon size={18} color="#f59e0b" />
           </div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a' }}>
+          <div style={{ fontSize: '28px', fontWeight: '650', color: '#0f172a' }}>
             {stats.totalKmTraveled || 0} <span style={{ fontSize: '16px', fontWeight: '600', color: '#64748b' }}>km</span>
           </div>
           <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
@@ -329,7 +332,7 @@ export default function VolunteerDashboard() {
       </div>
 
       {/* Tabs Navigation */}
-      <div
+      <div className="delivery-tabs"
         style={{
           display: 'flex',
           borderBottom: '1px solid #e2e8f0',
@@ -350,13 +353,13 @@ export default function VolunteerDashboard() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            color: activeTab === 'active' ? '#7c3aed' : '#64748b',
-            borderBottom: activeTab === 'active' ? '2.5px solid #7c3aed' : '2.5px solid transparent',
+            color: activeTab === 'active' ? '#285943' : '#64748b',
+            borderBottom: activeTab === 'active' ? '2.5px solid #285943' : '2.5px solid transparent',
             transition: 'all 0.15s ease'
           }}
         >
           <Truck size={16} />
-          <span>Active Mission ({activeJobs.length})</span>
+          <span>Active deliveries ({activeJobs.length})</span>
         </button>
 
         <button
@@ -371,13 +374,13 @@ export default function VolunteerDashboard() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            color: activeTab === 'available' ? '#7c3aed' : '#64748b',
-            borderBottom: activeTab === 'available' ? '2.5px solid #7c3aed' : '2.5px solid transparent',
+            color: activeTab === 'available' ? '#285943' : '#64748b',
+            borderBottom: activeTab === 'available' ? '2.5px solid #285943' : '2.5px solid transparent',
             transition: 'all 0.15s ease'
           }}
         >
           <Navigation size={16} />
-          <span>Available Missions ({openJobs.length})</span>
+          <span>Available pickups ({openJobs.length})</span>
         </button>
 
         <button
@@ -392,13 +395,13 @@ export default function VolunteerDashboard() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            color: activeTab === 'route' ? '#7c3aed' : '#64748b',
-            borderBottom: activeTab === 'route' ? '2.5px solid #7c3aed' : '2.5px solid transparent',
+            color: activeTab === 'route' ? '#285943' : '#64748b',
+            borderBottom: activeTab === 'route' ? '2.5px solid #285943' : '2.5px solid transparent',
             transition: 'all 0.15s ease'
           }}
         >
           <MapPin size={16} />
-          <span>Route & GPS Telemetry</span>
+          <span>Route estimate</span>
         </button>
 
         <button
@@ -413,13 +416,13 @@ export default function VolunteerDashboard() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            color: activeTab === 'history' ? '#7c3aed' : '#64748b',
-            borderBottom: activeTab === 'history' ? '2.5px solid #7c3aed' : '2.5px solid transparent',
+            color: activeTab === 'history' ? '#285943' : '#64748b',
+            borderBottom: activeTab === 'history' ? '2.5px solid #285943' : '2.5px solid transparent',
             transition: 'all 0.15s ease'
           }}
         >
           <Calendar size={16} />
-          <span>Mission History ({historyJobs.length})</span>
+          <span>Delivery history ({historyJobs.length})</span>
         </button>
       </div>
 
@@ -435,16 +438,16 @@ export default function VolunteerDashboard() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                   <div>
                     <span className="badge volunteer" style={{ marginBottom: '4px' }}>
-                      Mission #{currentActiveJob._id.slice(-6).toUpperCase()}
+                      Delivery #{currentActiveJob._id.slice(-6).toUpperCase()}
                     </span>
-                    <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
-                      Active Rescue: {currentActiveJob.donation?.foodType || currentActiveJob.wasteRequest?.wasteCategory}
+                    <h3 style={{ fontSize: '20px', fontWeight: '650', color: '#0f172a' }}>
+                      Delivery: {currentActiveJob.donation?.foodType || currentActiveJob.wasteRequest?.wasteCategory}
                     </h3>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '12px', color: '#64748b' }}>Estimated Transit</span>
-                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#7c3aed' }}>
-                      ~{currentActiveJob.routeDetails?.transitTimeMinutes || 20} mins ({currentActiveJob.routeDetails?.routeDistanceKm || 3.5} km)
+                    <div style={{ fontSize: '18px', fontWeight: '650', color: '#285943' }}>
+                      ~{currentActiveJob.routeDetails?.transitTimeMinutes ?? '—'} mins ({currentActiveJob.routeDetails?.routeDistanceKm ?? '—'} km)
                     </div>
                   </div>
                 </div>
@@ -464,7 +467,7 @@ export default function VolunteerDashboard() {
                     {
                       key: 'pickup_scheduled',
                       label: '1. Scheduled',
-                      sub: 'Courier Dispatched',
+                      sub: 'Volunteer assigned',
                       icon: Clock,
                       isDone: true,
                       isCurrent: currentActiveJob.statusPipeline === 'pickup_scheduled'
@@ -487,8 +490,8 @@ export default function VolunteerDashboard() {
                     },
                     {
                       key: 'completed',
-                      label: '4. Verified',
-                      sub: 'Custody Closed',
+                      label: '4. Completed',
+                      sub: 'Delivery recorded',
                       icon: CheckCircle,
                       isDone: currentActiveJob.statusPipeline === 'completed',
                       isCurrent: currentActiveJob.statusPipeline === 'completed'
@@ -500,8 +503,8 @@ export default function VolunteerDashboard() {
                       <div
                         key={step.key}
                         style={{
-                          backgroundColor: step.isCurrent ? '#f5f3ff' : '#f8fafc',
-                          border: step.isCurrent ? '2px solid #7c3aed' : '1px solid #e2e8f0',
+                          backgroundColor: step.isCurrent ? '#f3f5ee' : '#f8fafc',
+                          border: step.isCurrent ? '2px solid #285943' : '1px solid #e2e8f0',
                           borderRadius: '10px',
                           padding: '14px 12px',
                           display: 'flex',
@@ -525,7 +528,7 @@ export default function VolunteerDashboard() {
                         >
                           <StepIcon size={16} />
                         </div>
-                        <span style={{ fontSize: '13px', fontWeight: '700', color: step.isCurrent ? '#7c3aed' : '#0f172a' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '700', color: step.isCurrent ? '#285943' : '#0f172a' }}>
                           {step.label}
                         </span>
                         <span style={{ fontSize: '11px', color: '#64748b' }}>{step.sub}</span>
@@ -537,8 +540,8 @@ export default function VolunteerDashboard() {
                 {/* Milestone Action Buttons */}
                 <div
                   style={{
-                    backgroundColor: '#faf5ff',
-                    border: '1px dashed #d8b4fe',
+                    backgroundColor: '#f3f5ee',
+                    border: '1px dashed #cbd5c5',
                     borderRadius: '12px',
                     padding: '20px',
                     display: 'flex',
@@ -549,16 +552,16 @@ export default function VolunteerDashboard() {
                   }}
                 >
                   <div>
-                    <h4 style={{ fontSize: '14.5px', fontWeight: '700', color: '#581c87' }}>
-                      Milestone Action Required:
+                    <h4 style={{ fontSize: '14.5px', fontWeight: '700', color: '#285943' }}>
+                      Next step
                     </h4>
-                    <p style={{ fontSize: '13px', color: '#6b21a8' }}>
+                    <p style={{ fontSize: '13px', color: '#285943' }}>
                       {currentActiveJob.statusPipeline === 'pickup_scheduled' &&
                         'Arrive at donor location, verify packaging integrity, and confirm collection.'}
                       {currentActiveJob.statusPipeline === 'picked_up' &&
                         'Navigate to recipient destination and handover surplus batch.'}
                       {currentActiveJob.statusPipeline === 'delivered_or_recycled' &&
-                        'Sign-off on delivery receipt and officially complete rescue mission.'}
+                        'Confirm the delivery is complete.'}
                     </p>
                   </div>
 
@@ -575,7 +578,7 @@ export default function VolunteerDashboard() {
                         </button>
                         <button
                           className="btn btn-primary"
-                          style={{ backgroundColor: '#7c3aed', borderColor: '#7c3aed' }}
+                          style={{ backgroundColor: '#285943', borderColor: '#285943' }}
                           onClick={() => handleAdvanceStatus(currentActiveJob._id, 'picked_up', 'Surplus collected from kitchen')}
                           disabled={actionLoading}
                         >
@@ -607,7 +610,7 @@ export default function VolunteerDashboard() {
                         disabled={actionLoading}
                       >
                         <CheckCircle size={15} />
-                        <span>Complete Mission & Verify Handover</span>
+                        <span>Complete delivery</span>
                       </button>
                     )}
                   </div>
@@ -615,18 +618,18 @@ export default function VolunteerDashboard() {
               </div>
 
               {/* Waypoint Routing Details (Donor <-> Recipient) */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
                 {/* Pick-Up Origin (Donor) */}
                 <div className="card" style={{ padding: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#b45309', textTransform: 'uppercase' }}>
-                      Pick-Up Point (Donor Premises)
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#b45309', textTransform: 'none' }}>
+                      Collect from
                     </span>
                   </div>
 
-                  <h4 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '4px' }}>
-                    {currentActiveJob.donation?.donor?.name || 'Commercial Donor'}
+                  <h4 style={{ fontSize: '18px', fontWeight: '650', color: '#0f172a', marginBottom: '4px' }}>
+                    {currentActiveJob.donation?.donor?.name || 'Donor'}
                   </h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13.5px', color: '#64748b', marginBottom: '14px' }}>
                     <MapPin size={14} color="#f59e0b" />
@@ -645,7 +648,7 @@ export default function VolunteerDashboard() {
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: '#64748b' }}>Storage Condition:</span>
                       <span className="badge verified" style={{ textTransform: 'capitalize' }}>
-                        <Thermometer size={11} /> {currentActiveJob.donation?.storageCondition || 'refrigerated'}
+                        <Thermometer size={11} /> {currentActiveJob.donation?.storageCondition || 'Not provided'}
                       </span>
                     </div>
                   </div>
@@ -668,17 +671,17 @@ export default function VolunteerDashboard() {
                   )}
                 </div>
 
-                {/* Drop-Off Destination (Recipient Shelter) */}
+                {/* Deliver to */}
                 <div className="card" style={{ padding: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#059669' }} />
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#047857', textTransform: 'uppercase' }}>
-                      Drop-Off Destination (Recipient Shelter)
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#047857', textTransform: 'none' }}>
+                      Deliver to
                     </span>
                   </div>
 
-                  <h4 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '4px' }}>
-                    {currentActiveJob.receivingOrganization?.name || 'Verified Shelter'}
+                  <h4 style={{ fontSize: '18px', fontWeight: '650', color: '#0f172a', marginBottom: '4px' }}>
+                    {currentActiveJob.receivingOrganization?.name || 'Receiving organisation'}
                   </h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13.5px', color: '#64748b', marginBottom: '14px' }}>
                     <MapPin size={14} color="#059669" />
@@ -694,7 +697,7 @@ export default function VolunteerDashboard() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ color: '#64748b' }}>Registration Number:</span>
-                      <strong style={{ color: '#0f172a' }}>{currentActiveJob.receivingOrganization?.registrationInfo || 'NGO-VERIFIED'}</strong>
+                      <strong style={{ color: '#0f172a' }}>{currentActiveJob.receivingOrganization?.registrationInfo || 'Not provided'}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: '#64748b' }}>Contact Coordinator:</span>
@@ -722,8 +725,8 @@ export default function VolunteerDashboard() {
                   width: '64px',
                   height: '64px',
                   borderRadius: '50%',
-                  backgroundColor: '#f5f3ff',
-                  color: '#7c3aed',
+                  backgroundColor: '#f3f5ee',
+                  color: '#285943',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -732,15 +735,15 @@ export default function VolunteerDashboard() {
               >
                 <Truck size={32} />
               </div>
-              <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '650', color: '#0f172a', marginBottom: '8px' }}>
                 No Active Delivery in Progress
               </h3>
               <p style={{ fontSize: '14px', color: '#64748b', maxWidth: '460px', margin: '0 auto 20px' }}>
-                You are currently free and available for courier dispatch. Browse the open rescue missions board and accept a nearby delivery.
+                Browse available pickups to find a delivery you can help with.
               </p>
               <button className="btn btn-primary" onClick={() => setActiveTab('available')}>
                 <Navigation size={16} />
-                <span>Browse Available Missions ({openJobs.length})</span>
+                <span>Browse Available pickups ({openJobs.length})</span>
               </button>
             </div>
           )}
@@ -764,8 +767,8 @@ export default function VolunteerDashboard() {
             }}
           >
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
-                Open Dispatch Missions
+              <h3 style={{ fontSize: '18px', fontWeight: '650', color: '#0f172a' }}>
+                Available pickups
               </h3>
               <p style={{ fontSize: '13px', color: '#64748b' }}>
                 Claimed surplus batches awaiting volunteer transportation
@@ -790,7 +793,7 @@ export default function VolunteerDashboard() {
           </div>
 
           {openJobs.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 360px), 1fr))', gap: '20px' }}>
               {openJobs.map((job) => {
                 const isLocal = job.routeDetails?.originDistrict === (user?.district || 'Colombo');
                 return (
@@ -812,20 +815,20 @@ export default function VolunteerDashboard() {
                         <div>
                           {isLocal ? (
                             <span className="badge volunteer" style={{ marginBottom: '6px' }}>
-                              ⚡ Nearby in {job.routeDetails?.originDistrict}
+                               Nearby in {job.routeDetails?.originDistrict}
                             </span>
                           ) : (
                             <span className="badge pending" style={{ marginBottom: '6px' }}>
                               {job.routeDetails?.originDistrict}
                             </span>
                           )}
-                          <h4 style={{ fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>
+                          <h4 style={{ fontSize: '17px', fontWeight: '650', color: '#0f172a' }}>
                             {job.donation?.foodType || `${job.wasteRequest?.wasteCategory} Recyclables`}
                           </h4>
                         </div>
 
                         <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '12px', fontWeight: '700', color: '#7c3aed' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '700', color: '#285943' }}>
                             {job.routeDetails?.routeDistanceKm} km
                           </span>
                           <div style={{ fontSize: '11px', color: '#64748b' }}>
@@ -863,7 +866,7 @@ export default function VolunteerDashboard() {
                       <div style={{ fontSize: '12.5px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           <span style={{ color: '#64748b' }}>From: </span>
-                          <strong style={{ color: '#0f172a' }}>{job.donation?.donor?.name || 'Commercial Donor'}</strong>
+                          <strong style={{ color: '#0f172a' }}>{job.donation?.donor?.name || 'Donor'}</strong>
                         </div>
                         <ArrowRight size={14} color="#94a3b8" />
                         <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -875,11 +878,11 @@ export default function VolunteerDashboard() {
 
                     <button
                       className="btn btn-primary"
-                      style={{ width: '100%', justifyContent: 'center', backgroundColor: '#7c3aed', borderColor: '#7c3aed' }}
+                      style={{ width: '100%', justifyContent: 'center', backgroundColor: '#285943', borderColor: '#285943' }}
                       onClick={() => setSelectedJobToAccept(job)}
                     >
                       <Truck size={15} />
-                      <span>Accept Delivery Mission</span>
+                      <span>Accept delivery</span>
                     </button>
                   </div>
                 );
@@ -888,8 +891,8 @@ export default function VolunteerDashboard() {
           ) : (
             <div className="card" style={{ padding: '48px 24px', textAlign: 'center' }}>
               <Navigation size={40} color="#cbd5e1" style={{ margin: '0 auto 14px' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>
-                No Open Missions in This Filter
+              <h3 style={{ fontSize: '18px', fontWeight: '650', color: '#0f172a', marginBottom: '6px' }}>
+                No pickups match this filter
               </h3>
               <p style={{ fontSize: '13.5px', color: '#64748b', maxWidth: '420px', margin: '0 auto' }}>
                 All claimed surplus food batches in this district currently have couriers assigned. Try selecting "All Districts" or check back shortly.
@@ -903,205 +906,21 @@ export default function VolunteerDashboard() {
       {/* TAB 3: ROUTE & GPS VIEW                                      */}
       {/* ------------------------------------------------------------- */}
       {activeTab === 'route' && (
-        <div className="card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <div>
-              <h3 style={{ fontSize: '19px', fontWeight: '800', color: '#0f172a' }}>
-                Interactive Route & GPS Telemetry
-              </h3>
-              <p style={{ fontSize: '13.5px', color: '#64748b' }}>
-                Live waypoint navigation connecting donor kitchens, in-transit couriers, and recipient shelters.
-              </p>
-            </div>
-
-            {currentActiveJob && (
-              <span className="badge verified" style={{ padding: '6px 12px' }}>
-                <Navigation size={13} /> Active GPS Stream Active
-              </span>
-            )}
-          </div>
-
-          {currentActiveJob ? (
-            <div>
-              {/* Modern Visual Map Schematic Component */}
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-                  borderRadius: '16px',
-                  padding: '36px 24px',
-                  color: '#ffffff',
-                  marginBottom: '24px',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-              >
-                {/* Visual Route SVG Path */}
-                <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      position: 'relative',
-                      zIndex: 2
-                    }}
-                  >
-                    {/* Waypoint 1: Donor */}
-                    <div style={{ textAlign: 'center', width: '180px' }}>
-                      <div
-                        style={{
-                          width: '48px',
-                          height: '48px',
-                          borderRadius: '50%',
-                          backgroundColor: '#f59e0b',
-                          color: '#ffffff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: '0 auto 10px',
-                          boxShadow: '0 0 20px rgba(245, 158, 11, 0.5)'
-                        }}
-                      >
-                        <MapPin size={24} />
-                      </div>
-                      <div style={{ fontSize: '14px', fontWeight: '700' }}>
-                        {currentActiveJob.routeDetails?.originDistrict}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                        {currentActiveJob.donation?.donor?.name || 'Donor Location'}
-                      </div>
-                    </div>
-
-                    {/* Midpoint: Courier Truck */}
-                    <div style={{ textAlign: 'center', width: '180px' }}>
-                      <div
-                        style={{
-                          width: '54px',
-                          height: '54px',
-                          borderRadius: '50%',
-                          backgroundColor: '#7c3aed',
-                          color: '#ffffff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: '0 auto 10px',
-                          boxShadow: '0 0 25px rgba(124, 58, 237, 0.7)',
-                          animation: 'pulse 2s infinite'
-                        }}
-                      >
-                        <Truck size={26} />
-                      </div>
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#a78bfa' }}>
-                        {currentActiveJob.statusPipeline.replace(/_/g, ' ').toUpperCase()}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
-                        ~{currentActiveJob.routeDetails?.transitTimeMinutes} mins remaining
-                      </div>
-                    </div>
-
-                    {/* Waypoint 3: Shelter */}
-                    <div style={{ textAlign: 'center', width: '180px' }}>
-                      <div
-                        style={{
-                          width: '48px',
-                          height: '48px',
-                          borderRadius: '50%',
-                          backgroundColor: '#10b981',
-                          color: '#ffffff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: '0 auto 10px',
-                          boxShadow: '0 0 20px rgba(16, 185, 129, 0.5)'
-                        }}
-                      >
-                        <CheckCircle size={24} />
-                      </div>
-                      <div style={{ fontSize: '14px', fontWeight: '700' }}>
-                        {currentActiveJob.routeDetails?.destinationDistrict}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                        {currentActiveJob.receivingOrganization?.name || 'Recipient Shelter'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Connecting Line */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '24px',
-                      left: '90px',
-                      right: '90px',
-                      height: '4px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                      zIndex: 1
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: '100%',
-                        backgroundColor: '#7c3aed',
-                        width: currentActiveJob.statusPipeline === 'pickup_scheduled' ? '25%' : currentActiveJob.statusPipeline === 'picked_up' ? '65%' : '100%',
-                        transition: 'width 0.5s ease'
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Waypoint Coordinates & Distance Metrics */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-                <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px' }}>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>Origin Coordinates</span>
-                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>
-                    {currentActiveJob.routeDetails?.originCoords?.lat}° N, {currentActiveJob.routeDetails?.originCoords?.lng}° E
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                    {currentActiveJob.routeDetails?.originDistrict} District Center
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px' }}>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>Destination Coordinates</span>
-                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>
-                    {currentActiveJob.routeDetails?.destinationCoords?.lat}° N, {currentActiveJob.routeDetails?.destinationCoords?.lng}° E
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                    {currentActiveJob.routeDetails?.destinationDistrict} District Center
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px' }}>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>Route Length</span>
-                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#7c3aed' }}>
-                    {currentActiveJob.routeDetails?.routeDistanceKm} km
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                    Road Curvature Factor: 1.25x applied
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <RouteIcon size={36} color="#cbd5e1" style={{ margin: '0 auto 12px' }} />
-              <p style={{ color: '#64748b', fontSize: '14px' }}>
-                No active delivery in progress to map. Accept a mission from the "Available Missions" tab to view real-time turn-by-turn routing.
-              </p>
-            </div>
-          )}
-        </div>
+        <section className="route-estimate">
+          <h2>Route estimate</h2>
+          <p className="report-note">Distances and travel times use district centres. Confirm the exact addresses with the donor and receiving organisation.</p>
+          {currentActiveJob ? <>
+            <ol className="route-stops"><li><span>Collect from</span><strong>{currentActiveJob.donation?.donor?.name || currentActiveJob.wasteRequest?.donor?.name || 'Donor'}</strong><p>{currentActiveJob.routeDetails?.originDistrict}</p></li><li><span>Deliver to</span><strong>{currentActiveJob.receivingOrganization?.name || 'Receiving organisation'}</strong><p>{currentActiveJob.routeDetails?.destinationDistrict}</p></li></ol>
+            <dl className="report-breakdown"><div><dt>Estimated distance</dt><dd>{currentActiveJob.routeDetails?.routeDistanceKm ?? 'Not available'} km</dd></div><div><dt>Estimated travel time</dt><dd>{currentActiveJob.routeDetails?.transitTimeMinutes ?? 'Not available'} minutes</dd></div></dl>
+          </> : <p>Accept a pickup to see its route estimate.</p>}
+        </section>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* TAB 4: MISSION HISTORY                                       */}
-      {/* ------------------------------------------------------------- */}
       {activeTab === 'history' && (
         <div className="card" style={{ padding: '24px' }}>
           <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '19px', fontWeight: '800', color: '#0f172a' }}>
-              Verified Rescue Mission History
+            <h3 style={{ fontSize: '19px', fontWeight: '650', color: '#0f172a' }}>
+              Delivery history
             </h3>
             <p style={{ fontSize: '13.5px', color: '#64748b' }}>
               Audit-ready log of completed transfers, timestamps, and recipient receipts.
@@ -1161,7 +980,7 @@ export default function VolunteerDashboard() {
             <div style={{ textAlign: 'center', padding: '36px 0' }}>
               <Calendar size={36} color="#cbd5e1" style={{ margin: '0 auto 12px' }} />
               <p style={{ color: '#64748b', fontSize: '14px' }}>
-                No completed missions recorded yet. Accept and complete delivery runs to build your certified rescue portfolio.
+                Completed deliveries will appear here.
               </p>
             </div>
           )}
@@ -1177,7 +996,7 @@ export default function VolunteerDashboard() {
             position: 'fixed',
             inset: 0,
             backgroundColor: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(4px)',
+            backdropFilter: 'none',
             zIndex: 999,
             display: 'flex',
             alignItems: 'center',
@@ -1192,16 +1011,16 @@ export default function VolunteerDashboard() {
               width: '100%',
               padding: '24px',
               borderRadius: '16px',
-              animation: 'scaleIn 0.2s ease-out'
+              animation: 'none'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#f5f3ff', color: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#f3f5ee', color: '#285943', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Truck size={20} />
                 </div>
-                <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
-                  Accept Delivery Mission
+                <h3 style={{ fontSize: '18px', fontWeight: '650', color: '#0f172a' }}>
+                  Accept delivery
                 </h3>
               </div>
               <button
@@ -1213,7 +1032,7 @@ export default function VolunteerDashboard() {
             </div>
 
             <p style={{ fontSize: '13.5px', color: '#64748b', marginBottom: '16px' }}>
-              You are about to accept the following food rescue route. Once confirmed, the donor and recipient will be notified of your dispatch.
+              Accept this pickup to add it to your deliveries.
             </p>
 
             <div style={{ backgroundColor: '#f8fafc', borderRadius: '10px', padding: '16px', marginBottom: '20px', fontSize: '13px' }}>
@@ -1241,11 +1060,11 @@ export default function VolunteerDashboard() {
               </button>
               <button
                 className="btn btn-primary"
-                style={{ backgroundColor: '#7c3aed', borderColor: '#7c3aed' }}
+                style={{ backgroundColor: '#285943', borderColor: '#285943' }}
                 onClick={handleConfirmAccept}
                 disabled={actionLoading}
               >
-                {actionLoading ? 'Assigning...' : 'Confirm & Start Mission'}
+                {actionLoading ? 'Assigning...' : 'Accept delivery'}
               </button>
             </div>
           </div>
@@ -1261,7 +1080,7 @@ export default function VolunteerDashboard() {
             position: 'fixed',
             inset: 0,
             backgroundColor: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(4px)',
+            backdropFilter: 'none',
             zIndex: 999,
             display: 'flex',
             alignItems: 'center',
@@ -1276,7 +1095,7 @@ export default function VolunteerDashboard() {
               width: '100%',
               padding: '24px',
               borderRadius: '16px',
-              animation: 'scaleIn 0.2s ease-out'
+              animation: 'none'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -1284,8 +1103,8 @@ export default function VolunteerDashboard() {
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Navigation size={20} />
                 </div>
-                <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
-                  Confirm Shelter Delivery Handover
+                <h3 style={{ fontSize: '18px', fontWeight: '650', color: '#0f172a' }}>
+                  Confirm delivery
                 </h3>
               </div>
               <button
@@ -1323,7 +1142,7 @@ export default function VolunteerDashboard() {
                 onClick={() => handleAdvanceStatus(handoverModalJob._id, targetNextStatus, handoverNotes)}
                 disabled={actionLoading}
               >
-                {actionLoading ? 'Recording...' : 'Confirm Delivery Handover'}
+                {actionLoading ? 'Recording...' : 'Confirm delivery'}
               </button>
             </div>
           </div>

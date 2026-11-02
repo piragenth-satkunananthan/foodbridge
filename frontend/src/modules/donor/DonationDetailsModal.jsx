@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Utensils, Calendar, Clock, MapPin, Building, Truck, 
-  CheckCircle, AlertTriangle, XCircle, Info, Edit3, Trash2 
+import {
+  X, Utensils, Calendar, Clock, MapPin, Building, Truck,
+  CheckCircle, AlertTriangle, XCircle, Info, Edit3, Trash2
 } from 'lucide-react';
 import { fetchDonationById, cancelDonation } from '../../api/client';
 
@@ -10,7 +10,7 @@ const PIPELINE_STAGES = [
   { key: 'matched', label: 'Matched to NGO', desc: 'Recipient approved request' },
   { key: 'pickup_scheduled', label: 'Pickup Scheduled', desc: 'Volunteer assigned & dispatched' },
   { key: 'picked_up', label: 'In Transit', desc: 'Collected from your facility' },
-  { key: 'delivered', label: 'Delivered / Completed', desc: 'Received & verified by NGO' }
+  { key: 'delivered', label: 'Delivered / Completed', desc: 'Marked delivered' }
 ];
 
 export default function DonationDetailsModal({ donationId, isOpen, onClose, onUpdated, onEdit }) {
@@ -75,13 +75,13 @@ export default function DonationDetailsModal({ donationId, isOpen, onClose, onUp
   return (
     <div className="modal-overlay" style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)',
+      background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'none',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 9999, padding: '20px'
     }}>
       <div className="card" style={{
         maxWidth: '720px', width: '100%', maxHeight: '90vh', overflowY: 'auto',
-        borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)'
+        borderRadius: '16px', boxShadow: 'none'
       }}>
         {/* Header */}
         <div style={{
@@ -94,7 +94,7 @@ export default function DonationDetailsModal({ donationId, isOpen, onClose, onUp
               <span className="badge donor">Donation Tracker</span>
               <span style={{ fontSize: '12px', color: '#64748b' }}>ID: {donationId?.slice(-6)}</span>
             </div>
-            <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '650', color: '#0f172a' }}>
               {donation?.foodType || 'Donation Details'}
             </h2>
           </div>
@@ -169,7 +169,7 @@ export default function DonationDetailsModal({ donationId, isOpen, onClose, onUp
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
               <div>
                 <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginBottom: '10px' }}>
-                  Food & Safety Specs
+                  Food details
                 </h4>
                 <div style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div>
@@ -201,7 +201,7 @@ export default function DonationDetailsModal({ donationId, isOpen, onClose, onUp
 
               <div>
                 <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginBottom: '10px' }}>
-                  Logistics & Partners
+                  Collection details
                 </h4>
                 <div style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <div>
@@ -228,16 +228,16 @@ export default function DonationDetailsModal({ donationId, isOpen, onClose, onUp
                     </>
                   ) : (
                     <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '12px' }}>
-                      Volunteer courier dispatch activates once matched.
+                      Volunteer collection can be arranged after matching.
                     </div>
                   )}
 
                   {donation?.photo && (
                     <div style={{ marginTop: '8px' }}>
-                      <img 
-                        src={donation.photo} 
-                        alt="Donation preview" 
-                        style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '8px' }} 
+                      <img
+                        src={donation.photo}
+                        alt="Donation preview"
+                        style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
                       />
                     </div>
                   )}

@@ -53,13 +53,13 @@ export default function EditDonationModal({ donation, isOpen, onClose, onUpdated
   return (
     <div className="modal-overlay" style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)',
+      background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'none',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 9999, padding: '20px'
     }}>
       <div className="card" style={{
         maxWidth: '580px', width: '100%', maxHeight: '90vh', overflowY: 'auto',
-        borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)'
+        borderRadius: '16px', boxShadow: 'none'
       }}>
         <div style={{
           padding: '20px 24px', borderBottom: '1px solid #e2e8f0',
@@ -68,7 +68,7 @@ export default function EditDonationModal({ donation, isOpen, onClose, onUpdated
         }}>
           <div>
             <span className="badge donor" style={{ marginBottom: '4px' }}>Edit Surplus Post</span>
-            <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '650', color: '#0f172a' }}>
               Modify Posting Details
             </h2>
           </div>
@@ -93,8 +93,8 @@ export default function EditDonationModal({ donation, isOpen, onClose, onUpdated
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
               Food Description *
             </label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               className="form-control"
               value={foodType}
               onChange={(e) => setFoodType(e.target.value)}
@@ -108,8 +108,8 @@ export default function EditDonationModal({ donation, isOpen, onClose, onUpdated
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
                 Quantity *
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="form-control"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
@@ -121,13 +121,13 @@ export default function EditDonationModal({ donation, isOpen, onClose, onUpdated
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
                 Storage Condition *
               </label>
-              <select 
+              <select
                 value={storageCondition}
                 onChange={(e) => setStorageCondition(e.target.value)}
                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
               >
-                <option value="refrigerated">❄️ Refrigerated</option>
-                <option value="room_temperature">🌡️ Room Temperature</option>
+                <option value="refrigerated">❄ Refrigerated</option>
+                <option value="room_temperature">🌡 Room Temperature</option>
                 <option value="frozen">🧊 Frozen</option>
               </select>
             </div>
@@ -138,7 +138,7 @@ export default function EditDonationModal({ donation, isOpen, onClose, onUpdated
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
                 District *
               </label>
-              <select 
+              <select
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
@@ -152,8 +152,8 @@ export default function EditDonationModal({ donation, isOpen, onClose, onUpdated
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
                 Pickup Deadline *
               </label>
-              <input 
-                type="datetime-local" 
+              <input
+                type="datetime-local"
                 className="form-control"
                 value={pickupDeadline}
                 onChange={(e) => setPickupDeadline(e.target.value)}
@@ -167,7 +167,7 @@ export default function EditDonationModal({ donation, isOpen, onClose, onUpdated
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
               Special Access Instructions
             </label>
-            <textarea 
+            <textarea
               rows="3"
               className="form-control"
               value={specialInstructions}

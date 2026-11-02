@@ -89,11 +89,11 @@ export default function UsersTab({ currentAdminId }) {
     <div>
       {loadError && <div role="alert" className="report-error">{loadError} <button className="btn btn-secondary" onClick={loadUsers}>Try again</button></div>}
       <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '650', color: '#0f172a' }}>
           User & Fake Account Management
         </h2>
         <p style={{ fontSize: '13px', color: '#64748b' }}>
-          Maintain platform trust by monitoring user profiles, handling fake accounts, and enforcing community safety rules.
+          Review user details and manage account access.
         </p>
       </div>
 
@@ -182,7 +182,7 @@ export default function UsersTab({ currentAdminId }) {
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div className="avatar-badge" style={{
-                          background: u.role === 'admin' ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)' : 'linear-gradient(135deg, #059669 0%, #0284c7 100%)'
+                          background: u.role === 'admin' ? 'linear-gradient(135deg, #285943 0%, #a855f7 100%)' : 'linear-gradient(135deg, #059669 0%, #0284c7 100%)'
                         }}>
                           {u.name.slice(0, 2).toUpperCase()}
                         </div>

@@ -1,48 +1,12 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Recycle, Package, ShieldCheck, Clock, MapPin } from 'lucide-react';
 
 export default function RecyclerDashboard() {
   const { user } = useAuth();
-
-  return (
-    <div className="main-content">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-        <div>
-          <span className="badge recycler" style={{ marginBottom: '6px' }}>Circular Materials & Bio-Economy Facility</span>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a' }}>
-            Recycling Facility — {user?.name || 'Recycler'}
-          </h2>
-          <p style={{ fontSize: '13.5px', color: '#64748b' }}>
-            Accept and collect sorted recyclable materials (plastic, glass, paper, metal, organic).
-          </p>
-        </div>
-
-        {user?.verificationStatus === 'verified' ? (
-          <span className="badge verified" style={{ padding: '6px 12px', fontSize: '13px' }}>
-            <ShieldCheck size={16} /> Licensed Facility
-          </span>
-        ) : (
-          <span className="badge pending" style={{ padding: '6px 12px', fontSize: '13px' }}>
-            <Clock size={16} /> Verification Pending
-          </span>
-        )}
-      </div>
-
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Available Waste Collection Batches</h3>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>Filtered by handled material streams</span>
-        </div>
-
-        <div className="empty-state">
-          <Recycle size={40} color="#cbd5e1" style={{ margin: '0 auto' }} />
-          <h3>Circular Waste Stream Routing Hub</h3>
-          <p>
-            Receive categorized industrial waste batches, schedule bulk pickups, and log diversion metrics for environmental compliance and recycling certificates.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+  const status = user?.verificationStatus || 'pending';
+  return <main className="main-content account-page">
+    <div className="page-heading"><p className="eyebrow">{user?.district}</p><h1>Recycler dashboard</h1><p>{user?.name}</p></div>
+    <section className="account-details"><h2>Account details</h2><dl className="report-breakdown"><div><dt>Email</dt><dd>{user?.email}</dd></div><div><dt>Organisation review</dt><dd><span className={`badge ${status}`}>{status === 'verified' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Awaiting review'}</span></dd></div></dl></section>
+    <section className="availability-note"><h2>Waste collections</h2><p>Waste browsing and collection requests are not available in this version yet.</p></section>
+  </main>;
 }
