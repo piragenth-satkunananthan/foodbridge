@@ -1,15 +1,4 @@
 /* Shared visual language: quiet surfaces, clear controls, and readable records. */
-:root {
-  --primary: #174f45;
-  --primary-dark: #123d35;
-  --primary-light: #eaf0e8;
-  --accent: #174f45;
-  --bg-main: #ffffff;
-  --border: #deded8;
-  --text-main: #202d26;
-  --text-muted: #59655c;
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
 body { background: var(--bg-main); color: var(--text-main); }
 a { color: var(--primary); }
 button, input, select, textarea { font: inherit; }
@@ -129,30 +118,6 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .site-navigation > a:not(.btn), .site-navigation > button, .text-action { background: none; border: 0; color: var(--primary); font-size: 14px; cursor: pointer; padding: 8px 0; text-decoration: none; }
 .site-navigation > a:hover, .text-action:hover { text-decoration: underline; }
 .menu-toggle { display: none; }
-.home-page { width: min(1180px, 100%); margin: 0 auto; padding: 0 32px; }
-.home-intro { display: grid; grid-template-columns: 1.3fr 1fr; gap: 80px; padding: 76px 0 64px; align-items: center; }
-.eyebrow { font-size: 12px; color: #66685f; font-weight: 600; margin-bottom: 18px; }
-.home-intro h1 { font-size: clamp(36px, 4.4vw, 60px); line-height: 1.08; font-weight: 650; letter-spacing: -.045em; color: #202d26; }
-.home-lead { max-width: 490px; font-size: 18px; line-height: 1.65; margin: 24px 0; color: #525c55; }
-.home-signin { margin-top: 18px; font-size: 14px; }
-.collection-note { background: #f6f1e7; border-top: 4px solid #b54726; padding: 28px; }
-.collection-note h2 { font-size: 24px; font-weight: 600; line-height: 1.25; max-width: 320px; }
-.collection-note dl { margin: 24px 0; }
-.collection-note dl > div { padding: 14px 0; border-bottom: 1px solid #d9d2c5; }
-.collection-note dt { font-size: 12px; font-weight: 650; color: #785039; }
-.collection-note dd { margin-top: 4px; font-size: 15px; }
-.collection-note > p:last-child { font-size: 13px; color: #655e52; }
-.participation { display: grid; grid-template-columns: 1fr 1.4fr; gap: 80px; padding: 48px 0; border-top: 1px solid var(--border); }
-.participation h2 { font-size: 28px; letter-spacing: -.025em; font-weight: 600; line-height: 1.25; }
-.participation-rows article { border-bottom: 1px solid var(--border); padding: 0 0 24px; margin-bottom: 24px; }
-.participation-rows article:last-child { margin-bottom: 0; }
-.participation h3 { font-size: 20px; font-weight: 600; }
-.participation p { margin: 10px 0; color: var(--text-muted); }
-.participation a, .home-waste a, .home-report a { font-size: 14px; font-weight: 600; }
-.home-waste { max-width: 660px; padding-bottom: 48px; }
-.home-waste h2, .home-report h2 { font-size: 23px; font-weight: 600; }
-.home-waste p, .home-report p { margin: 12px 0; color: var(--text-muted); }
-.home-report { border-top: 1px solid var(--border); padding: 32px 0 48px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
 .admin-topbar, .admin-sections { max-width: 1240px; margin: auto; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .admin-tools { display: flex; align-items: center; gap: 20px; }
 .admin-name { font-size: 13px; color: var(--text-muted); }
@@ -188,11 +153,6 @@ button:disabled { opacity: .55; cursor: not-allowed; }
   .site-navigation.is-open { display: flex; flex-direction: column; }
   .site-navigation a, .site-navigation button { text-align: left; padding: 12px 0; }
   .site-navigation .btn { text-align: center; }
-  .home-page { padding: 0 20px; }
-  .home-intro { grid-template-columns: 1fr; gap: 32px; padding: 36px 0; }
-  .collection-note { transform: none; padding: 24px; }
-  .participation { grid-template-columns: 1fr; gap: 28px; padding: 32px 0; }
-  .home-report { align-items: flex-start; flex-direction: column; }
   .admin-topbar { padding: 14px 16px; gap: 12px; }
   .admin-tools { gap: 12px; }
   .admin-name { display: none; }

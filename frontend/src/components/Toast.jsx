@@ -31,14 +31,14 @@ export function ToastProvider({ children }) {
           const isError = toast.type === 'error';
 
           return (
-            <div key={toast.id} className={`toast-card toast-${toast.type}`}>
+            <div key={toast.id} className={`toast-card toast-${toast.type}`} role={isError ? 'alert' : 'status'}>
               <div className="toast-icon">
                 {isSuccess && <CheckCircle2 size={18} />}
                 {isError && <AlertCircle size={18} />}
                 {!isSuccess && !isError && <Info size={18} />}
               </div>
               <div className="toast-message">{toast.message}</div>
-              <button onClick={() => removeToast(toast.id)} className="toast-close">
+              <button onClick={() => removeToast(toast.id)} className="toast-close" aria-label="Dismiss notification">
                 <X size={15} />
               </button>
             </div>
