@@ -23,17 +23,20 @@ export default function LandingPage() {
       setLoading(false);
     }
   };
-  useEffect(() => { loadImpact(); }, []);
+  useEffect(() => { if (pathname === '/impact') loadImpact(); }, [pathname]);
+  if (pathname === '/') return (
+    <main className="home-page">
+      <section className="home-intro">
+        <div><p className="eyebrow">Food sharing · Sri Lanka</p><h1>Post surplus food<br />for collection.</h1><p className="home-lead">Tell us what you have, how much, and when it needs collecting. Keep the food details and collection progress in one place.</p><Link className="btn btn-primary" to="/register?role=donor">Register as a donor</Link><p className="home-signin">Already registered? <Link to="/login">Sign in to post food</Link></p></div>
+        <aside className="collection-note" aria-label="Before you post"><p className="eyebrow">Before you post</p><h2>Food, storage and collection details.</h2><dl><div><dt>Food</dt><dd>What is available and how much?</dd></div><div><dt>Storage</dt><dd>How has the food been stored?</dd></div><div><dt>Collection</dt><dd>Which district, and what is the deadline?</dd></div></dl><p>Use a photo of the food you are offering.</p></aside>
+      </section>
+      <section className="participation" aria-labelledby="participate-title"><div><p className="eyebrow">Taking part</p><h2 id="participate-title">Food needs a pickup,<br />and someone to receive it.</h2></div><div className="participation-rows"><article><h3>Donate food</h3><p>Post available food and follow its collection status from your dashboard.</p><Link to="/register?role=donor">Create a donor account →</Link></article><article><h3>Volunteer for deliveries</h3><p>Browse available pickups by district. Accept a delivery and record collection and handover.</p><Link to="/register?role=volunteer">Register as a volunteer →</Link></article><article><h3>Register an organisation</h3><p>Recipient organisations and recyclers can register for admin review. Food claims and waste claims are not available in these dashboards yet.</p><Link to="/register?role=recipient">Register your organisation →</Link></article></div></section>
+      <section className="home-waste"><h2>Have waste to collect?</h2><p>Donors can also post organic waste and recyclable materials. Keep these separate from food donations.</p><Link to="/login">Sign in to post a collection request →</Link></section>
+      <section className="home-report"><div><h2>Recorded deliveries and collections</h2><p>See completed food deliveries, recycling quantities, and the districts covered.</p></div><Link to="/impact">View community impact →</Link></section>
+    </main>
+  );
   return (
     <main className="main-content impact-page">
-      {pathname === '/' && (
-        <section className="foodbridge-intro">
-          <p className="eyebrow">Food sharing and waste collection in Sri Lanka</p>
-          <h1>Help surplus food reach people who need it.</h1>
-          <p>Post available food or recyclable waste. FoodBridge brings donors, charities, recycling facilities, and volunteers together.</p>
-          <div className="report-actions"><Link className="btn btn-primary" to="/register">Create an account</Link><Link className="btn btn-secondary" to="/login">Sign in</Link></div>
-        </section>
-      )}
       <section aria-labelledby="impact-title">
         <div className="report-heading">
           <div>

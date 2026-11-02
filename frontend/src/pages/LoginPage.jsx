@@ -24,7 +24,7 @@ export default function LoginPage() {
     finally { setSubmitting(false); }
   };
   return <main className="auth-layout">
-    <aside className="auth-intro"><p className="eyebrow">FoodBridge / Sign in</p><h1>Welcome back.</h1><p>Manage your donations, collections, and account from one place.</p><p>New to FoodBridge? <Link to="/register">Create an account</Link></p></aside>
+    <div className="auth-intro"><h1>Sign in</h1><p>New to FoodBridge? <Link to="/register">Create an account</Link></p></div>
     <section className="auth-form" aria-label="Sign in">
       {error && <p className="report-error" role="alert">{error}</p>}
       <form onSubmit={e => { e.preventDefault(); signIn(email, password); }}>

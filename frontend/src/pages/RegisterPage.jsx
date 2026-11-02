@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const districts = ['Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya', 'Galle', 'Matara', 'Hambantota', 'Jaffna', 'Kilinochchi', 'Mannar', 'Vavuniya', 'Mullaitivu', 'Batticaloa', 'Ampara', 'Trincomalee', 'Kurunegala', 'Puttalam', 'Anuradhapura', 'Polonnaruwa', 'Badulla', 'Monaragala', 'Ratnapura', 'Kegalle'];
 export default function RegisterPage() {
-  const [form, setForm] = useState({name: '', email: '', password: '', role: 'donor', district: 'Colombo', contactNumber: ''});
+  const [params] = useSearchParams();
+  const requestedRole = params.get('role');
+  const initialRole = ['donor', 'recipient', 'recycler', 'volunteer'].includes(requestedRole) ? requestedRole : 'donor';
+  const [form, setForm] = useState({name: '', email: '', password: '', role: initialRole, district: 'Colombo', contactNumber: ''});
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { register } = useAuth();
@@ -17,9 +20,8 @@ export default function RegisterPage() {
     finally { setSubmitting(false); }
   };
   return <main className="auth-layout">
-    <aside className="auth-intro"><p className="eyebrow">FoodBridge / Join</p><h1>Join FoodBridge.</h1><p>Create an account to post surplus food, arrange collections, or volunteer for deliveries.</p><p>Already registered? <Link to="/login">Sign in</Link></p></aside>
+    <div className="auth-intro"><h1>Create your account</h1><p>Already registered? <Link to="/login">Sign in</Link></p></div>
     <section className="auth-form" aria-label="Create an account">
-      <h2>Create an account</h2>
       {error && <p className="report-error" role="alert">{error}</p>}
       <form onSubmit={submit}>
         <label htmlFor="register-name">Your name or organisation name</label><input id="register-name" name="name" autoComplete="name" required value={form.name} onChange={change} />

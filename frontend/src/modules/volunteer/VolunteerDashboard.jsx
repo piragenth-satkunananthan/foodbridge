@@ -85,7 +85,7 @@ export default function VolunteerDashboard() {
       if (histRes.success) setHistoryJobs(histRes.history || []);
       if (statsRes.success) setStats(statsRes.stats || {});
     } catch (err) {
-      console.error('Failed to load courier data:', err);
+      console.error('Failed to load volunteer data:', err);
       setLoadError(err.message || 'Could not load pickups.');
     } finally {
       setLoading(false);
@@ -221,7 +221,7 @@ export default function VolunteerDashboard() {
         </div>
       )}
 
-      {/* Top Courier Header Bar */}
+      {/* Top Volunteer Header Bar */}
       <div
         style={{
           display: 'flex',
@@ -559,7 +559,7 @@ export default function VolunteerDashboard() {
                       {currentActiveJob.statusPipeline === 'pickup_scheduled' &&
                         'Arrive at donor location, verify packaging integrity, and confirm collection.'}
                       {currentActiveJob.statusPipeline === 'picked_up' &&
-                        'Navigate to recipient destination and handover surplus batch.'}
+                        'Deliver the food to the receiving organisation.'}
                       {currentActiveJob.statusPipeline === 'delivered_or_recycled' &&
                         'Confirm the delivery is complete.'}
                     </p>
@@ -771,7 +771,7 @@ export default function VolunteerDashboard() {
                 Available pickups
               </h3>
               <p style={{ fontSize: '13px', color: '#64748b' }}>
-                Claimed surplus batches awaiting volunteer transportation
+                Pickups waiting for a volunteer
               </p>
             </div>
 
@@ -895,7 +895,7 @@ export default function VolunteerDashboard() {
                 No pickups match this filter
               </h3>
               <p style={{ fontSize: '13.5px', color: '#64748b', maxWidth: '420px', margin: '0 auto' }}>
-                All claimed surplus food batches in this district currently have couriers assigned. Try selecting "All Districts" or check back shortly.
+                No pickups are available in this district. Try selecting "All Districts" or check back shortly.
               </p>
             </div>
           )}
@@ -923,7 +923,7 @@ export default function VolunteerDashboard() {
               Delivery history
             </h3>
             <p style={{ fontSize: '13.5px', color: '#64748b' }}>
-              Audit-ready log of completed transfers, timestamps, and recipient receipts.
+              Completed deliveries and recorded handover notes.
             </p>
           </div>
 
@@ -1116,7 +1116,7 @@ export default function VolunteerDashboard() {
             </div>
 
             <p style={{ fontSize: '13.5px', color: '#64748b', marginBottom: '16px' }}>
-              Deliver surplus batch to <strong>{handoverModalJob.receivingOrganization?.name}</strong>. Add any receiver remarks or custody notes below.
+              Deliver to <strong>{handoverModalJob.receivingOrganization?.name}</strong>. Add delivery notes below.
             </p>
 
             <div style={{ marginBottom: '16px' }}>
