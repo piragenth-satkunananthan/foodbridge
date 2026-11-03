@@ -78,37 +78,9 @@ function estimateTransitMinutes(distanceKm) {
 /**
  * Helper to calculate estimated meals or weight from quantity string
  */
-function parseQuantityMetrics(quantityStr) {
-  if (!quantityStr) return { meals: 0, kg: 0 };
-  const str = String(quantityStr).toLowerCase().trim();
-
-  // Match plates or meals
-  const mealMatch = str.match(/(\d+(?:\.\d+)?)\s*(plates|meals|portions|packets|boxes)/);
-  if (mealMatch) {
-    const meals = parseFloat(mealMatch[1]);
-    return { meals, kg: Math.round(meals * 0.4 * 10) / 10 }; // 0.4kg per meal
-  }
-
-  // Match kg or grams or tons
-  const kgMatch = str.match(/(\d+(?:\.\d+)?)\s*kg/);
-  if (kgMatch) {
-    const kg = parseFloat(kgMatch[1]);
-    return { meals: Math.round(kg * 2.5), kg }; // 2.5 meals per kg
-  }
-
-  const tonMatch = str.match(/(\d+(?:\.\d+)?)\s*(ton|tons)/);
-  if (tonMatch) {
-    const kg = parseFloat(tonMatch[1]) * 1000;
-    return { meals: Math.round(kg * 2.5), kg };
-  }
-
-  // Raw number fallback
-  const rawNum = parseFloat(str);
-  if (!isNaN(rawNum)) {
-    return { meals: Math.round(rawNum), kg: Math.round(rawNum * 0.4 * 10) / 10 };
-  }
-
-  return { meals: 25, kg: 10 }; // Safe baseline fallback
+function parseQuantityMetrics(value) {
+  const q = require('./quantity').parseQuantity(value);
+  return { meals: q?.meals || 0, kg: q?.kg || 0 };
 }
 
 module.exports = {
