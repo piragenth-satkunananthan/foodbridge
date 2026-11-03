@@ -18,4 +18,4 @@ Challenger assessments: regional ornament plates lose audience identification an
 2. Connected destinations: a functional junction of five equal pathways.
 3. Role index: five strong typographic destination bands.
 
-All three are proposed compositions, not implemented interfaces. No mockup is approved yet. The prompt sidecars contain the exact image generation prompts. Implementation waits for the user's mockup selection.
+The user rejected all three first-round mockups as looking old. They are preserved for comparison; none is approved. See `homepage-v2-round.md` for the replacement direction. The prompt sidecars contain the exact image generation prompts. Implementation waits for the user's mockup selection.
