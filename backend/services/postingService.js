@@ -211,7 +211,11 @@ async function canReadPost(post, user, kind) {
   )
     return true;
   return Boolean(
-    await Pickup.exists({ [kind]: post._id, volunteer: user._id })
+    await Pickup.exists({
+      [kind]: post._id,
+      volunteer: user._id,
+      statusPipeline: { $ne: 'cancelled' }
+    })
   );
 }
 async function pickupHistoryFilter(post, user, kind) {
