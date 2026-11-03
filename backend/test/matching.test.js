@@ -1,0 +1,42 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {setup,user,foodBody,Donation,Pickup,Organization}=require('./helpers');
+const api=setup();
+test('simultaneous claims allocate once and cancellation retains history and releases capacity',async()=>{
+ const donor=await user('donor'),a=await user('recipient','ngo'),b=await user('recipient','ngo'),outsider=await user('recipient');
+ const post=await api('POST','/donations',donor,foodBody());
+ const results=await Promise.all(Array.from({length:8},(_,i)=>api('POST',`/match/${post.body._id}/claim`,i%2?a:b,{})));
+ assert.equal(results.filter(r=>r.status===200).length,1,JSON.stringify(results));
+ assert.equal(await Pickup.countDocuments({donation:post.body._id,active:true}),1);
+ const matched=await Donation.findById(post.body._id);
+ const winner=String(matched.matchedRecipient)===String(a.organization)?a:b;
+ assert.equal((await api('PUT',`/match/${post.body._id}/cancel-claim`,outsider,{})).status,403);
+ assert.equal((await api('PUT',`/match/${post.body._id}/cancel-claim`,winner,{})).status,200);
+ assert.equal((await Organization.findById(winner.organization)).reservedKg,0);
+ assert.equal(await Pickup.countDocuments({donation:post.body._id,statusPipeline:'cancelled',active:false}),1);
+ assert.equal((await api('POST',`/match/${post.body._id}/claim`,winner,{})).status,200);
+ assert.equal(await Pickup.countDocuments({donation:post.body._id}),2);
+});
+test('claim transaction rolls back if pickup persistence fails',async(t)=>{
+ const donor=await user('donor'),recipient=await user('recipient','ngo');
+ const post=await api('POST','/donations',donor,foodBody());
+ const original=Pickup.prototype.save;
+ const mock=t.mock.method(Pickup.prototype,'save',async function(options){throw new Error('Injected write failure');});
+ assert.equal((await api('POST',`/match/${post.body._id}/claim`,recipient,{})).status,500);
+ mock.mock.restore();
+ assert.equal((await Donation.findById(post.body._id)).status,'posted');
+ assert.equal((await Organization.findById(recipient.organization)).reservedKg,0);
+ assert.equal(await Pickup.countDocuments({donation:post.body._id}),0);
+});
+test('capacity, storage, availability/deadline and verification determine eligibility',async()=>{
+ const donor=await user('donor'),recipient=await user('recipient','ngo'),admin=await user('admin');
+ const post=await api('POST','/donations',donor,foodBody());
+ await Organization.findByIdAndUpdate(recipient.organization,{capacityKg:5});
+ assert.equal((await api('POST',`/match/${post.body._id}/claim`,recipient,{})).status,409);
+ await Organization.findByIdAndUpdate(recipient.organization,{capacityKg:100,storageConditions:['frozen']});
+ assert.equal((await api('POST',`/match/${post.body._id}/claim`,recipient,{})).status,409);
+ await Organization.findByIdAndUpdate(recipient.organization,{storageConditions:['refrigerated'],verificationStatus:'rejected'});
+ assert.equal((await api('POST',`/match/${post.body._id}/claim`,recipient,{})).status,403);
+ assert.equal((await api('POST',`/match/${post.body._id}/claim`,admin,{})).status,403);
+ assert.equal((await Donation.findById(post.body._id)).status,'posted');
+});
