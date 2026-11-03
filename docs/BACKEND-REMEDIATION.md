@@ -1,6 +1,6 @@
 # Backend proposal alignment
 
-Baseline: ae0f315. Scope: backend only. Module branches were locally fast-forwarded with user approval. No publication or deployment is authorized.
+Baseline: ae0f315. Scope: backend only. Module branches were locally fast-forwarded with user approval. The user subsequently authorized publishing all five branches and merging through develop to production using the existing CI/CD pipeline.
 
 ## Acceptance rules
 
@@ -51,7 +51,7 @@ Combined runtime/CI and data preflight are recorded in `ebec747` on Module 5.
 - The read-only data preflight accepts an empty disposable replica set and flags a legacy organization without capacity; checks confirmed that it changed no records and created no collections. Node 20's built-in development watcher starts successfully.
 - `npm ci --ignore-scripts`, `npm audit` and `npm audit --omit=dev` pass with zero reported vulnerabilities after replacing Nodemon with Node's built-in watcher.
 - `git diff --check` passes. No authored changes under `frontend/` relative to the agreed baseline `ae0f315`.
-- Remote CI has not run: no changes were pushed, no PR was opened and nothing was deployed.
+- At the initial local completion checkpoint, remote CI had not run and nothing had been pushed or deployed. Publication evidence is recorded below.
 
 ## Proposal assessment and remaining work
 
@@ -62,3 +62,11 @@ Distance and journey time are estimates, not road navigation. Whole-batch alloca
 Cloud photo upload and road-routing integrations remain unimplemented provider dependencies. Their absence means the complete proposal is not yet delivered. Map/route display and all frontend changes remain outside this task, including the new organization profile and receipt/processing forms. Existing frontend callers must be updated before rollout.
 
 Before any deployment, back up and reconcile existing data using the read-only `npm run db:check` report and the steps in [BACKEND-API.md](BACKEND-API.md). Existing capacities, reservations, active-pickup flags, old completion records and demo provenance require review; none were guessed or migrated in project/deployed data. The single-member replica set supplies transactions, not high availability.
+
+## Publication review (2026-11-03)
+
+All five module branches were pushed and their GitHub CI runs passed. An independent `codex review --base origin/develop` identified legacy organization links as an upgrade concern. Commit `83edf33` adds a partial unique index, read-only missing/duplicate-link checks and a database regression test. The expanded backend gate passes 25 HTTP tests; frontend tests and production build also pass without frontend edits. GitHub CI passed for `83edf33`.
+
+The follow-up `codex review --commit 83edf33` warned that an already-deployed unconditional index would need migration. This does not apply to the requested upgrade: the actual production/develop baseline `ae0f315` declares no organization index, and the interim unconditional index existed only in the unpublished backend implementation. No production database migration is claimed. Operators of any separately deployed interim build must reconcile its index before upgrading.
+
+The user requested deployment through the existing CI/CD pipeline. That pipeline does not run the documented legacy-data preflight. Real-data reconciliation and UI integration remain rollout limitations, and a passing build or health endpoint does not prove those workflows are ready for existing users.
