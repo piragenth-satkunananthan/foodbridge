@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema(
   {
+    isDemo: { type: Boolean, default: false },
     name: {
       type: String,
       required: true,
