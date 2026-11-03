@@ -124,17 +124,7 @@ function calculateUrgencyScore(pickupDeadline) {
 /**
  * Parse quantity helper for meal portion matching.
  */
-function parseEstimatedPortions(quantityStr) {
-  if (!quantityStr) return 20;
-  const str = String(quantityStr).toLowerCase().trim();
-  const match = str.match(/([0-9]+(?:\.[0-9]+)?)/);
-  if (!match) return 20;
-  const num = parseFloat(match[1]);
-  if (str.includes('kg') || str.includes('kilo')) {
-    return Math.round(num * 2.5);
-  }
-  return Math.round(num);
-}
+function parseEstimatedPortions(value) { return require('./quantity').parseMealsCount(value); }
 
 /**
  * Storage compatibility score (0 - 100)
