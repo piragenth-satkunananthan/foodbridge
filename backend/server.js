@@ -95,6 +95,9 @@ app.use('/api/waste', wasteRoutes);                    // Circular Waste Stream 
 app.use('/api/match', matchRoutes);                    // Proximity-Based Smart Matching
 app.use('/api/pickups', pickupRoutes);                 // Volunteer Logistics & Last-Mile Delivery
 
+app.use('/api/organizations', require('./routes/organizationRoutes'));
+app.use('/api/complaints', require('./routes/complaintRoutes'));
+
 // Centralized 404 & Error Handling
 app.use(notFound);
 app.use(errorHandler);
