@@ -13,7 +13,8 @@
     "test:module3": "node test-module3.js",
     "test:module4": "node test-module4.js",
     "seed": "node seed-module5.js",
-    "test:impact": "node --test test-impact.js"
+    "test:impact": "node --test test-impact.js",
+    "test:api": "node scripts/test-api.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -1,4 +1,4 @@
-require('dotenv').config();
+if (require.main === module) require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -101,13 +101,15 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-connectDB().then(() => {
-  initCronJobs();
-  app.listen(PORT, () => {
-    console.log(`FoodBridge Server running on port ${PORT}`);
+if (require.main === module) {
+  if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is required');
+  connectDB().then(() => {
+    initCronJobs();
+    app.listen(PORT, () => console.log(`FoodBridge Server running on port ${PORT}`));
+  }).catch((error) => {
+    console.error('Failed to start server:', error.message);
+    process.exitCode = 1;
   });
-}).catch((err) => {
-  console.error('Failed to start server:', err.message);
-});
+}
 
 module.exports = app;

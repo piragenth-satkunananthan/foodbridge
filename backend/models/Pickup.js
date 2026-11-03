@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const pickupSchema = new mongoose.Schema(
   {
+    active: { type: Boolean, default: true },
+    reservedKg: { type: Number, default: 0 },
+    isDemo: { type: Boolean, default: false },
+    receivedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    processingOutcome: { type: String, enum: ['recycled', 'composted', 'disposed'], default: null },
     // Exactly one of these two will be set, depending on whether this pickup is for a Donation or a WasteRequest
     donation: {
       type: mongoose.Schema.Types.ObjectId,
@@ -25,7 +30,7 @@ const pickupSchema = new mongoose.Schema(
     },
     statusPipeline: {
       type: String,
-      enum: ['posted', 'matched', 'pickup_scheduled', 'picked_up', 'delivered_or_recycled', 'completed'],
+      enum: ['posted', 'matched', 'pickup_scheduled', 'picked_up', 'delivered_or_recycled', 'completed', 'cancelled', 'expired', 'rejected'],
       default: 'posted'
     },
     statusHistory: [
@@ -54,5 +59,11 @@ const pickupSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+pickupSchema.pre('validate', function () {
+  if (Boolean(this.donation) === Boolean(this.wasteRequest)) this.invalidate('donation', 'Exactly one source is required');
+});
+pickupSchema.index({ donation: 1 }, { unique: true, partialFilterExpression: { active: true, donation: { $type: 'objectId' } } });
+pickupSchema.index({ wasteRequest: 1 }, { unique: true, partialFilterExpression: { active: true, wasteRequest: { $type: 'objectId' } } });
 
 module.exports = mongoose.model('Pickup', pickupSchema);
