@@ -15,15 +15,50 @@ Baseline: ae0f315. Scope: backend only. Module branches were locally fast-forwar
 
 ## Work and evidence
 
-- [ ] Shared validation, database transactions and isolated API test harness (Module 5 foundation).
-- [ ] Donor posting, edit validation, availability and instructions (Module 1).
-- [ ] Organization onboarding, verification, complaints and moderation (Module 5).
-- [ ] Atomic recipient claims, eligibility and cancellation history (Module 2).
-- [ ] Conservative classification and collector lifecycle (Module 3).
-- [ ] Authorized pickup tracking and confirmed receipt (Module 4).
-- [ ] Unified impact, notifications, reports and demo isolation (Module 5).
-- [ ] Combined API, concurrency, failure recovery and existing regression checks; backend CI.
+- [x] Shared validation, database transactions and isolated API test harness (Module 5 foundation).
+- [x] Donor posting, edit validation, availability and instructions (Module 1).
+- [x] Organization onboarding, verification, complaints and moderation (Module 5).
+- [x] Atomic recipient claims, eligibility and cancellation history (Module 2).
+- [x] Conservative classification and collector lifecycle (Module 3).
+- [x] Authorized pickup tracking and confirmed receipt (Module 4).
+- [x] Unified impact, notifications, reports and demo isolation (Module 5).
+- [x] Combined API, concurrency, failure recovery and existing regression checks; backend CI configuration.
 
 Validation uses disposable test databases only. Each module owns its changes; shared dependency commits are carried to dependent branches. Rollback is by reverting task commits, without rewriting existing history.
 
 External integrations: no cloud image provider is currently configured. Provider credentials and deployment configuration cannot be invented. Existing URL photos remain supported; any unavailable integration will be recorded explicitly.
+
+## Local branch ownership
+
+Each module's fixes were committed on its assigned branch. Shared prerequisites and completed module fixes were cherry-picked locally where needed. The combined checkout for acceptance is `feature/module-5-admin-impact`; the other branches are module-specific and do not each contain the complete combined result.
+
+| Module | Assigned branch | Implementation and refinement commits |
+| --- | --- | --- |
+| 1 | feature/donor-surplus | 04f9df4, 00493de |
+| 2 | feature/module-2-recipient-matching | 7acf3b0, 3c67ef9 |
+| 3 | feature/module-3-waste-recycler | b725aa4, 0d03852 |
+| 4 | feature/module-4-volunteer-pickup | 8a48d56, d7ca58a |
+| 5 | feature/module-5-admin-impact | 994b6d2, 2153bae, a06063f, ea93c14, b94d4df |
+
+Combined runtime/CI and data preflight are recorded in `ebec747` on Module 5.
+
+## Validation evidence (2026-11-03)
+
+- `npm run test:all`: 24 real HTTP tests, 8 Node test-runner unit/schema cases, and existing module utility/schema assertions pass.
+- Node 20 production image: `npm test` and all 24 HTTP tests pass against a disposable replica set.
+- Regression coverage includes simultaneous allocation, organization capacity races, injected failures after intermediate writes, notification rollback, authorization/privacy, receipt rejection, expiry, composting versus disposal, completion-date reporting and demo exclusion.
+- Production backend Docker image builds. The final rebuild used `--network host` after two package downloads stalled on Docker's default network; the stalled task-owned build was stopped. Both Compose configurations parse successfully. The existing application stack was not restarted.
+- The read-only data preflight accepts an empty disposable replica set and flags a legacy organization without capacity; checks confirmed that it changed no records and created no collections. Node 20's built-in development watcher starts successfully.
+- `npm ci --ignore-scripts`, `npm audit` and `npm audit --omit=dev` pass with zero reported vulnerabilities after replacing Nodemon with Node's built-in watcher.
+- `git diff --check` passes. No authored changes under `frontend/` relative to the agreed baseline `ae0f315`.
+- Remote CI has not run: no changes were pushed, no PR was opened and nothing was deployed.
+
+## Proposal assessment and remaining work
+
+The proposal's core backend lifecycle is implemented: structured posting, explicit food/waste branching, verified organization eligibility, capacity-aware claims, tracked transport, receiving-party confirmation, governance and activity-based reporting. The proposal correctly leaves food acceptance to the receiving organization; the API now enforces that distinction before reporting rescued food. Material classification is deterministic guidance and requests clarification for ambiguous inputs.
+
+Distance and journey time are estimates, not road navigation. Whole-batch allocation and declared quantities are explicit implementation assumptions. Meal conversions are labelled estimates; no unsupported emissions model or recycling certification is presented as fact.
+
+Cloud photo upload and road-routing integrations remain unimplemented provider dependencies. Their absence means the complete proposal is not yet delivered. Map/route display and all frontend changes remain outside this task, including the new organization profile and receipt/processing forms. Existing frontend callers must be updated before rollout.
+
+Before any deployment, back up and reconcile existing data using the read-only `npm run db:check` report and the steps in [BACKEND-API.md](BACKEND-API.md). Existing capacities, reservations, active-pickup flags, old completion records and demo provenance require review; none were guessed or migrated in project/deployed data. The single-member replica set supplies transactions, not high availability.

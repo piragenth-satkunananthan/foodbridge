@@ -1,13 +1,13 @@
 # FoodBridge™ — Smart Food Rescue & Circular Waste Network
 
 [![CI/CD Pipeline](https://github.com/piragenth-satkunananthan/foodbridge/actions/workflows/ci.yml/badge.svg)](https://github.com/piragenth-satkunananthan/foodbridge/actions/workflows/ci.yml)
-[![Platform Status](https://img.shields.io/badge/status-production--ready-059669.svg)](#)
+[![Platform Status](https://img.shields.io/badge/status-backend--validated--UI--pending-eab308.svg)](#)
 [![Stack](https://img.shields.io/badge/stack-MERN-10b981.svg)](#)
 [![UN SDG 2](https://img.shields.io/badge/UN%20SDG-Zero%20Hunger-eab308.svg)](https://sdgs.un.org/goals/goal2)
 [![UN SDG 12](https://img.shields.io/badge/UN%20SDG-Responsible%20Consumption-f97316.svg)](https://sdgs.un.org/goals/goal12)
 [![License](https://img.shields.io/badge/license-MIT-64748b.svg)](LICENSE)
 
-**FoodBridge** is an enterprise-grade digital logistics and governance platform engineered to eliminate food waste and hunger. It connects commercial donors (hotels, restaurants, event venues) with verified charities, certified industrial recycling operators, and community volunteer couriers through intelligent proximity matching and auditable ESG tracking.
+**FoodBridge** is a food rescue and waste collection project. See [backend workflow contracts and rollout requirements](docs/BACKEND-API.md) and the [implementation checklist](docs/BACKEND-REMEDIATION.md) for validated behavior and remaining integration dependencies. It connects donors with verified recipient organizations, waste collectors and volunteer couriers through proximity matching and recorded collection outcomes.
 
 ---
 
@@ -48,7 +48,7 @@
 - **KYC/KYB Credential Verification:** Admin review and authorization for non-profit charities and recycling operators.
 - **Account Moderation & Security:** Real-time user activation, suspension, and role-based access enforcement.
 - **Real-Time Notification Hub:** High-priority in-app alerts on verification status, critical claims, and logistical handovers.
-- **Public Impact Aggregator:** Monthly snapshots calculating meals rescued, landfill diversion in kg, and CO₂e / water savings.
+- **Public Impact Aggregator:** Cumulative monthly snapshots of estimated meals rescued and confirmed recycling/composting quantities. Emissions and water savings are not calculated.
 
 ### 2. 🍲 Commercial Food Donor Portal (`/donor`)
 - Rapid posting of cooked meals, bakery products, and fresh groceries.
@@ -62,11 +62,11 @@
 
 ### 4. ♻️ Circular Waste Stream & Composting Hub (`/recycler`)
 - Categorized intake routing: Plastic, Glass, Paper, Metal, and Organic Waste.
-- Bulk batch claim management and environmental diversion certificates.
+- Whole-batch claims and recorded processing outcomes; no environmental certification is issued.
 
 ### 5. 🚚 Community Logistics & Courier Dispatch (`/volunteer`)
 - On-demand rescue mission acceptance.
-- Turn-by-turn route navigation between donor premises and charity destinations.
+- Location tracking and estimated travel distance; a road-routing provider remains unconfigured.
 - Timestamped chain-of-custody logging.
 
 ---
@@ -74,9 +74,9 @@
 ## 🏗️ Technical Architecture
 
 ### **Backend (`backend/`)**
-- **Runtime:** Node.js v20+ with Express 5
+- **Runtime:** Node.js v20.19+ with Express 5
 - **Database:** MongoDB with Mongoose ODM
-- **Resilience:** Dual-tier database connection (Auto-failover between remote AWS EC2 cluster and local Docker MongoDB instance)
+- **Database consistency:** Replica-set transactions for allocation and delivery; database connection failures stop startup rather than switching datasets.
 - **Security:** JSON Web Token (JWT) stateless auth with Bcrypt password hashing and custom RBAC middleware (`protect`, `authorize`)
 - **Data Models:** `User`, `Organization`, `Donation`, `WasteRequest`, `Pickup`, `Notification`, `ImpactRecord`
 
@@ -95,15 +95,15 @@ To run the entire ecosystem (MongoDB, Node.js Backend API, and Nginx-served Fron
 ```bash
 docker compose up --build
 ```
-Then visit **`http://localhost:5173`** in your browser.
+This stack uses Caddy and the configured domain; review `Caddyfile` and environment settings before starting it. For a standalone local HTTP stack, run `docker compose -f docker-compose.local.yml up --build` and visit **`http://localhost:8080`**. See the backend rollout requirements before using existing data.
 
 ---
 
 ### Option B: Local Development Setup
 
 ### Prerequisites
-- Node.js (v18 or v20+)
-- MongoDB (Local service, Docker container, or MongoDB Atlas / remote EC2 URI)
+- Node.js v20.19+
+- MongoDB replica set (local, Docker or Atlas); standalone MongoDB cannot execute the workflow transactions.
 
 ### 1. Database & Environment Configuration
 
@@ -116,11 +116,13 @@ cp .env.example .env # or verify existing .env
 Ensure `.env` contains:
 ```env
 PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/foodbridge
+MONGO_URI=mongodb://127.0.0.1:27017/foodbridge?replicaSet=rs0
 JWT_SECRET=your_jwt_production_secret
 ```
 
 ### 2. Seed Initial Platform Data
+
+Optional and destructive: the command below now requires `ALLOW_DEMO_SEED=true` and an explicitly selected demo/test/local database. Never seed shared data. All newly seeded activity is marked as demonstration data.
 ```bash
 cd backend
 npm install
@@ -130,6 +132,7 @@ npm run seed
 ### 3. Run Backend Integration Tests & Start Server
 ```bash
 npm test
+npm run test:api
 npm run dev
 ```
 The API server will listen on `http://localhost:5000`.
@@ -161,12 +164,12 @@ FoodBridge includes 1-click quick-fill buttons on the login page for rapid role 
 
 ## 🌍 Impact Calculation Methodology
 
-Environmental and social impact metrics follow recognized United Nations Food and Agriculture Organization (FAO) and EPA WARM methodologies:
+Public impact uses confirmed, non-demo activity. Meal conversions are estimates from declared quantities; no validated emissions or water model is configured:
 
 - **Meals Rescued:** Calculated from batch plate counts or standard 0.40 kg/meal conversion factors.
-- **CO₂e Avoided:** $2.5 \text{ kg CO}_2\text{e}$ mitigated per 1.0 kg of food diverted from anaerobic landfill decomposition.
-- **Water Saved:** 850 Liters of embodied water footprint conserved per 1.0 kg of rescued agricultural produce.
-- **Landfill Diversion:** Direct sum of certified recycled plastic, glass, paper, metal, and organic compost batches.
+- **CO2e Avoided:** Not currently calculated; backend emissions estimates are unavailable.
+- **Water Saved:** Not currently calculated.
+- **Landfill Diversion:** Sum of organization-confirmed recycled and composted mass. Non-recyclable disposal is excluded.
 
 ---
 
