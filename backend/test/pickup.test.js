@@ -1,43 +1,220 @@
-const {test}=require('node:test');
-const assert=require('node:assert/strict');
-const {setup,user,foodBody,Donation,Pickup,Organization,WasteRequest}=require('./helpers');
-const {expireOverdue}=require('../services/pickupService');
-const api=setup();
-async function claimed(){const donor=await user('donor'),recipient=await user('recipient','ngo'),courier=await user('volunteer');const post=await api('POST','/donations',donor,foodBody());const claim=await api('POST',`/match/${post.body._id}/claim`,recipient,{});assert.equal(claim.status,200);return {donor,recipient,courier,post:post.body,pickup:claim.body.pickup};}
-test('food delivery requires authorized sequential milestones and recipient acknowledgement',async()=>{
- const {donor,recipient,courier,post,pickup}=await claimed();const stranger=await user('volunteer');
- const accepts=await Promise.all([api('POST',`/pickups/${pickup._id}/accept`,courier,{}),api('POST',`/pickups/${pickup._id}/accept`,stranger,{})]);
- assert.equal(accepts.filter(r=>r.status===200).length,1);
- const assigned=accepts[0].status===200?courier:stranger,other=accepts[0].status===200?stranger:courier;
- assert.equal((await api('PUT',`/pickups/${pickup._id}/location`,other,{lat:8,lng:80})).status,403);
- assert.equal((await api('GET',`/pickups/${pickup._id}`,other)).status,403);
- assert.equal((await api('GET',`/pickups/${pickup._id}`,donor)).status,200);
- assert.equal((await api('PUT',`/pickups/${pickup._id}/location`,assigned,{lat:0,lng:0})).status,200);
- assert.equal((await api('PUT',`/pickups/${pickup._id}/location`,assigned,{lat:91,lng:0})).status,400);
- assert.equal((await api('PUT',`/pickups/${pickup._id}/status`,assigned,{status:'completed'})).status,409);
- assert.equal((await api('PUT',`/pickups/${pickup._id}/status`,assigned,{status:'picked_up'})).status,200);
- assert.equal((await api('PUT',`/pickups/${pickup._id}/confirm-receipt`,recipient,{})).status,409);
- assert.equal((await api('PUT',`/pickups/${pickup._id}/status`,assigned,{status:'delivered_or_recycled'})).status,200);
- assert.equal((await Donation.findById(post._id)).status,'delivered');
- assert.equal((await api('PUT',`/pickups/${pickup._id}/confirm-receipt`,assigned,{})).status,403);
- assert.equal((await api('PUT',`/pickups/${pickup._id}/confirm-receipt`,recipient,{accepted:true})).status,200);
- assert.equal((await api('PUT',`/pickups/${pickup._id}/confirm-receipt`,recipient,{accepted:true})).status,409);
- assert.equal((await Donation.findById(post._id)).status,'completed');
- assert.equal((await Organization.findById(recipient.organization)).reservedKg,0);
- assert.equal((await Pickup.findById(pickup._id)).statusHistory.length,6);
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const {
+  setup,
+  user,
+  foodBody,
+  Donation,
+  Pickup,
+  Organization,
+  WasteRequest
+} = require('./helpers');
+const { expireOverdue } = require('../services/pickupService');
+const api = setup();
+async function claimed() {
+  const donor = await user('donor'),
+    recipient = await user('recipient', 'ngo'),
+    courier = await user('volunteer');
+  const post = await api('POST', '/donations', donor, foodBody());
+  const claim = await api(
+    'POST',
+    `/match/${post.body._id}/claim`,
+    recipient,
+    {}
+  );
+  assert.equal(claim.status, 200);
+  return {
+    donor,
+    recipient,
+    courier,
+    post: post.body,
+    pickup: claim.body.pickup
+  };
+}
+test('food delivery requires authorized sequential milestones and recipient acknowledgement', async () => {
+  const { donor, recipient, courier, post, pickup } = await claimed();
+  const stranger = await user('volunteer');
+  const accepts = await Promise.all([
+    api('POST', `/pickups/${pickup._id}/accept`, courier, {}),
+    api('POST', `/pickups/${pickup._id}/accept`, stranger, {})
+  ]);
+  assert.equal(accepts.filter((r) => r.status === 200).length, 1);
+  const assigned = accepts[0].status === 200 ? courier : stranger,
+    other = accepts[0].status === 200 ? stranger : courier;
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/location`, other, {
+        lat: 8,
+        lng: 80
+      })
+    ).status,
+    403
+  );
+  assert.equal((await api('GET', `/pickups/${pickup._id}`, other)).status, 403);
+  assert.equal((await api('GET', `/pickups/${pickup._id}`, donor)).status, 200);
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/location`, assigned, {
+        lat: 0,
+        lng: 0
+      })
+    ).status,
+    200
+  );
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/location`, assigned, {
+        lat: 91,
+        lng: 0
+      })
+    ).status,
+    400
+  );
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/status`, assigned, {
+        status: 'completed'
+      })
+    ).status,
+    409
+  );
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/status`, assigned, {
+        status: 'picked_up'
+      })
+    ).status,
+    200
+  );
+  assert.equal(
+    (await api('PUT', `/pickups/${pickup._id}/confirm-receipt`, recipient, {}))
+      .status,
+    409
+  );
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/status`, assigned, {
+        status: 'delivered_or_recycled'
+      })
+    ).status,
+    200
+  );
+  assert.equal((await Donation.findById(post._id)).status, 'delivered');
+  assert.equal(
+    (await api('PUT', `/pickups/${pickup._id}/confirm-receipt`, assigned, {}))
+      .status,
+    403
+  );
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/confirm-receipt`, recipient, {
+        accepted: true
+      })
+    ).status,
+    200
+  );
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/confirm-receipt`, recipient, {
+        accepted: true
+      })
+    ).status,
+    409
+  );
+  assert.equal((await Donation.findById(post._id)).status, 'completed');
+  assert.equal(
+    (await Organization.findById(recipient.organization)).reservedKg,
+    0
+  );
+  assert.equal((await Pickup.findById(pickup._id)).statusHistory.length, 6);
 });
-test('overdue food and waste expire atomically; future availability blocks collection',async()=>{
- const {donor,recipient,courier,post,pickup}=await claimed();
- await Donation.findByIdAndUpdate(post._id,{pickupDeadline:new Date(Date.now()-1000)});
- assert.equal((await api('POST',`/pickups/${pickup._id}/accept`,courier,{})).status,409);
- const waste=await WasteRequest.create({donor:donor._id,wasteCategory:'plastic',quantity:'5 kg',district:'Colombo',pickupDeadline:new Date(Date.now()-1000)});
- await expireOverdue();
- assert.equal((await Donation.findById(post._id)).status,'expired');
- assert.equal((await Pickup.findById(pickup._id)).active,false);
- assert.equal((await WasteRequest.findById(waste._id)).status,'expired');
- assert.equal((await Organization.findById(recipient.organization)).reservedKg,0);
- const next=await claimed();
- await Donation.findByIdAndUpdate(next.post._id,{availableTime:new Date(Date.now()+3600000)});
- assert.equal((await api('POST',`/pickups/${next.pickup._id}/accept`,next.courier,{})).status,200);
- assert.equal((await api('PUT',`/pickups/${next.pickup._id}/status`,next.courier,{status:'picked_up'})).status,409);
+test('overdue food and waste expire atomically; future availability blocks collection', async () => {
+  const { donor, recipient, courier, post, pickup } = await claimed();
+  await Donation.findByIdAndUpdate(post._id, {
+    pickupDeadline: new Date(Date.now() - 1000)
+  });
+  assert.equal(
+    (await api('POST', `/pickups/${pickup._id}/accept`, courier, {})).status,
+    409
+  );
+  const waste = await WasteRequest.create({
+    donor: donor._id,
+    wasteCategory: 'plastic',
+    quantity: '5 kg',
+    district: 'Colombo',
+    pickupDeadline: new Date(Date.now() - 1000)
+  });
+  await expireOverdue();
+  assert.equal((await Donation.findById(post._id)).status, 'expired');
+  assert.equal((await Pickup.findById(pickup._id)).active, false);
+  assert.equal((await WasteRequest.findById(waste._id)).status, 'expired');
+  assert.equal(
+    (await Organization.findById(recipient.organization)).reservedKg,
+    0
+  );
+  const next = await claimed();
+  await Donation.findByIdAndUpdate(next.post._id, {
+    availableTime: new Date(Date.now() + 3600000)
+  });
+  assert.equal(
+    (await api('POST', `/pickups/${next.pickup._id}/accept`, next.courier, {}))
+      .status,
+    200
+  );
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${next.pickup._id}/status`, next.courier, {
+        status: 'picked_up'
+      })
+    ).status,
+    409
+  );
+});
+test('arrival write failure rolls back pickup milestone as well as source state', async (t) => {
+  const { courier, post, pickup } = await claimed();
+  await api('POST', `/pickups/${pickup._id}/accept`, courier, {});
+  const mock = t.mock.method(Donation.prototype, 'save', async () => {
+    throw new Error('Injected source-write failure');
+  });
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/status`, courier, {
+        status: 'picked_up'
+      })
+    ).status,
+    500
+  );
+  mock.mock.restore();
+  assert.equal(
+    (await Pickup.findById(pickup._id)).statusPipeline,
+    'pickup_scheduled'
+  );
+  assert.equal((await Donation.findById(post._id)).status, 'pickup_scheduled');
+});
+test('recipient rejection closes the delivery without recording rescued meals', async () => {
+  const { recipient, courier, post, pickup } = await claimed();
+  await api('POST', `/pickups/${pickup._id}/accept`, courier, {});
+  await api('PUT', `/pickups/${pickup._id}/status`, courier, {
+    status: 'picked_up'
+  });
+  await api('PUT', `/pickups/${pickup._id}/status`, courier, {
+    status: 'delivered_or_recycled'
+  });
+  assert.equal(
+    (
+      await api('PUT', `/pickups/${pickup._id}/confirm-receipt`, recipient, {
+        accepted: false,
+        note: 'Recipient declined this batch'
+      })
+    ).status,
+    200
+  );
+  const source = await Donation.findById(post._id);
+  assert.equal(source.status, 'cancelled');
+  assert.equal(source.completedAt, null);
+  assert.equal((await Pickup.findById(pickup._id)).statusPipeline, 'rejected');
+  assert.equal(
+    (await Organization.findById(recipient.organization)).reservedKg,
+    0
+  );
 });
