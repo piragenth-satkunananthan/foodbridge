@@ -1,11 +1,23 @@
-const assert=require('node:assert/strict');
-const {classifyWasteItem,parseWasteWeightKg,calculateWasteEnvironmentalImpact}=require('./utils/wasteClassifier');
-assert.equal(classifyWasteItem('glass jars').category,'glass');
-assert.equal(classifyWasteItem('unknown item').category,null);
-assert.equal(classifyWasteItem('plastic and glass').requiresConfirmation,true);
-assert.equal(classifyWasteItem('chemical waste').category,null);
-assert.equal(parseWasteWeightKg('40 bags'),0);
-assert.equal(parseWasteWeightKg('500 g'),0.5);
-assert.equal(calculateWasteEnvironmentalImpact('non_recyclable','20 kg').divertedKg,0);
-assert.equal(calculateWasteEnvironmentalImpact('plastic','20 kg').co2eSavedKg,null);
-console.log('Classification and honest waste quantity checks passed. HTTP coverage is in test/waste.test.js.');
+const assert = require('node:assert/strict');
+const {
+  classifyWasteItem,
+  parseWasteWeightKg,
+  calculateWasteEnvironmentalImpact
+} = require('./utils/wasteClassifier');
+assert.equal(classifyWasteItem('glass jars').category, 'glass');
+assert.equal(classifyWasteItem('unknown item').category, null);
+assert.equal(classifyWasteItem('plastic and glass').requiresConfirmation, true);
+assert.equal(classifyWasteItem('chemical waste').category, null);
+assert.equal(parseWasteWeightKg('40 bags'), 0);
+assert.equal(parseWasteWeightKg('500 g'), 0.5);
+assert.equal(
+  calculateWasteEnvironmentalImpact('non_recyclable', '20 kg').divertedKg,
+  0
+);
+assert.equal(
+  calculateWasteEnvironmentalImpact('plastic', '20 kg').co2eSavedKg,
+  null
+);
+console.log(
+  'Classification and honest waste quantity checks passed. HTTP coverage is in test/waste.test.js.'
+);
