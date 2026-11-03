@@ -62,8 +62,16 @@ router.put('/:id/cancel', authorize('volunteer', 'admin'), cancelPickupJob);
 // @route   PUT /api/pickups/:id/location
 // @desc    Update live GPS coordinates for in-transit tracking
 // @access  Private (Volunteer, Admin)
-router.put('/:id/location', authorize('volunteer', 'admin'), updatePickupLocation);
+router.put(
+  '/:id/location',
+  authorize('volunteer', 'admin'),
+  updatePickupLocation
+);
 
-router.put('/:id/confirm-receipt', authorize('recipient', 'recycler', 'admin'), confirmPickupReceipt);
+router.put(
+  '/:id/confirm-receipt',
+  authorize('recipient', 'recycler', 'admin'),
+  confirmPickupReceipt
+);
 
 module.exports = router;
