@@ -218,3 +218,36 @@ test('recipient rejection closes the delivery without recording rescued meals', 
     0
   );
 });
+
+test('donor suspension after assignment blocks collection without changing the job', async () => {
+  const { donor, courier, post, pickup } = await claimed();
+  await api('POST', `/pickups/${pickup._id}/accept`, courier, {});
+  donor.status = 'suspended';
+  await donor.save();
+  const result = await api('PUT', `/pickups/${pickup._id}/status`, courier, { status: 'picked_up' });
+  assert.equal(result.status, 409);
+  assert.equal((await Pickup.findById(pickup._id)).statusPipeline, 'pickup_scheduled');
+  assert.equal((await Donation.findById(post._id)).status, 'pickup_scheduled');
+});
+
+test('released assignments remain in history and replacement jobs retain capacity once', async () => {
+  const { recipient, courier, post, pickup } = await claimed();
+  await api('POST', `/pickups/${pickup._id}/accept`, courier, {});
+  const reserved = (await Organization.findById(recipient.organization)).reservedKg;
+  assert.equal((await api('PUT', `/pickups/${pickup._id}/cancel`, courier, {})).status, 200);
+  const closed = await Pickup.findById(pickup._id);
+  assert.equal(closed.active, false);
+  assert.equal(String(closed.volunteer), String(courier._id));
+  const replacement = await Pickup.findOne({ donation: post._id, active: true });
+  assert.ok(replacement);
+  assert.equal(replacement.volunteer, null);
+  assert.equal(String((await Donation.findById(post._id)).activePickup), String(replacement._id));
+  assert.equal((await Organization.findById(recipient.organization)).reservedKg, reserved);
+  const history = await api('GET', '/pickups/history', courier);
+  assert.ok(history.body.history.some(p => p._id === pickup._id));
+  const nextCourier = await user('volunteer');
+  assert.equal((await api('POST', `/pickups/${replacement._id}/accept`, nextCourier, {})).status, 200);
+  assert.equal((await api('PUT', `/pickups/${pickup._id}/status`, courier, { status: 'picked_up' })).status, 409);
+  assert.equal((await api('PUT', `/match/${post._id}/cancel-claim`, recipient, {})).status, 200);
+  assert.equal((await Organization.findById(recipient.organization)).reservedKg, 0);
+});
