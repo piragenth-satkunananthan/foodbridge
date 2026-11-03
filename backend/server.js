@@ -24,7 +24,9 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Security Headers
-app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+app.use(
+  helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false })
+);
 
 // Rate Limiting (DDoS & Brute Force Protection)
 const globalLimiter = rateLimit({
@@ -32,7 +34,10 @@ const globalLimiter = rateLimit({
   max: 500, // Limit each IP to 500 requests per 15 mins
   standardHeaders: true,
   legacyHeaders: false,
-  message: { status: 'error', message: 'Too many requests from this IP, please try again later.' }
+  message: {
+    status: 'error',
+    message: 'Too many requests from this IP, please try again later.'
+  }
 });
 
 const authLimiter = rateLimit({
@@ -40,7 +45,10 @@ const authLimiter = rateLimit({
   max: 50, // Limit auth attempts to 50 per 15 mins
   standardHeaders: true,
   legacyHeaders: false,
-  message: { status: 'error', message: 'Too many login attempts. Please try again after 15 minutes.' }
+  message: {
+    status: 'error',
+    message: 'Too many login attempts. Please try again after 15 minutes.'
+  }
 });
 
 app.use(globalLimiter);
@@ -53,22 +61,44 @@ const defaultAllowedOrigins = [
   'http://localhost:3000'
 ];
 const configuredOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+  ? process.env.ALLOWED_ORIGINS.split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
   : [];
-const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...configuredOrigins]));
+const allowedOrigins = Array.from(
+  new Set([...defaultAllowedOrigins, ...configuredOrigins])
+);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*') || /^http:\/\/localhost:\d+$/.test(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error(`CORS policy violation: origin ${origin} not permitted`));
-  },
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes('*') ||
+        /^http:\/\/localhost:\d+$/.test(origin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(
+        new Error(`CORS policy violation: origin ${origin} not permitted`)
+      );
+    },
+    credentials: true
+  })
+);
 
 app.use(express.json({ limit: '5mb' }));
+app.use((req, res, next) => {
+  if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+    if (req.body === undefined) req.body = {};
+    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body))
+      return res
+        .status(400)
+        .json({ message: 'Request body must be a JSON object' });
+  }
+  next();
+});
 // NoSQL Query Injection Defense (Express 5 compatible)
 app.use((req, res, next) => {
   if (req.body) mongoSanitize.sanitize(req.body);
@@ -78,22 +108,30 @@ app.use((req, res, next) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'FoodBridge API is running', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    message: 'FoodBridge API is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'FoodBridge Enterprise API Core', version: '2.0.0' });
+  res.json({
+    status: 'ok',
+    message: 'FoodBridge Enterprise API Core',
+    version: '2.0.0'
+  });
 });
 
 // Mounted routes
-app.use('/api/auth', authLimiter, authRoutes);          // Authentication with Brute Force Guard
-app.use('/api/admin', adminRoutes);                    // Platform Governance & Compliance
-app.use('/api/impact', impactRoutes);                  // Public ESG & Ecological Impact Analytics
-app.use('/api/notifications', notificationRoutes);     // Real-time Event Notification Engine
-app.use('/api/donations', donationRoutes);             // Surplus Food Dispatch
-app.use('/api/waste', wasteRoutes);                    // Circular Waste Stream Routing
-app.use('/api/match', matchRoutes);                    // Proximity-Based Smart Matching
-app.use('/api/pickups', pickupRoutes);                 // Volunteer Logistics & Last-Mile Delivery
+app.use('/api/auth', authLimiter, authRoutes); // Authentication with Brute Force Guard
+app.use('/api/admin', adminRoutes); // Platform Governance & Compliance
+app.use('/api/impact', impactRoutes); // Public ESG & Ecological Impact Analytics
+app.use('/api/notifications', notificationRoutes); // Real-time Event Notification Engine
+app.use('/api/donations', donationRoutes); // Surplus Food Dispatch
+app.use('/api/waste', wasteRoutes); // Circular Waste Stream Routing
+app.use('/api/match', matchRoutes); // Proximity-Based Smart Matching
+app.use('/api/pickups', pickupRoutes); // Volunteer Logistics & Last-Mile Delivery
 
 app.use('/api/organizations', require('./routes/organizationRoutes'));
 app.use('/api/complaints', require('./routes/complaintRoutes'));
@@ -106,13 +144,17 @@ const PORT = process.env.PORT || 5000;
 
 if (require.main === module) {
   if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is required');
-  connectDB().then(() => {
-    initCronJobs();
-    app.listen(PORT, () => console.log(`FoodBridge Server running on port ${PORT}`));
-  }).catch((error) => {
-    console.error('Failed to start server:', error.message);
-    process.exitCode = 1;
-  });
+  connectDB()
+    .then(() => {
+      initCronJobs();
+      app.listen(PORT, () =>
+        console.log(`FoodBridge Server running on port ${PORT}`)
+      );
+    })
+    .catch((error) => {
+      console.error('Failed to start server:', error.message);
+      process.exitCode = 1;
+    });
 }
 
 module.exports = app;
