@@ -9,11 +9,7 @@ const { calculateImpactMetrics } = require('../controllers/impactController');
 
 const runPeriodicFreshnessCheck = async () => {
   try {
-    const now = new Date();
-    await Donation.updateMany(
-      { status: 'posted', pickupDeadline: { $lte: now } },
-      { $set: { status: 'expired' } }
-    );
+    await require('./pickupService').expireOverdue();
   } catch (err) {
     console.error('[Cron] Error running freshness check:', err.message);
   }
@@ -24,8 +20,8 @@ const runMonthlyImpactSnapshot = async () => {
     const currentPeriod = new Date().toISOString().slice(0, 7); // YYYY-MM
     const stats = await calculateImpactMetrics();
     await ImpactRecord.findOneAndUpdate(
-      { period: currentPeriod },
-      { $set: { ...stats, period: currentPeriod } },
+      { period: currentPeriod, isDemo: false },
+      { $set: { ...stats, period: currentPeriod, isDemo: false } },
       { upsert: true }
     );
   } catch (err) {
@@ -42,10 +38,13 @@ const initCronJobs = () => {
   }, 5000);
 
   // Run every 15 minutes in production / background
-  const interval = setInterval(() => {
-    runPeriodicFreshnessCheck();
-    runMonthlyImpactSnapshot();
-  }, 15 * 60 * 1000);
+  const interval = setInterval(
+    () => {
+      runPeriodicFreshnessCheck();
+      runMonthlyImpactSnapshot();
+    },
+    15 * 60 * 1000
+  );
 
   // Unref interval so it does not prevent clean process termination in test environments
   if (interval.unref) interval.unref();
