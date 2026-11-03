@@ -116,7 +116,8 @@ async function advance(id, user, body) {
         fail(409, 'Collection is outside the availability window');
       await receivingOrganization(pickup, session);
       const donor = await User.findById(source.donor).session(session);
-      if (!donor || donor.status !== 'active') fail(409, 'Donor is unavailable');
+      if (!donor || donor.status !== 'active')
+        fail(409, 'Donor is unavailable');
     }
     pickup.proofNotes = body.proofNotes
       ? text(body.proofNotes, 'Proof notes')
@@ -226,13 +227,16 @@ async function cancelAssignment(id, user, body = {}) {
     );
     await pickup.save({ session });
     const replacement = new Pickup({
+      sourceSnapshot: pickup.sourceSnapshot,
       donation: pickup.donation,
       wasteRequest: pickup.wasteRequest,
       receivingOrganization: pickup.receivingOrganization,
       reservedKg: pickup.reservedKg,
       isDemo: pickup.isDemo,
       statusPipeline: 'matched',
-      statusHistory: [{ status: 'matched', note: 'Awaiting a replacement volunteer' }]
+      statusHistory: [
+        { status: 'matched', note: 'Awaiting a replacement volunteer' }
+      ]
     });
     await replacement.save({ session });
     source.activePickup = replacement._id;

@@ -23,6 +23,7 @@ async function claim(id, user, kind) {
     if (!check.eligible) fail(409, check.reason);
     const pickup = new Pickup({
       [kind]: post._id,
+      sourceSnapshot: require('../utils/pickupHistory').snapshotSource(post),
       receivingOrganization: org._id,
       reservedKg: check.weightKg,
       isDemo: post.isDemo,

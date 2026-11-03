@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const pickupSchema = new mongoose.Schema(
   {
     active: { type: Boolean, default: true },
+    sourceSnapshot: { type: mongoose.Schema.Types.Mixed, default: null },
     reservedKg: { type: Number, default: 0 },
     isDemo: { type: Boolean, default: false },
     receivedBy: {
