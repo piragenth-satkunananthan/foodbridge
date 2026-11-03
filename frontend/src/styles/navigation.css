@@ -17,7 +17,7 @@
 }
 
 .fb-header--home { border-bottom: 0; background: white; font-family: 'Inter Tight', sans-serif; }
-.fb-header--home .fb-header-inner { max-width: 1536px; padding: 18px 4%; }
+.fb-header--home .fb-header-inner { max-width: 1536px; padding: 7px 4%; }
 .fb-header--home .fb-brand { font-size: clamp(28px, 3vw, 44px); color: #08130a; }
 .fb-header--home .fb-brand span { color: #7bb817; }
 .fb-header--home .fb-navigation { gap: 36px; }

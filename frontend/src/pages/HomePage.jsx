@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import handover from '../../../assets/plates/hero-photo.png';
 import '../styles/home.css';
 
 const roles = ['Donor', 'Recipient', 'Recycler', 'Volunteer', 'Admin'];
@@ -12,7 +11,7 @@ export default function HomePage() {
   return (
     <main id="main-content" className="fb-home">
       <section className="fb-home-hero" aria-labelledby="home-title">
-        <img className="fb-handover" src={handover} width="1536" height="1024" alt="Illustration of two people sharing a crate of fresh vegetables" fetchPriority="high" />
+        <img className="fb-handover" src="/images/homepage-handover-wide.png" width="1536" height="1024" alt="Illustration of two people sharing a crate of fresh vegetables" fetchPriority="high" />
         <div className="fb-home-copy">
           <h1 id="home-title">More shared.<br />Less wasted.</h1>
           <p>Food sharing and waste collection in Sri Lanka.</p>
