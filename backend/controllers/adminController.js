@@ -221,18 +221,17 @@ const verifyOrganization = async (req, res) => {
       return res.status(404).json({ message: 'Organization not found' });
     }
 
-    organization.verificationStatus = verificationStatus;
-    organization.verificationRemarks = remarks || '';
-    organization.verifiedAt = new Date();
-    organization.verifiedBy = req.user._id;
-    await organization.save();
-
-    // Synchronize linked user's verificationStatus
+    await require('../utils/transaction')(async session => {
+      const current = await Organization.findById(organization._id).session(session);
+      current.verificationStatus = verificationStatus;
+      current.verificationRemarks = remarks || '';
+      current.verifiedAt = new Date();
+      current.verifiedBy = req.user._id;
+      await current.save({session});
+      await User.findByIdAndUpdate(current.linkedUser, {verificationStatus}, {session});
+      Object.assign(organization, current.toObject());
+    });
     if (organization.linkedUser) {
-      await User.findByIdAndUpdate(organization.linkedUser, {
-        verificationStatus
-      });
-
       // Send in-app notification to the organization owner
       const isApproved = verificationStatus === 'verified';
       const notificationMsg = isApproved
@@ -443,14 +442,11 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Clean up linked organization if applicable
-    if (user.organization) {
-      await Organization.findByIdAndDelete(user.organization);
-    }
+    // Preserve historical references and disable all further access.
+    user.status = 'suspended';
+    await user.save();
+    res.json({ message: 'Account disabled; transaction and organization history retained' });
 
-    await User.findByIdAndDelete(req.params.id);
-
-    res.json({ message: `User "${user.name}" (${user.email}) successfully removed` });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
