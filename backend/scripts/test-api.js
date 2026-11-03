@@ -55,25 +55,42 @@ const docker = (...args) =>
     }
     await mongoose.disconnect();
     const files = process.argv.slice(2);
+    const testFiles = files.length
+      ? files
+      : require('node:fs')
+          .readdirSync(path.resolve(__dirname, '../test'))
+          .filter((file) => file.endsWith('.test.js'))
+          .map((file) => `test/${file}`);
+    const testArgs = ['--test', '--test-concurrency=1', ...testFiles];
+    const env = {
+      ...process.env,
+      MONGO_URI: uri,
+      JWT_SECRET: randomUUID(),
+      NODE_ENV: 'test'
+    };
+    const image = process.env.TEST_NODE_IMAGE;
     const result = spawnSync(
-      process.execPath,
-      [
-        '--test',
-        '--test-concurrency=1',
-        ...(files.length ? files : ['test/*.test.js'])
-      ],
-      {
-        cwd: path.resolve(__dirname, '..'),
-        stdio: 'inherit',
-        env: {
-          ...process.env,
-          MONGO_URI: uri,
-          JWT_SECRET: randomUUID(),
-          NODE_ENV: 'test'
-        }
-      }
+      image ? 'docker' : process.execPath,
+      image
+        ? [
+            'run',
+            '--rm',
+            '--network',
+            'host',
+            '-e',
+            'MONGO_URI',
+            '-e',
+            'JWT_SECRET',
+            '-e',
+            'NODE_ENV',
+            image,
+            'node',
+            ...testArgs
+          ]
+        : testArgs,
+      { cwd: path.resolve(__dirname, '..'), stdio: 'inherit', env }
     );
-    process.exitCode = result.status || (result.error ? 1 : 0);
+    process.exitCode = result.status ?? 1;
   } catch (error) {
     console.error(error.message);
     process.exitCode = 1;
