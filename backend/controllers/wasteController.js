@@ -55,252 +55,34 @@ const classifyWaste = async (req, res) => {
 
 // @route POST /api/waste
 // @access Private (Donor only)
-const createWasteRequest = async (req, res) => {
-  try {
-    const { wasteCategory, quantity, district, pickupDeadline, photo, specialInstructions } = req.body;
-
-    const errors = {};
-    if (!wasteCategory || !validCategories.has(wasteCategory)) {
-      errors.wasteCategory = `Waste category must be one of: ${Array.from(validCategories).join(', ')}`;
-    }
-    if (!quantity || typeof quantity !== 'string' || !quantity.trim()) {
-      errors.quantity = 'Quantity is required (e.g. "50 kg" or "10 bags")';
-    }
-    if (!district || typeof district !== 'string' || !district.trim()) {
-      errors.district = 'District is required';
-    }
-    if (!pickupDeadline) {
-      errors.pickupDeadline = 'Pickup deadline is required';
-    } else {
-      const deadlineDate = new Date(pickupDeadline);
-      if (Number.isNaN(deadlineDate.getTime()) || deadlineDate.getTime() <= Date.now()) {
-        errors.pickupDeadline = 'Pickup deadline must be a valid future date';
-      }
-    }
-
-    if (Object.keys(errors).length > 0) {
-      return res.status(400).json({ message: 'Validation failed', errors });
-    }
-
-    const wasteRequest = await WasteRequest.create({
-      donor: req.user._id,
-      wasteCategory,
-      quantity: quantity.trim(),
-      district: district.trim(),
-      pickupDeadline: new Date(pickupDeadline),
-      photo: photo || null,
-      status: 'posted'
-    });
-
-    // Notify donor
-    await createNotification({
-      recipientUser: req.user._id,
-      message: `Your waste collection request for ${wasteCategory} (${quantity}) has been posted.`,
-      relatedType: 'wasteRequest',
-      relatedId: wasteRequest._id
-    });
-
-    // Notify nearby verified recyclers that handle this material type
-    try {
-      const eligibleOrgs = await Organization.find({
-        verificationStatus: 'verified',
-        type: { $in: ['recycler', 'composting_facility'] },
-        $or: [
-          { materialTypesHandled: wasteCategory },
-          { materialTypesHandled: { $size: 0 } }
-        ]
-      }).select('linkedUser name district');
-
-      for (const org of eligibleOrgs) {
-        if (org.linkedUser) {
-          await createNotification({
-            recipientUser: org.linkedUser,
-            message: `New ${wasteCategory} waste batch available in ${district} (${quantity}).`,
-            relatedType: 'wasteRequest',
-            relatedId: wasteRequest._id
-          });
-        }
-      }
-    } catch (notifErr) {
-      console.warn('Recycler broadcast notification notice:', notifErr.message);
-    }
-
-    res.status(201).json(wasteRequest);
-  } catch (error) {
-    console.error('Create waste request error:', error);
-    res.status(500).json({ message: 'Error creating waste collection request', error: error.message });
+const {endpoint,fail,pagination,literalRegex} = require('../utils/domain');
+const {createPosting,changePosting,canReadPost} = require('../services/postingService');
+const createWasteRequest=endpoint(async(req,res)=>res.status(201).json(await createPosting(req.body,req.user,'wasteRequest')));
+const updateWasteRequest=endpoint(async(req,res)=>res.json(await changePosting(req.params.id,req.user,'wasteRequest',req.body)));
+const cancelWasteRequest=endpoint(async(req,res)=>res.json({message:'Waste request cancelled',wasteRequest:await changePosting(req.params.id,req.user,'wasteRequest',{},true)}));
+const getWasteRequests=endpoint(async(req,res)=>{
+  const {page,limit,skip}=pagination(req.query);
+  const query={};
+  if(req.user.role==='donor') query.donor=req.user._id;
+  else if(req.user.role!=='admin') {
+    const org=await Organization.findOne({linkedUser:req.user._id});
+    if(!org) fail(403,'Organization profile required');
+    query.matchedCollector=org._id;
   }
-};
-
-// @route GET /api/waste
-// @access Private
-const getWasteRequests = async (req, res) => {
-  try {
-    const { status, category, search, page = 1, limit = 50 } = req.query;
-    const query = {};
-
-    // Donors only see their own requests
-    if (req.user.role === 'donor') {
-      query.donor = req.user._id;
-    }
-
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-
-    if (category && category !== 'all') {
-      query.wasteCategory = category;
-    }
-
-    if (search) {
-      query.wasteCategory = { $regex: search, $options: 'i' };
-    }
-
-    const skip = (Number(page) - 1) * Number(limit);
-    const [requests, total] = await Promise.all([
-      WasteRequest.find(query)
-        .populate('matchedCollector', 'name type district materialTypesHandled')
-        .populate('donor', 'name district contactNumber')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(Number(limit)),
-      WasteRequest.countDocuments(query)
-    ]);
-
-    res.json({
-      wasteRequests: requests,
-      total,
-      page: Number(page),
-      pages: Math.ceil(total / Number(limit))
-    });
-  } catch (error) {
-    console.error('Get waste requests error:', error);
-    res.status(500).json({ message: 'Error retrieving waste requests', error: error.message });
-  }
-};
-
-// @route GET /api/waste/:id
-// @access Private
-const getWasteRequestById = async (req, res) => {
-  try {
-    const query = { _id: req.params.id };
-    if (req.user.role === 'donor') {
-      query.donor = req.user._id;
-    }
-
-    const wasteRequest = await WasteRequest.findOne(query)
-      .populate('matchedCollector', 'name type district contactNumber materialTypesHandled registrationInfo')
-      .populate('donor', 'name district contactNumber email');
-
-    if (!wasteRequest) {
-      return res.status(404).json({ message: 'Waste request not found' });
-    }
-
-    const pickup = await Pickup.findOne({ wasteRequest: wasteRequest._id })
-      .populate('volunteer', 'name contactNumber')
-      .populate('receivingOrganization', 'name district type');
-
-    // Enrich with environmental impact and circular pathway details
-    const impact = calculateWasteEnvironmentalImpact(wasteRequest.wasteCategory, wasteRequest.quantity);
-    const stream = WASTE_STREAMS[wasteRequest.wasteCategory] || WASTE_STREAMS.organic;
-
-    res.json({
-      wasteRequest,
-      pickup,
-      impact,
-      pathway: {
-        title: stream.pathwayTitle,
-        description: stream.pathwayDescription,
-        facilityType: stream.facilityType,
-        handlingGuidelines: stream.handlingGuidelines
-      }
-    });
-  } catch (error) {
-    console.error('Get waste request by ID error:', error);
-    res.status(500).json({ message: 'Error retrieving waste request', error: error.message });
-  }
-};
-
-// @route PUT /api/waste/:id
-// @access Private (Donor only)
-const updateWasteRequest = async (req, res) => {
-  try {
-    const request = await WasteRequest.findOne({ _id: req.params.id, donor: req.user._id });
-    if (!request) {
-      return res.status(404).json({ message: 'Waste request not found' });
-    }
-
-    if (request.status !== 'posted') {
-      return res.status(400).json({
-        message: `Cannot edit a request that is already '${request.status}'. Only 'posted' requests can be edited.`
-      });
-    }
-
-    const { wasteCategory, quantity, district, pickupDeadline, photo } = req.body;
-    if (wasteCategory !== undefined) {
-      if (!validCategories.has(wasteCategory)) {
-        return res.status(400).json({ message: 'Invalid waste category' });
-      }
-      request.wasteCategory = wasteCategory;
-    }
-    if (quantity !== undefined) {
-      if (!quantity.trim()) return res.status(400).json({ message: 'Quantity cannot be empty' });
-      request.quantity = quantity.trim();
-    }
-    if (district !== undefined) {
-      if (!district.trim()) return res.status(400).json({ message: 'District cannot be empty' });
-      request.district = district.trim();
-    }
-    if (pickupDeadline !== undefined) {
-      const deadlineDate = new Date(pickupDeadline);
-      if (Number.isNaN(deadlineDate.getTime()) || deadlineDate.getTime() <= Date.now()) {
-        return res.status(400).json({ message: 'Pickup deadline must be a valid future date' });
-      }
-      request.pickupDeadline = deadlineDate;
-    }
-    if (photo !== undefined) {
-      request.photo = photo;
-    }
-
-    await request.save();
-    res.json(request);
-  } catch (error) {
-    console.error('Update waste request error:', error);
-    res.status(500).json({ message: 'Error updating waste request', error: error.message });
-  }
-};
-
-// @route DELETE /api/waste/:id
-// @access Private (Donor only)
-const cancelWasteRequest = async (req, res) => {
-  try {
-    const request = await WasteRequest.findOne({ _id: req.params.id, donor: req.user._id });
-    if (!request) {
-      return res.status(404).json({ message: 'Waste request not found' });
-    }
-
-    if (request.status !== 'posted') {
-      return res.status(400).json({
-        message: `Cannot cancel a request that is already '${request.status}'. Only 'posted' requests can be cancelled.`
-      });
-    }
-
-    request.status = 'cancelled';
-    await request.save();
-
-    await createNotification({
-      recipientUser: req.user._id,
-      message: `You cancelled your waste collection request for ${request.wasteCategory}.`,
-      relatedType: 'wasteRequest',
-      relatedId: request._id
-    });
-
-    res.json({ message: 'Waste request cancelled successfully', wasteRequest: request });
-  } catch (error) {
-    console.error('Cancel waste request error:', error);
-    res.status(500).json({ message: 'Error cancelling waste request', error: error.message });
-  }
-};
+  if(req.query.status && req.query.status!=='all') query.status=req.query.status;
+  if(req.query.category && req.query.category!=='all') query.wasteCategory=req.query.category;
+  if(req.query.search) query.wasteCategory={$regex:literalRegex(req.query.search),$options:'i'};
+  const [requests,total]=await Promise.all([WasteRequest.find(query).populate('matchedCollector','name type district').sort({createdAt:-1}).skip(skip).limit(limit),WasteRequest.countDocuments(query)]);
+  res.json({wasteRequests:requests,total,page,pages:Math.ceil(total/limit)});
+});
+const getWasteRequestById=endpoint(async(req,res)=>{
+  const wasteRequest=await WasteRequest.findById(req.params.id);
+  if(!wasteRequest) fail(404,'Waste request not found');
+  if(!await canReadPost(wasteRequest,req.user,'wasteRequest')) fail(403,'Not a participant in this waste request');
+  await wasteRequest.populate('matchedCollector','name type district');
+  const pickups=await Pickup.find({wasteRequest:wasteRequest._id}).populate('volunteer','name contactNumber').sort({createdAt:-1});
+  res.json({wasteRequest,pickup:pickups.find(p=>p.active)||pickups[0]||null,history:pickups});
+});
 
 // =========================================================================
 // 3. Recycler Hub & Collector Workflows (Module 3 - MA. Fathima Amna)
