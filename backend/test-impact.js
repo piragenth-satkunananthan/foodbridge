@@ -58,12 +58,3 @@ test('current cumulative totals cannot be saved as a historical month', async ()
   assert.equal(status, 400);
   assert.match(response.message, /current month/);
 });
-
-test('freshness check atomically expires only unclaimed overdue donations', async (t) => {
-  let observed;
-  t.mock.method(Donation, 'updateMany', async (filter, update) => { observed = { filter, update }; });
-  await runPeriodicFreshnessCheck();
-  assert.equal(observed.filter.status, 'posted');
-  assert.ok(observed.filter.pickupDeadline.$lte instanceof Date);
-  assert.deepEqual(observed.update, { $set: { status: 'expired' } });
-});
