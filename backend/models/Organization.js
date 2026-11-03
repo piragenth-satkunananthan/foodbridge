@@ -75,6 +75,9 @@ const organizationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-organizationSchema.index({ linkedUser: 1 }, { unique: true });
+organizationSchema.index(
+  { linkedUser: 1 },
+  { unique: true, partialFilterExpression: { linkedUser: { $type: 'objectId' } } }
+);
 
 module.exports = mongoose.model('Organization', organizationSchema);

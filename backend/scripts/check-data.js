@@ -15,6 +15,9 @@ const Organization = require('../models/Organization');
       organizationsMissingCapacity: await Organization.countDocuments({
         $or: [{ capacityKg: null }, { capacityKg: { $lte: 0 } }]
       }),
+      organizationsMissingUserLink: await Organization.countDocuments({
+        linkedUser: { $not: { $type: 'objectId' } }
+      }),
       pickupsMissingActiveFlag: await Pickup.countDocuments({
         active: { $exists: false }
       }),
@@ -27,6 +30,13 @@ const Organization = require('../models/Organization');
         completedAt: null
       })
     };
+    const duplicateLinks = await Organization.aggregate([
+      { $match: { linkedUser: { $type: 'objectId' } } },
+      { $group: { _id: '$linkedUser', count: { $sum: 1 } } },
+      { $match: { count: { $gt: 1 } } },
+      { $count: 'count' }
+    ]);
+    counts.organizationDuplicateUserLinks = duplicateLinks[0]?.count || 0;
     for (const field of ['donation', 'wasteRequest']) {
       const duplicates = await Pickup.aggregate([
         {

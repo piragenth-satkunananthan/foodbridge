@@ -6,6 +6,8 @@ Node 20.19+ and MongoDB replica-set transactions are required. The Compose files
 
 Before deploying against existing data, back it up and run `npm run db:check` from `backend/` with the intended database configuration. This is a read-only count report and exits nonzero when reconciliation is required. Do not bypass reported duplicate allocations or infer receipt timestamps, organization capacity or demo provenance. Existing active pickups without `active` must be reconciled against their source before marking active and building the unique indexes. Reserve the actual outstanding quantity on the organization. Existing records lacking completion confirmation do not contribute to public confirmed impact. Organizations must submit capacity and supported storage/material settings and be reverified. No migration has been applied to existing project or deployed data.
 
+The preflight also flags missing organization/user links and duplicate links. Reconcile ownership before onboarding those organizations. The partial unique index enforces one organization per valid linked user while allowing legacy unlinked records to remain available for review; it does not invent owners or repair duplicate links.
+
 ## Organization and governance
 
 - `POST /api/auth/register`: donor, recipient, recycler or volunteer; admin cannot self-register. Registration returns a JWT. Passwords require at least eight characters and at most 72 UTF-8 bytes.
