@@ -9,7 +9,12 @@ const Notification = require('../models/Notification');
  * @param {string|ObjectId} [params.relatedId=null] - Linked document ID
  * @returns {Promise<Notification>}
  */
-const createNotification = async ({ recipientUser, message, relatedType = 'system', relatedId = null }) => {
+const createNotification = async ({
+  recipientUser,
+  message,
+  relatedType = 'system',
+  relatedId = null
+}) => {
   try {
     const notification = await Notification.create({
       recipientUser,
@@ -27,7 +32,12 @@ const createNotification = async ({ recipientUser, message, relatedType = 'syste
 /**
  * Sends notifications to multiple users (e.g. system broadcast).
  */
-const sendBulkNotifications = async (userIds, message, relatedType = 'system', relatedId = null) => {
+const sendBulkNotifications = async (
+  userIds,
+  message,
+  relatedType = 'system',
+  relatedId = null
+) => {
   try {
     const docs = userIds.map((userId) => ({
       recipientUser: userId,
@@ -46,3 +56,25 @@ module.exports = {
   createNotification,
   sendBulkNotifications
 };
+
+// In-app events commit together with their associated business operation.
+const queueNotifications = async (
+  userIds,
+  message,
+  relatedType,
+  relatedId,
+  session
+) => {
+  const recipients = [...new Set(userIds.filter(Boolean).map(String))];
+  if (!recipients.length) return;
+  await Notification.insertMany(
+    recipients.map((recipientUser) => ({
+      recipientUser,
+      message,
+      relatedType,
+      relatedId
+    })),
+    { session }
+  );
+};
+module.exports.queueNotifications = queueNotifications;
