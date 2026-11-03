@@ -20,8 +20,8 @@ const runMonthlyImpactSnapshot = async () => {
     const currentPeriod = new Date().toISOString().slice(0, 7); // YYYY-MM
     const stats = await calculateImpactMetrics();
     await ImpactRecord.findOneAndUpdate(
-      { period: currentPeriod },
-      { $set: { ...stats, period: currentPeriod } },
+      { period: currentPeriod, isDemo: false },
+      { $set: { ...stats, period: currentPeriod, isDemo: false } },
       { upsert: true }
     );
   } catch (err) {

@@ -16,7 +16,8 @@ const seedData = async () => {
   try {
     console.log('Connecting to MongoDB...');
     await connectDB();
-    console.log('Clearing existing collections...');
+    if (process.env.ALLOW_DEMO_SEED !== 'true' || !/(demo|test|local)/i.test(mongoose.connection.name)) throw new Error('Demo seeding requires ALLOW_DEMO_SEED=true and a demo/test/local database name');
+    console.log('Clearing explicitly selected demo collections...');
 
     await Promise.all([
       User.deleteMany({}),
@@ -34,6 +35,7 @@ const seedData = async () => {
 
     // 1. Admin User
     const adminUser = await User.create({
+      isDemo: true,
       name: 'System Administrator',
       email: 'admin@foodbridge.com',
       password: passwordHash,
@@ -45,6 +47,7 @@ const seedData = async () => {
 
     // 2. Donors
     const donor1 = await User.create({
+      isDemo: true,
       name: 'Grand Cinnamon Hotel',
       email: 'cinnamon@hotel.com',
       password: userPassHash,
@@ -55,6 +58,7 @@ const seedData = async () => {
     });
 
     const donor2 = await User.create({
+      isDemo: true,
       name: 'Royal Heritage Banquet',
       email: 'banquet@royal.com',
       password: userPassHash,
@@ -66,6 +70,7 @@ const seedData = async () => {
 
     // 3. Recipient Users
     const recipientUser1 = await User.create({
+      isDemo: true,
       name: 'Sister Mary Care Home',
       email: 'carehome@ngo.org',
       password: userPassHash,
@@ -76,6 +81,7 @@ const seedData = async () => {
     });
 
     const recipientUser2 = await User.create({
+      isDemo: true,
       name: 'Community Food Shelter',
       email: 'shelter@hope.org',
       password: userPassHash,
@@ -87,6 +93,7 @@ const seedData = async () => {
 
     // 4. Recycler Users
     const recyclerUser1 = await User.create({
+      isDemo: true,
       name: 'EcoCycle Lanka',
       email: 'info@ecocycle.lk',
       password: userPassHash,
@@ -97,6 +104,7 @@ const seedData = async () => {
     });
 
     const recyclerUser2 = await User.create({
+      isDemo: true,
       name: 'GreenEarth BioCompost',
       email: 'compost@greenearth.lk',
       password: userPassHash,
@@ -108,6 +116,7 @@ const seedData = async () => {
 
     // 5. Volunteer User
     const volunteer1 = await User.create({
+      isDemo: true,
       name: 'Saman Perera',
       email: 'saman@volunteer.org',
       password: userPassHash,
@@ -119,6 +128,7 @@ const seedData = async () => {
 
     // 6. Organizations
     const org1 = await Organization.create({
+      isDemo: true,
       name: 'Sister Mary Care Home',
       type: 'shelter',
       registrationInfo: 'NGO-COL-2021-049',
@@ -132,6 +142,7 @@ const seedData = async () => {
     await recipientUser1.save();
 
     const org2 = await Organization.create({
+      isDemo: true,
       name: 'Community Food Shelter',
       type: 'charity',
       registrationInfo: 'REG-KDY-2024-912',
@@ -143,6 +154,7 @@ const seedData = async () => {
     await recipientUser2.save();
 
     const org3 = await Organization.create({
+      isDemo: true,
       name: 'EcoCycle Lanka (Pvt) Ltd',
       type: 'recycler',
       registrationInfo: 'WST-PVT-2023-887',
@@ -157,6 +169,7 @@ const seedData = async () => {
     await recyclerUser1.save();
 
     const org4 = await Organization.create({
+      isDemo: true,
       name: 'GreenEarth BioCompost Facility',
       type: 'composting_facility',
       registrationInfo: 'ENV-GMP-2025-110',
@@ -170,6 +183,7 @@ const seedData = async () => {
 
     // 7. Donations
     const donation1 = await Donation.create({
+      isDemo: true,
       donor: donor1._id,
       foodType: 'Cooked Buffet Rice & Curry',
       quantity: '60 plates',
@@ -183,6 +197,7 @@ const seedData = async () => {
     });
 
     const donation2 = await Donation.create({
+      isDemo: true,
       donor: donor2._id,
       foodType: 'Fresh Breads & Pastries',
       quantity: '40 kg',
@@ -195,6 +210,7 @@ const seedData = async () => {
 
     // 8. Waste Requests
     const waste1 = await WasteRequest.create({
+      isDemo: true,
       donor: donor1._id,
       wasteCategory: 'plastic',
       quantity: '85 kg',
@@ -205,6 +221,7 @@ const seedData = async () => {
     });
 
     const waste2 = await WasteRequest.create({
+      isDemo: true,
       donor: donor2._id,
       wasteCategory: 'organic',
       quantity: '150 kg',
@@ -215,6 +232,7 @@ const seedData = async () => {
 
     // 9. Pickups
     await Pickup.create({
+      isDemo: true,
       donation: donation1._id,
       volunteer: volunteer1._id,
       receivingOrganization: org1._id,
@@ -232,6 +250,7 @@ const seedData = async () => {
 
     // 10. Impact Monthly History
     await ImpactRecord.create({
+      isDemo: true,
       mealsRescued: 2850,
       kgRecycled: { plastic: 650, glass: 320, paper: 410, metal: 190 },
       kgOrganicDiverted: 1200,

@@ -28,16 +28,17 @@ test('food portions and weight conversions produce consistent meal estimates', (
 const Donation = require('./models/Donation');
 const WasteRequest = require('./models/WasteRequest');
 const { calculateImpactMetrics, recordMonthlySnapshot } = require('./controllers/impactController');
-const { runPeriodicFreshnessCheck } = require('./services/cronService');
 
 test('impact aggregation excludes non-recyclables and counts recognised units', async (t) => {
   t.mock.method(Donation, 'find', (query) => {
-    assert.deepEqual(query.status.$in, ['delivered', 'completed']);
+    assert.equal(query.status, 'completed');
+    assert.deepEqual(query.isDemo, {$ne:true});
+    assert.deepEqual(query.completedAt, {$type:'date'});
     return { select: async () => [{ quantity: '20 kg', district: 'Colombo' }] };
   });
   t.mock.method(WasteRequest, 'find', () => ({ select: async () => [
-    { wasteCategory: 'plastic', quantity: '500 g', district: 'Colombo' },
-    { wasteCategory: 'organic', quantity: '2 tonnes', district: 'Kandy' },
+    { wasteCategory: 'plastic', processingOutcome: 'recycled', quantity: '500 g', district: 'Colombo' },
+    { wasteCategory: 'organic', processingOutcome: 'composted', quantity: '2 tonnes', district: 'Kandy' },
     { wasteCategory: 'non_recyclable', quantity: '100 kg', district: 'Kandy' },
     { wasteCategory: 'paper', quantity: '40 bags', district: 'Kandy' }
   ] }));
@@ -49,12 +50,8 @@ test('impact aggregation excludes non-recyclables and counts recognised units', 
 });
 
 test('current cumulative totals cannot be saved as a historical month', async () => {
-  let status;
-  let response;
-  await recordMonthlySnapshot({ body: { period: '2000-01' } }, {
-    status(code) { status = code; return this; },
-    json(body) { response = body; }
-  });
-  assert.equal(status, 400);
-  assert.match(response.message, /current month/);
+  let error;
+  await recordMonthlySnapshot({ body: { period: '2000-01' } }, {}, (err) => {error=err;});
+  assert.equal(error.status,400);
+  assert.match(error.message,/current month/);
 });

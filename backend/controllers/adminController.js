@@ -5,7 +5,7 @@ const WasteRequest = require('../models/WasteRequest');
 const Pickup = require('../models/Pickup');
 const ImpactRecord = require('../models/ImpactRecord');
 const { createNotification } = require('../utils/notificationService');
-const { parseMealsCount, parseWeightKg } = require('./impactController');
+const { parseMealsCount, parseWeightKg, confirmedFilter } = require('./impactController');
 
 // ==========================================
 // 1. DASHBOARD & STATS
@@ -57,9 +57,9 @@ const getAdminStats = async (req, res) => {
         { $group: { _id: '$statusPipeline', count: { $sum: 1 } } }
       ]),
       // Completed donations for quick meal calculation
-      Donation.find({ status: { $in: ['delivered', 'completed'] } }).select('quantity'),
+      Donation.find(confirmedFilter).select('quantity'),
       // Completed waste for quick kg calculation
-      WasteRequest.find({ status: { $in: ['recycled', 'completed'] } }).select('wasteCategory quantity'),
+      WasteRequest.find(confirmedFilter).select('wasteCategory quantity processingOutcome'),
       // 5 most recent donations
       Donation.find()
         .sort({ createdAt: -1 })
@@ -101,9 +101,9 @@ const getAdminStats = async (req, res) => {
     let totalOrganicKg = 0;
     completedWaste.forEach((w) => {
       const kg = parseWeightKg(w.quantity);
-      if (w.wasteCategory === 'organic') {
+      if (w.wasteCategory === 'organic' && w.processingOutcome === 'composted') {
         totalOrganicKg += kg;
-      } else if (['plastic', 'glass', 'paper', 'metal'].includes(w.wasteCategory)) {
+      } else if (['plastic', 'glass', 'paper', 'metal'].includes(w.wasteCategory) && w.processingOutcome === 'recycled') {
         totalKgRecycled += kg;
       }
     });
@@ -459,73 +459,30 @@ const deleteUser = async (req, res) => {
 // @desc    Generate aggregated platform reports
 // @route   GET /api/admin/reports
 // @access  Private/Admin
-const getReports = async (req, res) => {
-  try {
-    const { fromDate, toDate, district } = req.query;
-    const dateFilter = {};
-    if (fromDate || toDate) {
-      dateFilter.createdAt = {};
-      if (fromDate) dateFilter.createdAt.$gte = new Date(fromDate);
-      if (toDate) dateFilter.createdAt.$lte = new Date(toDate);
+const getReports = require('../utils/domain').endpoint(async (req,res) => {
+  const {fail,district:normalizeDistrict}=require('../utils/domain');
+  const {fromDate,toDate,district}=req.query;
+  const range={};
+  for(const [value,key] of [[fromDate,'$gte'],[toDate,'$lte']]) {
+    if(value) {
+      const date=new Date(value);
+      if(!Number.isFinite(date.getTime())) fail(400,'Invalid report date');
+      if(key==='$lte' && /^\d{4}-\d{2}-\d{2}$/.test(value)) date.setUTCHours(23,59,59,999);
+      range[key]=date;
     }
-
-    const donationMatch = { ...dateFilter };
-    const wasteMatch = { ...dateFilter };
-    if (district && district !== 'all') {
-      donationMatch.district = district;
-      wasteMatch.district = district;
-    }
-
-    const [
-      donationsByDistrict,
-      wasteByDistrict,
-      wasteCategoryReport,
-      totalDonations,
-      completedDonations,
-      totalWaste,
-      completedWaste
-    ] = await Promise.all([
-      Donation.aggregate([
-        { $match: donationMatch },
-        { $group: { _id: '$district', total: { $sum: 1 }, completed: { $sum: { $cond: [{ $in: ['$status', ['delivered', 'completed']] }, 1, 0] } } } },
-        { $sort: { total: -1 } }
-      ]),
-      WasteRequest.aggregate([
-        { $match: wasteMatch },
-        { $group: { _id: '$district', total: { $sum: 1 }, recycled: { $sum: { $cond: [{ $in: ['$status', ['recycled', 'completed']] }, 1, 0] } } } },
-        { $sort: { total: -1 } }
-      ]),
-      WasteRequest.aggregate([
-        { $match: wasteMatch },
-        { $group: { _id: '$wasteCategory', total: { $sum: 1 } } }
-      ]),
-      Donation.countDocuments(donationMatch),
-      Donation.countDocuments({ ...donationMatch, status: { $in: ['delivered', 'completed'] } }),
-      WasteRequest.countDocuments(wasteMatch),
-      WasteRequest.countDocuments({ ...wasteMatch, status: { $in: ['recycled', 'completed'] } })
-    ]);
-
-    const donationSuccessRate = totalDonations > 0 ? Math.round((completedDonations / totalDonations) * 100) : 0;
-    const wasteSuccessRate = totalWaste > 0 ? Math.round((completedWaste / totalWaste) * 100) : 0;
-
-    res.json({
-      filters: { fromDate, toDate, district: district || 'all' },
-      summary: {
-        totalDonations,
-        completedDonations,
-        donationSuccessRate: `${donationSuccessRate}%`,
-        totalWasteRequests: totalWaste,
-        completedWasteRequests: completedWaste,
-        wasteSuccessRate: `${wasteSuccessRate}%`
-      },
-      donationsByDistrict,
-      wasteByDistrict,
-      wasteCategories: Object.fromEntries(wasteCategoryReport.map((w) => [w._id, w.total]))
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
-};
+  if(range.$gte && range.$lte && range.$gte>range.$lte) fail(400,'fromDate must precede toDate');
+  const base={isDemo:{$ne:true}};
+  if(district && district!=='all') base.district=normalizeDistrict(district);
+  const posted={...base,...(Object.keys(range).length?{createdAt:range}:{})};
+  const completed={...confirmedFilter,...base,...(Object.keys(range).length?{completedAt:{$type:'date',...range}}:{})};
+  const [totalDonations,totalWasteRequests,completedDonations,completedWasteRequests,food,waste]=await Promise.all([
+    Donation.countDocuments(posted),WasteRequest.countDocuments(posted),Donation.countDocuments(completed),WasteRequest.countDocuments(completed),Donation.find(completed),WasteRequest.find(completed)
+  ]);
+  const grouped=(items)=>Object.entries(items.reduce((acc,item)=>{acc[item.district]=(acc[item.district]||0)+1;return acc;},{})).map(([_id,completed])=>({_id,completed}));
+  const impact=await require('./impactController').calculateImpactMetrics({...base,...(Object.keys(range).length?{completedAt:{$type:'date',...range}}:{})});
+  res.json({filters:{fromDate,toDate,district:district||'all'},periodBasis:'post counts use createdAt; outcomes use completedAt; UTC dates include the full final day',summary:{totalDonations,totalWasteRequests,completedDonations,completedWasteRequests,donationSuccessRate:null,wasteSuccessRate:null},impact,donationsByDistrict:grouped(food),wasteByDistrict:grouped(waste),wasteCategories:waste.reduce((acc,item)=>{acc[item.wasteCategory]=(acc[item.wasteCategory]||0)+1;return acc;},{})});
+});
 
 module.exports = {
   getAdminStats,
