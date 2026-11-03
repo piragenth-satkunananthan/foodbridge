@@ -48,6 +48,8 @@ Claims reserve the entire batch. Partial allocations are not supported. The orga
 
 The pipeline is matched -> pickup_scheduled -> picked_up -> delivered_or_recycled -> completed. Cancelled/expired/rejected attempts are terminal and retained. Overdue uncollected sources and pickups expire together. In-transit jobs are retained for actual recipient acceptance/rejection. Participant-only detail endpoints contain contact information; the volunteer open board omits contact details.
 
+Collection rechecks that the donor account is active. Releasing a volunteer assignment closes that attempt and creates a new unassigned pickup ID, retaining the organization's existing capacity reservation. Clients should refresh the open-job list after release. New claims store the original post details for historical views. Closed legacy claims without a snapshot expose only the source ID, because their original details cannot be reconstructed reliably; cancelled volunteers cannot read the live post through their old assignment.
+
 Existing frontend callers that complete pickups as a courier or request the old synthetic recycling certificate need UI updates in a later frontend task. Frontend implementation was explicitly excluded from this work.
 
 ## Reporting and tests

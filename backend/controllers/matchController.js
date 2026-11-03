@@ -127,7 +127,11 @@ const getMyClaims = endpoint(async (req, res) => {
     .populate('receivingOrganization', 'name type district')
     .sort({ createdAt: -1 })
     .lean();
-  res.json({ success: true, count: claims.length, claims });
+  res.json({
+    success: true,
+    count: claims.length,
+    claims: claims.map(require('../utils/pickupHistory').historicalPickup)
+  });
 });
 const getRecipientStats = endpoint(async (req, res) => {
   const org = await Organization.findOne({ linkedUser: req.user._id });

@@ -42,7 +42,7 @@ function populate(query) {
     });
 }
 function enrich(doc, user) {
-  const pickup = doc.toObject ? doc.toObject() : doc;
+  const pickup = require('../utils/pickupHistory').historicalPickup(doc);
   const source = pickup.donation || pickup.wasteRequest;
   const org = pickup.receivingOrganization;
   const distance =

@@ -230,6 +230,7 @@ const getRecyclerClaims = endpoint(async (req, res) => {
     .sort({ createdAt: -1 })
     .lean();
   const claims = pickups
+    .map(require('../utils/pickupHistory').historicalPickup)
     .filter((p) => p.wasteRequest)
     .map((p) => ({
       ...p.wasteRequest,
