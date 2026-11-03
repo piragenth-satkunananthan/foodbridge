@@ -9,11 +9,7 @@ const { calculateImpactMetrics } = require('../controllers/impactController');
 
 const runPeriodicFreshnessCheck = async () => {
   try {
-    const now = new Date();
-    await Donation.updateMany(
-      { status: 'posted', pickupDeadline: { $lte: now } },
-      { $set: { status: 'expired' } }
-    );
+    await require('./pickupService').expireOverdue();
   } catch (err) {
     console.error('[Cron] Error running freshness check:', err.message);
   }

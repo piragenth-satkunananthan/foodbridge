@@ -40,6 +40,7 @@ const pickupSchema = new mongoose.Schema(
         note: { type: String, default: '' }
       }
     ],
+    locationUpdatedAt: { type: Date, default: null },
     routeLocation: {
       lat: Number,
       lng: Number
