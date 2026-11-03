@@ -2,6 +2,14 @@ const mongoose = require('mongoose');
 
 const donationSchema = new mongoose.Schema(
   {
+    availableTime: { type: Date, default: Date.now },
+    location: { lat: Number, lng: Number },
+    quantityValue: { type: Number, min: 0 },
+    quantityUnit: String,
+    completedAt: { type: Date, default: null },
+    isDemo: { type: Boolean, default: false },
+    activePickup: { type: mongoose.Schema.Types.ObjectId, ref: 'Pickup', default: null },
+    statusHistory: [{ status: String, timestamp: { type: Date, default: Date.now }, actor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, note: String }],
     donor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
