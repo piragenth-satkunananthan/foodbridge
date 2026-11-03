@@ -4,8 +4,15 @@ const Donation = require('../models/Donation');
 const WasteRequest = require('../models/WasteRequest');
 const Pickup = require('../models/Pickup');
 const ImpactRecord = require('../models/ImpactRecord');
-const { createNotification } = require('../utils/notificationService');
-const { parseMealsCount, parseWeightKg, confirmedFilter } = require('./impactController');
+const {
+  createNotification,
+  queueNotifications
+} = require('../utils/notificationService');
+const {
+  parseMealsCount,
+  parseWeightKg,
+  confirmedFilter
+} = require('./impactController');
 
 // ==========================================
 // 1. DASHBOARD & STATS
@@ -31,9 +38,7 @@ const getAdminStats = async (req, res) => {
       recentOrgs
     ] = await Promise.all([
       // Users grouped by role
-      User.aggregate([
-        { $group: { _id: '$role', count: { $sum: 1 } } }
-      ]),
+      User.aggregate([{ $group: { _id: '$role', count: { $sum: 1 } } }]),
       // Pending organizations waiting for review
       Organization.countDocuments({ verificationStatus: 'pending' }),
       // Organizations grouped by verification status
@@ -41,9 +46,7 @@ const getAdminStats = async (req, res) => {
         { $group: { _id: '$verificationStatus', count: { $sum: 1 } } }
       ]),
       // Donations grouped by status
-      Donation.aggregate([
-        { $group: { _id: '$status', count: { $sum: 1 } } }
-      ]),
+      Donation.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
       // Waste requests grouped by status
       WasteRequest.aggregate([
         { $group: { _id: '$status', count: { $sum: 1 } } }
@@ -59,7 +62,9 @@ const getAdminStats = async (req, res) => {
       // Completed donations for quick meal calculation
       Donation.find(confirmedFilter).select('quantity'),
       // Completed waste for quick kg calculation
-      WasteRequest.find(confirmedFilter).select('wasteCategory quantity processingOutcome'),
+      WasteRequest.find(confirmedFilter).select(
+        'wasteCategory quantity processingOutcome'
+      ),
       // 5 most recent donations
       Donation.find()
         .sort({ createdAt: -1 })
@@ -78,7 +83,14 @@ const getAdminStats = async (req, res) => {
     ]);
 
     // Format user counts map
-    const userCounts = { donor: 0, recipient: 0, volunteer: 0, recycler: 0, admin: 0, total: 0 };
+    const userCounts = {
+      donor: 0,
+      recipient: 0,
+      volunteer: 0,
+      recycler: 0,
+      admin: 0,
+      total: 0
+    };
     usersByRole.forEach((u) => {
       if (userCounts[u._id] !== undefined) userCounts[u._id] = u.count;
       userCounts.total += u.count;
@@ -101,9 +113,15 @@ const getAdminStats = async (req, res) => {
     let totalOrganicKg = 0;
     completedWaste.forEach((w) => {
       const kg = parseWeightKg(w.quantity);
-      if (w.wasteCategory === 'organic' && w.processingOutcome === 'composted') {
+      if (
+        w.wasteCategory === 'organic' &&
+        w.processingOutcome === 'composted'
+      ) {
         totalOrganicKg += kg;
-      } else if (['plastic', 'glass', 'paper', 'metal'].includes(w.wasteCategory) && w.processingOutcome === 'recycled') {
+      } else if (
+        ['plastic', 'glass', 'paper', 'metal'].includes(w.wasteCategory) &&
+        w.processingOutcome === 'recycled'
+      ) {
         totalKgRecycled += kg;
       }
     });
@@ -112,18 +130,32 @@ const getAdminStats = async (req, res) => {
       kpis: {
         totalUsers: userCounts.total,
         pendingVerifications: pendingVerificationsCount,
-        totalDonations: donationsByStatus.reduce((acc, curr) => acc + curr.count, 0),
-        totalWasteRequests: wasteByStatus.reduce((acc, curr) => acc + curr.count, 0),
+        totalDonations: donationsByStatus.reduce(
+          (acc, curr) => acc + curr.count,
+          0
+        ),
+        totalWasteRequests: wasteByStatus.reduce(
+          (acc, curr) => acc + curr.count,
+          0
+        ),
         totalMealsRescued,
         totalKgRecycled: Math.round(totalKgRecycled * 10) / 10,
         totalOrganicKg: Math.round(totalOrganicKg * 10) / 10
       },
       userCounts,
       orgCounts,
-      donationsByStatus: Object.fromEntries(donationsByStatus.map((d) => [d._id, d.count])),
-      wasteByStatus: Object.fromEntries(wasteByStatus.map((w) => [w._id, w.count])),
-      wasteByCategory: Object.fromEntries(wasteByCategory.map((w) => [w._id, w.count])),
-      pickupsByStatus: Object.fromEntries(pickupsByStatus.map((p) => [p._id, p.count])),
+      donationsByStatus: Object.fromEntries(
+        donationsByStatus.map((d) => [d._id, d.count])
+      ),
+      wasteByStatus: Object.fromEntries(
+        wasteByStatus.map((w) => [w._id, w.count])
+      ),
+      wasteByCategory: Object.fromEntries(
+        wasteByCategory.map((w) => [w._id, w.count])
+      ),
+      pickupsByStatus: Object.fromEntries(
+        pickupsByStatus.map((p) => [p._id, p.count])
+      ),
       recentActivity: {
         donations: recentDonations,
         wasteRequests: recentWaste,
@@ -164,7 +196,10 @@ const getOrganizations = async (req, res) => {
     }
 
     const organizations = await Organization.find(filter)
-      .populate('linkedUser', 'name email contactNumber district verificationStatus status')
+      .populate(
+        'linkedUser',
+        'name email contactNumber district verificationStatus status'
+      )
       .populate('verifiedBy', 'name email')
       .sort({ createdAt: -1 });
 
@@ -180,7 +215,10 @@ const getOrganizations = async (req, res) => {
 const getOrganizationById = async (req, res) => {
   try {
     const organization = await Organization.findById(req.params.id)
-      .populate('linkedUser', 'name email contactNumber district verificationStatus status createdAt')
+      .populate(
+        'linkedUser',
+        'name email contactNumber district verificationStatus status createdAt'
+      )
       .populate('verifiedBy', 'name email');
 
     if (!organization) {
@@ -189,8 +227,12 @@ const getOrganizationById = async (req, res) => {
 
     // Also fetch past matched donations and waste requests for context
     const [pastDonations, pastWaste] = await Promise.all([
-      Donation.find({ matchedRecipient: organization._id }).sort({ createdAt: -1 }).limit(10),
-      WasteRequest.find({ matchedCollector: organization._id }).sort({ createdAt: -1 }).limit(10)
+      Donation.find({ matchedRecipient: organization._id })
+        .sort({ createdAt: -1 })
+        .limit(10),
+      WasteRequest.find({ matchedCollector: organization._id })
+        .sort({ createdAt: -1 })
+        .limit(10)
     ]);
 
     res.json({
@@ -213,7 +255,9 @@ const verifyOrganization = async (req, res) => {
     const { verificationStatus, remarks } = req.body;
 
     if (!['verified', 'rejected'].includes(verificationStatus)) {
-      return res.status(400).json({ message: "Status must be either 'verified' or 'rejected'" });
+      return res
+        .status(400)
+        .json({ message: "Status must be either 'verified' or 'rejected'" });
     }
 
     const organization = await Organization.findById(req.params.id);
@@ -221,30 +265,29 @@ const verifyOrganization = async (req, res) => {
       return res.status(404).json({ message: 'Organization not found' });
     }
 
-    await require('../utils/transaction')(async session => {
-      const current = await Organization.findById(organization._id).session(session);
+    await require('../utils/transaction')(async (session) => {
+      const current = await Organization.findById(organization._id).session(
+        session
+      );
       current.verificationStatus = verificationStatus;
       current.verificationRemarks = remarks || '';
       current.verifiedAt = new Date();
       current.verifiedBy = req.user._id;
-      await current.save({session});
-      await User.findByIdAndUpdate(current.linkedUser, {verificationStatus}, {session});
+      await current.save({ session });
+      await User.findByIdAndUpdate(
+        current.linkedUser,
+        { verificationStatus },
+        { session }
+      );
+      await queueNotifications(
+        [current.linkedUser],
+        `Organization ${current.name} is ${verificationStatus}.${remarks ? ' Remarks: ' + remarks : ''}`,
+        'organization',
+        current._id,
+        session
+      );
       Object.assign(organization, current.toObject());
     });
-    if (organization.linkedUser) {
-      // Send in-app notification to the organization owner
-      const isApproved = verificationStatus === 'verified';
-      const notificationMsg = isApproved
-        ? `Congratulations! Your organization "${organization.name}" has been officially verified by the platform admin.`
-        : `Your organization verification request for "${organization.name}" was not approved.${remarks ? ' Remarks: ' + remarks : ''}`;
-
-      await createNotification({
-        recipientUser: organization.linkedUser,
-        message: notificationMsg,
-        relatedType: 'organization',
-        relatedId: organization._id
-      });
-    }
 
     res.json({
       message: `Organization has been marked as ${verificationStatus}`,
@@ -269,7 +312,8 @@ const getAllDonations = async (req, res) => {
 
     if (status && status !== 'all') filter.status = status;
     if (district && district !== 'all') filter.district = district;
-    if (foodType && foodType !== 'all') filter.foodType = { $regex: foodType, $options: 'i' };
+    if (foodType && foodType !== 'all')
+      filter.foodType = { $regex: foodType, $options: 'i' };
     if (search) {
       filter.$or = [
         { foodType: { $regex: search, $options: 'i' } },
@@ -360,7 +404,8 @@ const getAllUsers = async (req, res) => {
     if (role && role !== 'all') filter.role = role;
     if (district && district !== 'all') filter.district = district;
     if (status && status !== 'all') filter.status = status;
-    if (verificationStatus && verificationStatus !== 'all') filter.verificationStatus = verificationStatus;
+    if (verificationStatus && verificationStatus !== 'all')
+      filter.verificationStatus = verificationStatus;
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -388,11 +433,15 @@ const updateUserStatus = async (req, res) => {
     const { status, reason } = req.body;
 
     if (!['active', 'suspended'].includes(status)) {
-      return res.status(400).json({ message: "Status must be 'active' or 'suspended'" });
+      return res
+        .status(400)
+        .json({ message: "Status must be 'active' or 'suspended'" });
     }
 
     if (req.user._id.toString() === req.params.id) {
-      return res.status(400).json({ message: 'Administrators cannot suspend their own account' });
+      return res
+        .status(400)
+        .json({ message: 'Administrators cannot suspend their own account' });
     }
 
     const user = await User.findById(req.params.id);
@@ -434,7 +483,9 @@ const updateUserStatus = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     if (req.user._id.toString() === req.params.id) {
-      return res.status(400).json({ message: 'Administrators cannot delete their own account' });
+      return res
+        .status(400)
+        .json({ message: 'Administrators cannot delete their own account' });
     }
 
     const user = await User.findById(req.params.id);
@@ -445,8 +496,9 @@ const deleteUser = async (req, res) => {
     // Preserve historical references and disable all further access.
     user.status = 'suspended';
     await user.save();
-    res.json({ message: 'Account disabled; transaction and organization history retained' });
-
+    res.json({
+      message: 'Account disabled; transaction and organization history retained'
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -459,29 +511,86 @@ const deleteUser = async (req, res) => {
 // @desc    Generate aggregated platform reports
 // @route   GET /api/admin/reports
 // @access  Private/Admin
-const getReports = require('../utils/domain').endpoint(async (req,res) => {
-  const {fail,district:normalizeDistrict}=require('../utils/domain');
-  const {fromDate,toDate,district}=req.query;
-  const range={};
-  for(const [value,key] of [[fromDate,'$gte'],[toDate,'$lte']]) {
-    if(value) {
-      const date=new Date(value);
-      if(!Number.isFinite(date.getTime())) fail(400,'Invalid report date');
-      if(key==='$lte' && /^\d{4}-\d{2}-\d{2}$/.test(value)) date.setUTCHours(23,59,59,999);
-      range[key]=date;
+const getReports = require('../utils/domain').endpoint(async (req, res) => {
+  const { fail, district: normalizeDistrict } = require('../utils/domain');
+  const { fromDate, toDate, district } = req.query;
+  const range = {};
+  for (const [value, key] of [
+    [fromDate, '$gte'],
+    [toDate, '$lte']
+  ]) {
+    if (value) {
+      const date = new Date(value);
+      if (!Number.isFinite(date.getTime())) fail(400, 'Invalid report date');
+      if (key === '$lte' && /^\d{4}-\d{2}-\d{2}$/.test(value))
+        date.setUTCHours(23, 59, 59, 999);
+      range[key] = date;
     }
   }
-  if(range.$gte && range.$lte && range.$gte>range.$lte) fail(400,'fromDate must precede toDate');
-  const base={isDemo:{$ne:true}};
-  if(district && district!=='all') base.district=normalizeDistrict(district);
-  const posted={...base,...(Object.keys(range).length?{createdAt:range}:{})};
-  const completed={...confirmedFilter,...base,...(Object.keys(range).length?{completedAt:{$type:'date',...range}}:{})};
-  const [totalDonations,totalWasteRequests,completedDonations,completedWasteRequests,food,waste]=await Promise.all([
-    Donation.countDocuments(posted),WasteRequest.countDocuments(posted),Donation.countDocuments(completed),WasteRequest.countDocuments(completed),Donation.find(completed),WasteRequest.find(completed)
+  if (range.$gte && range.$lte && range.$gte > range.$lte)
+    fail(400, 'fromDate must precede toDate');
+  const base = { isDemo: { $ne: true } };
+  if (district && district !== 'all')
+    base.district = normalizeDistrict(district);
+  const posted = {
+    ...base,
+    ...(Object.keys(range).length ? { createdAt: range } : {})
+  };
+  const completed = {
+    ...confirmedFilter,
+    ...base,
+    ...(Object.keys(range).length
+      ? { completedAt: { $type: 'date', ...range } }
+      : {})
+  };
+  const [
+    totalDonations,
+    totalWasteRequests,
+    completedDonations,
+    completedWasteRequests,
+    food,
+    waste
+  ] = await Promise.all([
+    Donation.countDocuments(posted),
+    WasteRequest.countDocuments(posted),
+    Donation.countDocuments(completed),
+    WasteRequest.countDocuments(completed),
+    Donation.find(completed),
+    WasteRequest.find(completed)
   ]);
-  const grouped=(items)=>Object.entries(items.reduce((acc,item)=>{acc[item.district]=(acc[item.district]||0)+1;return acc;},{})).map(([_id,completed])=>({_id,completed}));
-  const impact=await require('./impactController').calculateImpactMetrics({...base,...(Object.keys(range).length?{completedAt:{$type:'date',...range}}:{})});
-  res.json({filters:{fromDate,toDate,district:district||'all'},periodBasis:'post counts use createdAt; outcomes use completedAt; UTC dates include the full final day',summary:{totalDonations,totalWasteRequests,completedDonations,completedWasteRequests,donationSuccessRate:null,wasteSuccessRate:null},impact,donationsByDistrict:grouped(food),wasteByDistrict:grouped(waste),wasteCategories:waste.reduce((acc,item)=>{acc[item.wasteCategory]=(acc[item.wasteCategory]||0)+1;return acc;},{})});
+  const grouped = (items) =>
+    Object.entries(
+      items.reduce((acc, item) => {
+        acc[item.district] = (acc[item.district] || 0) + 1;
+        return acc;
+      }, {})
+    ).map(([_id, completed]) => ({ _id, completed }));
+  const impact = await require('./impactController').calculateImpactMetrics({
+    ...base,
+    ...(Object.keys(range).length
+      ? { completedAt: { $type: 'date', ...range } }
+      : {})
+  });
+  res.json({
+    filters: { fromDate, toDate, district: district || 'all' },
+    periodBasis:
+      'post counts use createdAt; outcomes use completedAt; UTC dates include the full final day',
+    summary: {
+      totalDonations,
+      totalWasteRequests,
+      completedDonations,
+      completedWasteRequests,
+      donationSuccessRate: null,
+      wasteSuccessRate: null
+    },
+    impact,
+    donationsByDistrict: grouped(food),
+    wasteByDistrict: grouped(waste),
+    wasteCategories: waste.reduce((acc, item) => {
+      acc[item.wasteCategory] = (acc[item.wasteCategory] || 0) + 1;
+      return acc;
+    }, {})
+  });
 });
 
 module.exports = {

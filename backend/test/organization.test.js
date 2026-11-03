@@ -1,44 +1,141 @@
-const {test} = require('node:test');
+const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const {setup,user,Organization,User} = require('./helpers');
-const api=setup();
-test('new recipient submits organization, admin verifies, and edits require re-verification',async()=>{
- const recipient=await user('recipient'),admin=await user('admin');
- const body={name:'New NGO',type:'ngo',registrationInfo:'TEST',district:'Colombo',capacityKg:100,storageConditions:['refrigerated']};
- let response=await api('PUT','/organizations/me',recipient,body);
- assert.equal(response.status,201,JSON.stringify(response.body));
- const org=response.body.organization;
- assert.equal(org.verificationStatus,'pending');
- assert.equal(String((await User.findById(recipient._id)).organization),org._id);
- assert.equal((await api('PUT',`/admin/organizations/${org._id}/verify`,recipient,{verificationStatus:'verified'})).status,403);
- assert.equal((await api('PUT',`/admin/organizations/${org._id}/verify`,admin,{verificationStatus:'verified'})).status,200);
- assert.equal((await Organization.findById(org._id)).verificationStatus,'verified');
- assert.equal((await User.findById(recipient._id)).verificationStatus,'verified');
- response=await api('PUT','/organizations/me',recipient,{...body,name:'Updated NGO'});
- assert.equal(response.body.organization.verificationStatus,'pending');
- assert.equal(await Organization.countDocuments({linkedUser:recipient._id}),1);
- assert.equal((await api('PUT','/organizations/me',recipient,{...body,verificationStatus:'verified'})).status,400);
+const { setup, user, Organization, User } = require('./helpers');
+const api = setup();
+test('new recipient submits organization, admin verifies, and edits require re-verification', async () => {
+  const recipient = await user('recipient'),
+    admin = await user('admin');
+  const body = {
+    name: 'New NGO',
+    type: 'ngo',
+    registrationInfo: 'TEST',
+    district: 'Colombo',
+    capacityKg: 100,
+    storageConditions: ['refrigerated']
+  };
+  let response = await api('PUT', '/organizations/me', recipient, body);
+  assert.equal(response.status, 201, JSON.stringify(response.body));
+  const org = response.body.organization;
+  assert.equal(org.verificationStatus, 'pending');
+  assert.equal(
+    String((await User.findById(recipient._id)).organization),
+    org._id
+  );
+  assert.equal(
+    (
+      await api('PUT', `/admin/organizations/${org._id}/verify`, recipient, {
+        verificationStatus: 'verified'
+      })
+    ).status,
+    403
+  );
+  assert.equal(
+    (
+      await api('PUT', `/admin/organizations/${org._id}/verify`, admin, {
+        verificationStatus: 'verified'
+      })
+    ).status,
+    200
+  );
+  assert.equal(
+    (await Organization.findById(org._id)).verificationStatus,
+    'verified'
+  );
+  assert.equal(
+    (await User.findById(recipient._id)).verificationStatus,
+    'verified'
+  );
+  response = await api('PUT', '/organizations/me', recipient, {
+    ...body,
+    name: 'Updated NGO'
+  });
+  assert.equal(response.body.organization.verificationStatus, 'pending');
+  assert.equal(
+    await Organization.countDocuments({ linkedUser: recipient._id }),
+    1
+  );
+  assert.equal(
+    (
+      await api('PUT', '/organizations/me', recipient, {
+        ...body,
+        verificationStatus: 'verified'
+      })
+    ).status,
+    400
+  );
 });
-test('complaints are private to reporter and administered with recorded resolution',async()=>{
- const reporter=await user('donor'),other=await user('donor'),admin=await user('admin');
- let result=await api('POST','/complaints',reporter,{subject:'Missed collection',description:'Courier did not arrive'});
- assert.equal(result.status,201);
- const id=result.body.complaint._id;
- assert.equal((await api('GET','/complaints',other)).body.complaints.length,0);
- assert.equal((await api('PUT',`/complaints/${id}`,other,{status:'resolved',note:'invalid'})).status,403);
- result=await api('PUT',`/complaints/${id}`,admin,{status:'resolved',note:'Contacted donor and resolved'});
- assert.equal(result.status,200);
- assert.equal(result.body.complaint.history.length,2);
+test('complaints are private to reporter and administered with recorded resolution', async () => {
+  const reporter = await user('donor'),
+    other = await user('donor'),
+    admin = await user('admin');
+  let result = await api('POST', '/complaints', reporter, {
+    subject: 'Missed collection',
+    description: 'Courier did not arrive'
+  });
+  assert.equal(result.status, 201);
+  const id = result.body.complaint._id;
+  assert.equal(
+    (await api('GET', '/complaints', other)).body.complaints.length,
+    0
+  );
+  assert.equal(
+    (
+      await api('PUT', `/complaints/${id}`, other, {
+        status: 'resolved',
+        note: 'invalid'
+      })
+    ).status,
+    403
+  );
+  result = await api('PUT', `/complaints/${id}`, admin, {
+    status: 'resolved',
+    note: 'Contacted donor and resolved'
+  });
+  assert.equal(result.status, 200);
+  assert.equal(result.body.complaint.history.length, 2);
 });
-test('public registration rejects admin escalation and invalid credentials',async()=>{
- const body={name:'Registered',email:'registered@example.invalid',password:'password123',role:'recipient',district:'Colombo',contactNumber:'0700000000'};
- assert.equal((await api('POST','/auth/register',null,{...body,role:'admin'})).status,400);
- assert.equal((await api('POST','/auth/register',null,{...body,email:{value:'bad'}})).status,400);
- assert.equal((await api('POST','/auth/register',null,{...body,password:'short'})).status,400);
- const result=await api('POST','/auth/register',null,body);
- assert.equal(result.status,201);
- assert.equal(result.body.verificationStatus,'pending');
- const admin=await user('admin');
- assert.equal((await api('PUT',`/admin/users/${result.body._id}/status`,admin,{status:'suspended'})).status,200);
- assert.equal((await api('GET','/auth/me',{token:result.body.token})).status,403);
+test('public registration rejects admin escalation and invalid credentials', async () => {
+  const body = {
+    name: 'Registered',
+    email: 'registered@example.invalid',
+    password: 'password123',
+    role: 'recipient',
+    district: 'Colombo',
+    contactNumber: '0700000000'
+  };
+  assert.equal(
+    (await api('POST', '/auth/register', null, { ...body, role: 'admin' }))
+      .status,
+    400
+  );
+  assert.equal(
+    (
+      await api('POST', '/auth/register', null, {
+        ...body,
+        email: { value: 'bad' }
+      })
+    ).status,
+    400
+  );
+  assert.equal(
+    (await api('POST', '/auth/register', null, { ...body, password: 'short' }))
+      .status,
+    400
+  );
+  const result = await api('POST', '/auth/register', null, body);
+  assert.equal(result.status, 201);
+  assert.equal(result.body.verificationStatus, 'pending');
+  const admin = await user('admin');
+  assert.equal(
+    (
+      await api('PUT', `/admin/users/${result.body._id}/status`, admin, {
+        status: 'suspended'
+      })
+    ).status,
+    200
+  );
+  assert.equal(
+    (await api('GET', '/auth/me', { token: result.body.token })).status,
+    403
+  );
 });

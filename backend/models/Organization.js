@@ -7,7 +7,14 @@ const organizationSchema = new mongoose.Schema(
     accepting: { type: Boolean, default: true },
     serviceDistricts: { type: [String], default: [] },
     foodTypes: { type: [String], default: [] },
-    storageConditions: { type: [String], enum: ['refrigerated', 'room_temperature', 'frozen'], default: [] },
+    storageConditions: {
+      type: [String],
+      enum: ['refrigerated', 'room_temperature', 'frozen'],
+      default: []
+    },
+    city: { type: String, default: '' },
+    area: { type: String, default: '' },
+    address: { type: String, default: '' },
     location: { lat: Number, lng: Number },
     isDemo: { type: Boolean, default: false },
     name: {
@@ -17,7 +24,14 @@ const organizationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['ngo', 'charity', 'shelter', 'recycler', 'composting_facility', 'waste_management'],
+      enum: [
+        'ngo',
+        'charity',
+        'shelter',
+        'recycler',
+        'composting_facility',
+        'waste_management'
+      ],
       required: true
     },
     registrationInfo: {

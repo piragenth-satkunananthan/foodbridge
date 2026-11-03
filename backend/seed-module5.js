@@ -16,7 +16,13 @@ const seedData = async () => {
   try {
     console.log('Connecting to MongoDB...');
     await connectDB();
-    if (process.env.ALLOW_DEMO_SEED !== 'true' || !/(demo|test|local)/i.test(mongoose.connection.name)) throw new Error('Demo seeding requires ALLOW_DEMO_SEED=true and a demo/test/local database name');
+    if (
+      process.env.ALLOW_DEMO_SEED !== 'true' ||
+      !/(demo|test|local)/i.test(mongoose.connection.name)
+    )
+      throw new Error(
+        'Demo seeding requires ALLOW_DEMO_SEED=true and a demo/test/local database name'
+      );
     console.log('Clearing explicitly selected demo collections...');
 
     await Promise.all([
@@ -191,7 +197,8 @@ const seedData = async () => {
       storageCondition: 'refrigerated',
       pickupDeadline: new Date(Date.now() + 3600000 * 6),
       district: 'Colombo',
-      specialInstructions: 'Ready in commercial food containers at back reception.',
+      specialInstructions:
+        'Ready in commercial food containers at back reception.',
       status: 'completed',
       matchedRecipient: org1._id
     });
@@ -240,9 +247,15 @@ const seedData = async () => {
       statusHistory: [
         { status: 'posted', timestamp: new Date(Date.now() - 3600000 * 5) },
         { status: 'matched', timestamp: new Date(Date.now() - 3600000 * 4) },
-        { status: 'pickup_scheduled', timestamp: new Date(Date.now() - 3600000 * 3) },
+        {
+          status: 'pickup_scheduled',
+          timestamp: new Date(Date.now() - 3600000 * 3)
+        },
         { status: 'picked_up', timestamp: new Date(Date.now() - 3600000 * 2) },
-        { status: 'delivered_or_recycled', timestamp: new Date(Date.now() - 3600000 * 1) },
+        {
+          status: 'delivered_or_recycled',
+          timestamp: new Date(Date.now() - 3600000 * 1)
+        },
         { status: 'completed', timestamp: new Date() }
       ],
       routeLocation: { lat: 6.9271, lng: 79.8612 }
@@ -261,14 +274,16 @@ const seedData = async () => {
     // 11. Initial Notifications
     await Notification.create({
       recipientUser: adminUser._id,
-      message: 'New organization "GreenEarth BioCompost Facility" submitted registration details for verification.',
+      message:
+        'New organization "GreenEarth BioCompost Facility" submitted registration details for verification.',
       relatedType: 'organization',
       relatedId: org4._id
     });
 
     await Notification.create({
       recipientUser: adminUser._id,
-      message: 'New organization "Community Food Shelter" submitted registration details for verification.',
+      message:
+        'New organization "Community Food Shelter" submitted registration details for verification.',
       relatedType: 'organization',
       relatedId: org2._id
     });

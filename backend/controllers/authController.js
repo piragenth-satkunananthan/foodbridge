@@ -16,17 +16,39 @@ const registerUser = async (req, res) => {
     }
 
     if (!publicRoles.includes(role)) {
-      return res.status(400).json({ message: 'This role cannot be registered publicly' });
+      return res
+        .status(400)
+        .json({ message: 'This role cannot be registered publicly' });
     }
 
-    if (typeof email !== 'string' || typeof password !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return res.status(400).json({message:'Valid email and password are required'});
+    if (
+      typeof email !== 'string' ||
+      typeof password !== 'string' ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    )
+      return res
+        .status(400)
+        .json({ message: 'Valid email and password are required' });
     const normalizedEmail = email.trim().toLowerCase();
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: 'Email is already registered' });
     }
 
-    if (typeof name !== 'string' || !name.trim() || name.length > 200 || typeof contactNumber !== 'string' || !contactNumber.trim() || contactNumber.length > 50 || password.length < 8 || Buffer.byteLength(password) > 72) return res.status(400).json({message:'Invalid profile or password (8 characters minimum, 72 bytes maximum)'});
+    if (
+      typeof name !== 'string' ||
+      !name.trim() ||
+      name.length > 200 ||
+      typeof contactNumber !== 'string' ||
+      !contactNumber.trim() ||
+      contactNumber.length > 50 ||
+      password.length < 8 ||
+      Buffer.byteLength(password) > 72
+    )
+      return res.status(400).json({
+        message:
+          'Invalid profile or password (8 characters minimum, 72 bytes maximum)'
+      });
     const validDistrict = normalizeDistrict(district);
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -51,7 +73,11 @@ const registerUser = async (req, res) => {
       token: generateToken(user._id, user.role)
     });
   } catch (error) {
-    res.status(error.status || 500).json({ message: error.status ? error.message : 'Unable to complete authentication request' });
+    res.status(error.status || 500).json({
+      message: error.status
+        ? error.message
+        : 'Unable to complete authentication request'
+    });
   }
 };
 
@@ -61,10 +87,19 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+      return res
+        .status(400)
+        .json({ message: 'Email and password are required' });
     }
 
-    if (typeof email !== 'string' || typeof password !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return res.status(400).json({message:'Valid email and password are required'});
+    if (
+      typeof email !== 'string' ||
+      typeof password !== 'string' ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    )
+      return res
+        .status(400)
+        .json({ message: 'Valid email and password are required' });
     const normalizedEmail = email.trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
@@ -77,7 +112,9 @@ const loginUser = async (req, res) => {
     }
 
     if (user.status === 'suspended') {
-      return res.status(403).json({ message: 'Account has been suspended by an administrator' });
+      return res
+        .status(403)
+        .json({ message: 'Account has been suspended by an administrator' });
     }
 
     res.json({
@@ -91,7 +128,11 @@ const loginUser = async (req, res) => {
       token: generateToken(user._id, user.role)
     });
   } catch (error) {
-    res.status(error.status || 500).json({ message: error.status ? error.message : 'Unable to complete authentication request' });
+    res.status(error.status || 500).json({
+      message: error.status
+        ? error.message
+        : 'Unable to complete authentication request'
+    });
   }
 };
 

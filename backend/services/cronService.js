@@ -38,10 +38,13 @@ const initCronJobs = () => {
   }, 5000);
 
   // Run every 15 minutes in production / background
-  const interval = setInterval(() => {
-    runPeriodicFreshnessCheck();
-    runMonthlyImpactSnapshot();
-  }, 15 * 60 * 1000);
+  const interval = setInterval(
+    () => {
+      runPeriodicFreshnessCheck();
+      runMonthlyImpactSnapshot();
+    },
+    15 * 60 * 1000
+  );
 
   // Unref interval so it does not prevent clean process termination in test environments
   if (interval.unref) interval.unref();

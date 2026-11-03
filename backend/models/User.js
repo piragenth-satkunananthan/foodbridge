@@ -43,7 +43,9 @@ const userSchema = new mongoose.Schema(
       enum: ['pending', 'verified', 'rejected'],
       default: function () {
         // Donors and volunteers don't need org verification; recipients/recyclers do
-        return this.role === 'recipient' || this.role === 'recycler' ? 'pending' : 'verified';
+        return this.role === 'recipient' || this.role === 'recycler'
+          ? 'pending'
+          : 'verified';
       }
     },
     status: {
