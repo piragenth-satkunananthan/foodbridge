@@ -2,6 +2,14 @@ const mongoose = require('mongoose');
 
 const organizationSchema = new mongoose.Schema(
   {
+    capacityKg: { type: Number, min: 0, default: null },
+    reservedKg: { type: Number, min: 0, default: 0 },
+    accepting: { type: Boolean, default: true },
+    serviceDistricts: { type: [String], default: [] },
+    foodTypes: { type: [String], default: [] },
+    storageConditions: { type: [String], enum: ['refrigerated', 'room_temperature', 'frozen'], default: [] },
+    location: { lat: Number, lng: Number },
+    isDemo: { type: Boolean, default: false },
     name: {
       type: String,
       required: true,
@@ -9,7 +17,7 @@ const organizationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['ngo', 'charity', 'shelter', 'recycler', 'composting_facility'],
+      enum: ['ngo', 'charity', 'shelter', 'recycler', 'composting_facility', 'waste_management'],
       required: true
     },
     registrationInfo: {
@@ -52,5 +60,7 @@ const organizationSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+organizationSchema.index({ linkedUser: 1 }, { unique: true });
 
 module.exports = mongoose.model('Organization', organizationSchema);
