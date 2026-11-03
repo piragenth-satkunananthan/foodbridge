@@ -6,4 +6,4 @@ Replace the institutional signage world: remove numbered role rows, heavy stripe
 
 The user has delegated visual direction. The bolder catalog reroll was considered but its literal neon circuits, dream-city, barcode and toy-shelf forms add unrelated product metaphors. They are not adopted; the user's request for a contemporary homepage governs this revision.
 
-Three new mockups: A photography-led community kitchen; B typography-led food handover; C immersive community table. All are unapproved proposals. Original mockups are preserved for comparison. No UI implementation is authorised by a comp approval yet.
+Three new mockups: A photography-led community kitchen; B typography-led food handover; C immersive community table. The user approved composition B (`homepage-v2-2.png`); A and C remain unapproved. Original mockups are preserved for comparison. No UI implementation is authorised by a comp approval yet.
