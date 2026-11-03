@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const impactRecordSchema = new mongoose.Schema(
   {
+    isDemo: { type: Boolean, default: false },
     mealsRescued: {
       type: Number,
       default: 0
@@ -27,5 +28,7 @@ const impactRecordSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+impactRecordSchema.index({ period: 1, isDemo: 1 }, { unique: true });
 
 module.exports = mongoose.model('ImpactRecord', impactRecordSchema);
