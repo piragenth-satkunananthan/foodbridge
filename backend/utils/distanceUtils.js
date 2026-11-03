@@ -6,7 +6,7 @@
 const DISTRICT_COORDINATES = {
   // Western Province
   Colombo: { lat: 6.9271, lng: 79.8612 },
-  Gampaha: { lat: 7.0840, lng: 79.9943 },
+  Gampaha: { lat: 7.084, lng: 79.9943 },
   Kalutara: { lat: 6.5854, lng: 79.9607 },
 
   // Central Province
@@ -15,19 +15,19 @@ const DISTRICT_COORDINATES = {
   'Nuwara Eliya': { lat: 6.9497, lng: 80.7891 },
 
   // Southern Province
-  Galle: { lat: 6.0535, lng: 80.2210 },
-  Matara: { lat: 5.9549, lng: 80.5550 },
+  Galle: { lat: 6.0535, lng: 80.221 },
+  Matara: { lat: 5.9549, lng: 80.555 },
   Hambantota: { lat: 6.1429, lng: 81.1212 },
 
   // Northern Province
   Jaffna: { lat: 9.6615, lng: 80.0255 },
-  Kilinochchi: { lat: 9.3803, lng: 80.3770 },
-  Mannar: { lat: 8.9810, lng: 79.9044 },
+  Kilinochchi: { lat: 9.3803, lng: 80.377 },
+  Mannar: { lat: 8.981, lng: 79.9044 },
   Vavuniya: { lat: 8.7542, lng: 80.4982 },
   Mullaitivu: { lat: 9.2671, lng: 80.8142 },
 
   // Eastern Province
-  Batticaloa: { lat: 7.7310, lng: 81.6747 },
+  Batticaloa: { lat: 7.731, lng: 81.6747 },
   Ampara: { lat: 7.2912, lng: 81.6724 },
   Trincomalee: { lat: 8.5874, lng: 81.2152 },
 
@@ -40,7 +40,7 @@ const DISTRICT_COORDINATES = {
   Polonnaruwa: { lat: 7.9403, lng: 81.0188 },
 
   // Uva Province
-  Badulla: { lat: 6.9934, lng: 81.0550 },
+  Badulla: { lat: 6.9934, lng: 81.055 },
   Monaragala: { lat: 6.8728, lng: 81.3507 },
 
   // Sabaragamuwa Province
@@ -74,8 +74,12 @@ function getDistrictDistanceKm(districtA, districtB) {
     return 3.0; // intra-district transit distance
   }
 
-  const coordsA = DISTRICT_COORDINATES[districtA] || DISTRICT_COORDINATES[normalizeDistrict(districtA)];
-  const coordsB = DISTRICT_COORDINATES[districtB] || DISTRICT_COORDINATES[normalizeDistrict(districtB)];
+  const coordsA =
+    DISTRICT_COORDINATES[districtA] ||
+    DISTRICT_COORDINATES[normalizeDistrict(districtA)];
+  const coordsB =
+    DISTRICT_COORDINATES[districtB] ||
+    DISTRICT_COORDINATES[normalizeDistrict(districtB)];
 
   if (!coordsA || !coordsB) return 35; // default inter-district distance
 
@@ -112,28 +116,26 @@ function calculateUrgencyScore(pickupDeadline) {
   const deadlineTime = new Date(pickupDeadline).getTime();
   const hoursRemaining = (deadlineTime - now) / (1000 * 60 * 60);
 
-  if (hoursRemaining <= 0) return { score: 0, hoursRemaining: 0, urgencyLevel: 'expired' };
-  if (hoursRemaining <= 2) return { score: 100, hoursRemaining, urgencyLevel: 'critical' };
-  if (hoursRemaining <= 4) return { score: 90, hoursRemaining, urgencyLevel: 'high' };
-  if (hoursRemaining <= 8) return { score: 75, hoursRemaining, urgencyLevel: 'medium' };
-  if (hoursRemaining <= 16) return { score: 60, hoursRemaining, urgencyLevel: 'standard' };
-  if (hoursRemaining <= 24) return { score: 45, hoursRemaining, urgencyLevel: 'flexible' };
+  if (hoursRemaining <= 0)
+    return { score: 0, hoursRemaining: 0, urgencyLevel: 'expired' };
+  if (hoursRemaining <= 2)
+    return { score: 100, hoursRemaining, urgencyLevel: 'critical' };
+  if (hoursRemaining <= 4)
+    return { score: 90, hoursRemaining, urgencyLevel: 'high' };
+  if (hoursRemaining <= 8)
+    return { score: 75, hoursRemaining, urgencyLevel: 'medium' };
+  if (hoursRemaining <= 16)
+    return { score: 60, hoursRemaining, urgencyLevel: 'standard' };
+  if (hoursRemaining <= 24)
+    return { score: 45, hoursRemaining, urgencyLevel: 'flexible' };
   return { score: 30, hoursRemaining, urgencyLevel: 'relaxed' };
 }
 
 /**
  * Parse quantity helper for meal portion matching.
  */
-function parseEstimatedPortions(quantityStr) {
-  if (!quantityStr) return 20;
-  const str = String(quantityStr).toLowerCase().trim();
-  const match = str.match(/([0-9]+(?:\.[0-9]+)?)/);
-  if (!match) return 20;
-  const num = parseFloat(match[1]);
-  if (str.includes('kg') || str.includes('kilo')) {
-    return Math.round(num * 2.5);
-  }
-  return Math.round(num);
+function parseEstimatedPortions(value) {
+  return require('./quantity').parseMealsCount(value);
 }
 
 /**
@@ -164,8 +166,25 @@ function calculateQuantityScore(estimatedPortions) {
  * - Quantity / Capacity: 15%
  * - Storage condition: 10%
  */
-function calculateSmartMatchScore({ donation, recipientDistrict }) {
-  const distanceKm = getDistrictDistanceKm(donation.district, recipientDistrict);
+function calculateSmartMatchScore({
+  donation,
+  recipientDistrict,
+  organization
+}) {
+  const actualCoordinates = [
+    donation.location?.lat,
+    donation.location?.lng,
+    organization?.location?.lat,
+    organization?.location?.lng
+  ].every(Number.isFinite);
+  const distanceKm = actualCoordinates
+    ? haversineDistance(
+        donation.location.lat,
+        donation.location.lng,
+        organization.location.lat,
+        organization.location.lng
+      )
+    : getDistrictDistanceKm(donation.district, recipientDistrict);
   const proximityScore = calculateProximityScore(distanceKm);
   const urgencyInfo = calculateUrgencyScore(donation.pickupDeadline);
   const portions = parseEstimatedPortions(donation.quantity);
@@ -179,15 +198,20 @@ function calculateSmartMatchScore({ donation, recipientDistrict }) {
       hoursRemaining: 0,
       urgencyLevel: 'expired',
       isExpired: true,
-      breakdown: { proximityScore, urgencyScore: 0, quantityScore, storageScore }
+      breakdown: {
+        proximityScore,
+        urgencyScore: 0,
+        quantityScore,
+        storageScore
+      }
     };
   }
 
   const compositeScore = Math.round(
-    proximityScore * 0.40 +
-    urgencyInfo.score * 0.35 +
-    quantityScore * 0.15 +
-    storageScore * 0.10
+    proximityScore * 0.4 +
+      urgencyInfo.score * 0.35 +
+      quantityScore * 0.15 +
+      storageScore * 0.1
   );
 
   return {

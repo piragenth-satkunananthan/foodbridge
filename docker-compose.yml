@@ -1,6 +1,7 @@
 services:
   mongodb:
     image: mongo:latest
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     container_name: foodbridge-mongodb
     restart: unless-stopped
     ports:
@@ -11,6 +12,12 @@ services:
       - foodbridge-mongo-data:/data/db
     networks:
       - foodbridge-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "try { quit(rs.status().myState === 1 ? 0 : 1); } catch (e) { if (e.code === 94) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongodb:27017'}]}); quit(1); } throw e; }"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
 
   backend:
     build:
@@ -22,12 +29,13 @@ services:
       - "127.0.0.1:5000:5000"
     environment:
       PORT: 5000
-      MONGO_URI: mongodb://mongodb:27017/foodbridge
+      MONGO_URI: mongodb://mongodb:27017/foodbridge?replicaSet=rs0
       JWT_SECRET: ${JWT_SECRET}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       NODE_ENV: production
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - foodbridge-network
 

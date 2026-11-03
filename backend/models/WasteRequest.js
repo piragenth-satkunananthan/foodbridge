@@ -2,6 +2,35 @@ const mongoose = require('mongoose');
 
 const wasteRequestSchema = new mongoose.Schema(
   {
+    availableTime: { type: Date, default: Date.now },
+    city: { type: String, default: '' },
+    area: { type: String, default: '' },
+    address: { type: String, default: '' },
+    location: { lat: Number, lng: Number },
+    quantityValue: { type: Number, min: 0 },
+    quantityUnit: String,
+    completedAt: { type: Date, default: null },
+    isDemo: { type: Boolean, default: false },
+    activePickup: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Pickup',
+      default: null
+    },
+    statusHistory: [
+      {
+        status: String,
+        timestamp: { type: Date, default: Date.now },
+        actor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        note: String
+      }
+    ],
+    specialInstructions: { type: String, default: '' },
+    processingOutcome: {
+      type: String,
+      enum: ['recycled', 'composted', 'disposed'],
+      default: null
+    },
+    processingNotes: { type: String, default: '' },
     donor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -30,7 +59,19 @@ const wasteRequestSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['posted', 'matched', 'pickup_scheduled', 'picked_up', 'recycled', 'completed', 'cancelled', 'expired'],
+      enum: [
+        'posted',
+        'matched',
+        'pickup_scheduled',
+        'picked_up',
+        'delivered',
+        'recycled',
+        'composted',
+        'disposed',
+        'completed',
+        'cancelled',
+        'expired'
+      ],
       default: 'posted'
     },
     matchedCollector: {
