@@ -1,0 +1,7 @@
+{
+  "tool": "image_gen",
+  "reference": ".impeccable/mocks/homepage-v2-2.png",
+  "asset": "frontend/public/images/homepage-handover.png",
+  "prompt": "Create only the photographic hero asset from the reference homepage, not a webpage. Match the reference's composition: a smiling Sri Lankan adult woman with dark hair tied back, beige shirt and dark green apron on the right, accepting a dark green reusable crate filled with cabbage, lettuce, carrots, tomatoes and peppers; a second adult's sage-shirted torso and natural hands enter from the left carrying the crate. Crate spans the lower center; woman occupies right third. Preserve abundant empty white space across upper left for future HTML headline overlay. Natural realistic proportions and hands, soft editorial studio daylight, dignified everyday food sharing. Wide landscape 3:2 composition at high resolution. Pure white opaque background blending seamlessly into a white website. No typography whatsoever, no logos, no navigation, no buttons, no borders, no role selector, no interface, no watermark. This is illustrative AI-generated photography, not evidence of a real FoodBridge event. Reference supplies photographic subject placement and lighting only; remove all of its interface content.",
+  "note": "AI-generated illustrative scene; no real FoodBridge delivery is asserted."
+}
