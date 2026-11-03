@@ -187,6 +187,54 @@ export const cancelWasteRequest = (id) => {
   });
 };
 
+// ==========================================
+// Circular Waste Streams & Recycler Operations (Module 3 - MA. Fathima Amna)
+// ==========================================
+
+export const fetchRecyclerFeed = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return apiFetch(`/waste/recycler/feed${query ? '?' + query : ''}`);
+};
+
+export const fetchRecyclerClaims = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return apiFetch(`/waste/recycler/claims${query ? '?' + query : ''}`);
+};
+
+export const fetchRecyclerStats = () => apiFetch('/waste/recycler/stats');
+
+export const claimWasteRequest = (wasteId, notes = '') => {
+  return apiFetch(`/waste/${wasteId}/claim`, {
+    method: 'POST',
+    body: JSON.stringify({ notes })
+  });
+};
+
+export const cancelWasteClaim = (wasteId, reason = '') => {
+  return apiFetch(`/waste/${wasteId}/cancel-claim`, {
+    method: 'PUT',
+    body: JSON.stringify({ reason })
+  });
+};
+
+export const confirmWasteRecycled = (wasteId, completionData = {}) => {
+  return apiFetch(`/waste/${wasteId}/confirm-recycled`, {
+    method: 'PUT',
+    body: JSON.stringify(completionData)
+  });
+};
+
+export const classifyWasteItem = (payload) => {
+  return apiFetch('/waste/classify', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+};
+
+export const fetchEligibleCollectorsForWaste = (wasteId) => {
+  return apiFetch(`/waste/${wasteId}/collectors`);
+};
+
 
 // ==========================================
 // Volunteer Courier & Route Tracking APIs (Module 4)

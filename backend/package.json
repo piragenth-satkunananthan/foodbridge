@@ -10,6 +10,7 @@
     "test": "node test-module5.js && node --test test-impact.js",
     "test:module1": "node test-module1.js",
     "test:module2": "node test-module2.js",
+    "test:module3": "node test-module3.js",
     "test:module4": "node test-module4.js",
     "seed": "node seed-module5.js",
     "test:impact": "node --test test-impact.js"
