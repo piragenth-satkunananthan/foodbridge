@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T17:39:11.892294+00:00",
+  "title": "FoodBridge homepage",
+  "extensions": {
+    "breakpoints": [
+      {
+        "name": "compact",
+        "value": "1100px"
+      },
+      {
+        "name": "mobile",
+        "value": "759px"
+      }
+    ],
+    "motion": [
+      {
+        "name": "role-hover",
+        "value": "160ms ease",
+        "purpose": "Subtle background and padding response; disabled for reduced motion."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Role link",
+      "kind": "nav",
+      "description": "One of five equally visible role entry links.",
+      "html": "<a class=\"role\" href=\"#\">Donor <span aria-hidden=\"true\">&rarr;</span></a>",
+      "css": ".role {display:flex;align-items:center;justify-content:space-between;min-height:76px;padding:16px 0;border-bottom:1px solid #93a58b;color:#08130a;font-size:28px;text-decoration:none;} .role:hover {background:#e7f7d2;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Space for sharing",
+    "overview": "A full-width photographic homepage with separate, generously spaced introduction, role selection, impact and workflow sections.",
+    "keyCharacteristics": [
+      "Full width",
+      "Open typography",
+      "Separate role section",
+      "Natural photography"
+    ],
+    "dos": [
+      "Use the available width",
+      "Keep generous section spacing"
+    ],
+    "donts": [
+      "Compress the narrative into one viewport",
+      "Enclose all roles in a pill"
+    ]
+  }
+}

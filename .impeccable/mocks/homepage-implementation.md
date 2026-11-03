@@ -13,3 +13,9 @@ Fonts: Inter Tight 400, 600 and 700 from the Google Fonts distribution; license 
 Removed negative headline tracking, increased supporting type width, widened the role label, and reduced homepage header height by 22px. A new photographic asset is composed for the panoramic crop, preserving visible hair and separation from the subtitle; its exact generation prompt is recorded in `homepage-handover-wide.provenance.json`. Mobile uses a shorter proportional crop.
 
 Revalidated the production build, both frontend tests, and headless browser role links, touch targets, navigation, overflow and recipient registration selection at desktop, tablet, mobile and narrow widths. Additional checks pass at 1440, 1024 and 901px. Independent screenshot review confirms the identified compression issues improve with no material regression. A minor lower-hand crop remains on desktop. The earlier full comp workflow is still uncompleted; these targeted fixes do not assert a full fidelity-gate pass or deployment.
+
+## Full-width redesign
+
+The user subsequently replaced the V2-2 reproduction goal with a full-width breathable redesign and delegated all decisions. Introductory copy now sits above the photograph, all primary homepage sections use the available viewport with consistent fluid gutters, roles have their own open section, and vertical spacing intentionally supports scrolling. The new homepage authority is DESIGN.md and the updated surface brief. Earlier mock-comparison failures describe a superseded composition.
+
+Production build, both frontend tests, layout detector and browser checks pass. Checked 320, 390, 768, 901, 1440, 1536, 1920 and 2560px widths for role routes, touch targets, overflow and applicable menu behavior. Independent review of the new composition found no material visual issues and additionally checked intermediate breakpoints. No publication or backend validation was performed.

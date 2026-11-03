@@ -17,11 +17,13 @@
 }
 
 .fb-header--home { border-bottom: 0; background: white; font-family: 'Inter Tight', sans-serif; }
-.fb-header--home .fb-header-inner { max-width: 1536px; padding: 7px 4%; }
-.fb-header--home .fb-brand { font-size: clamp(28px, 3vw, 44px); color: #08130a; }
+.fb-header--home .fb-header-inner { max-width: none; padding: 28px clamp(24px, 6vw, 144px); }
+.fb-header--home .fb-brand { font-size: clamp(28px, 2.4vw, 40px); color: #08130a; }
 .fb-header--home .fb-brand span { color: #7bb817; }
 .fb-header--home .fb-navigation { gap: 36px; }
 .fb-header--home .fb-navigation > a:not(.fb-button) { color: #08130a; font-size: 20px; font-weight: 600; }
 .fb-header--home .fb-button--ghost { background: #b7ef32; color: #08130a; border-radius: 28px; font-size: 18px; }
 .fb-header--home .fb-button--ghost:hover { background: #a4dc24; }
 @media (max-width: 759px) { .fb-header--home .fb-navigation { gap: 8px; } .fb-header--home .fb-header-inner { padding: 16px 24px; } }
+
+.fb-footer--home .fb-footer-inner { max-width: none; padding: 48px clamp(24px, 6vw, 144px); }

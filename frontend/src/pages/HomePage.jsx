@@ -14,7 +14,7 @@ export default function HomePage() {
         <img className="fb-handover" src="/images/homepage-handover-wide.png" width="1536" height="1024" alt="Illustration of two people sharing a crate of fresh vegetables" fetchPriority="high" />
         <div className="fb-home-copy">
           <h1 id="home-title">More shared.<br />Less wasted.</h1>
-          <p>Food sharing and waste collection in Sri Lanka.</p>
+          <div className="fb-home-intro"><p>Food sharing and waste collection in Sri Lanka.</p><a href="#role-title">Choose your role <ArrowRight size={20} aria-hidden="true" /></a></div>
         </div>
       </section>
       <div className="fb-home-entry">
