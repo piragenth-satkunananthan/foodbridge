@@ -43,7 +43,10 @@ export default function HomePage() {
         <div className="fb-home-message">
           <h1 id="home-title">A little sharing.<br />A lot of<br /><span>possibility.</span></h1>
           <p>Food sharing and waste collection in Sri Lanka. Bring what you have. Find where you can help.</p>
-          <div className="fb-home-principle"><span>Food for sharing.</span><span>Waste for separate collection.</span></div>
+          <div className="fb-home-principle">
+            <span><span className="fb-principle-dot" aria-hidden="true" />Food for sharing</span>
+            <span><span className="fb-principle-dot fb-principle-dot--waste" aria-hidden="true" />Waste for separate collection</span>
+          </div>
           <a className="fb-home-explore" href="#how-it-works">See how it works <ArrowDown size={20} aria-hidden="true" /></a>
         </div>
         <div className="fb-home-directory">
@@ -84,8 +87,8 @@ export default function HomePage() {
               <li><strong>Matching:</strong> Local district dispatch to ensure fast, safe handover within the collection window.</li>
             </ul>
           </article>
-          <article className="fb-stream-column">
-            <span className="fb-stream-tag">Stream 02 &middot; Separate Recovery</span>
+          <article className="fb-stream-column fb-stream-column--waste">
+            <span className="fb-stream-tag fb-stream-tag--waste">Stream 02 &middot; Separate Recovery</span>
             <h3>Waste for collection</h3>
             <p className="fb-stream-desc">Inedible food scraps, spoiled produce, agricultural byproducts, and clean packaging like cardboard, glass, and plastic.</p>
             <ul className="fb-stream-specs">
