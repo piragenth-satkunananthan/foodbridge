@@ -165,3 +165,22 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 
 .site-footer { margin-top: auto; }
 .admin-page .plaid-card { border: 0; border-radius: 0 !important; padding-left: 0; padding-right: 0; background: transparent; }
+
+/* Auth pages — fb-* design system */
+.auth-page { display: flex; justify-content: center; align-items: flex-start; min-height: calc(100dvh - 72px); padding: 48px 20px 72px; background: var(--color-background); }
+.auth-card { width: min(480px, 100%); }
+.auth-card .auth-intro { margin-bottom: 28px; }
+.auth-card .auth-intro h1 { font-size: 28px; font-weight: 650; letter-spacing: -.03em; color: var(--color-text); }
+.auth-card .auth-intro p { margin-top: 10px; font-size: var(--text-sm); color: var(--color-muted); }
+.auth-card .auth-intro a { color: var(--color-primary); }
+.auth-card form { display: grid; gap: var(--space-4); }
+.auth-submit { width: 100%; margin-top: var(--space-2); }
+.auth-form-error { margin-top: var(--space-2); }
+.auth-form-columns { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.auth-role-note { font-size: var(--text-sm); color: var(--color-muted); line-height: 1.6; padding: var(--space-3) var(--space-4); background: var(--color-background); border-left: 3px solid var(--color-border); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.auth-demo { border-top: 1px solid var(--color-border); padding-top: var(--space-6); margin-top: var(--space-6); }
+.auth-demo summary { cursor: pointer; font-size: var(--text-sm); color: var(--color-primary); font-weight: 600; }
+.auth-demo-note { font-size: 13px; color: var(--color-muted); margin: var(--space-3) 0; }
+.auth-demo-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+@media (max-width: 480px) { .auth-form-columns { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .auth-page { padding: 32px 16px 48px; } }

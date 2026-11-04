@@ -32,7 +32,7 @@
 .fb-home-workflow li p { margin-top: 16px; font-size: 16px; line-height: 1.8; color: var(--home-muted); max-width: 38ch; }
 .fb-home-outcomes { display: flex; align-items: center; justify-content: space-between; gap: 64px; padding: 80px var(--home-gutter); background: var(--home-ink); color: #fff; }
 .fb-home-outcomes p { max-width: 45ch; font-size: 17px; line-height: 1.75; color: #d4e3d9; margin-top: 24px; }
-.fb-home-outcomes a { display: inline-flex; align-items: center; justify-content: space-between; gap: 32px; padding: 20px 0; color: #fff; font-size: 17px; text-decoration: none; border-bottom: 1px solid #92b59f; }
+.fb-home-outcomes a { display: inline-flex; align-items: center; justify-content: space-between; gap: 32px; padding: 20px 0; color: #fff; font-size: 17px; text-decoration: underline; text-decoration-color: #92b59f; text-underline-offset: 5px; border-bottom: 1px solid #92b59f; }
 .fb-home-outcomes a:focus-visible { outline-color: var(--home-yellow); }
 .fb-home-outcomes a:hover { color: var(--home-yellow); }
 @media (max-width: 1100px) {
