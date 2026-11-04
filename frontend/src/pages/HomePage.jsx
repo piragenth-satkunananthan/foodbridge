@@ -5,11 +5,31 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/home.css';
 
 const roles = [
-  { name: 'Donor', detail: 'Share surplus food or post waste for collection.' },
-  { name: 'Recipient', detail: 'Register your food-receiving organisation.' },
-  { name: 'Recycler', detail: 'Register your waste-collection organisation.' },
-  { name: 'Volunteer', detail: 'Help with local pickups and deliveries.' },
-  { name: 'Admin', detail: 'Manage accounts, verification and activity.' },
+  {
+    name: 'Donor',
+    detail: 'Share surplus food or post waste for collection.',
+    audience: 'Hotels · Restaurants · Caterers'
+  },
+  {
+    name: 'Recipient',
+    detail: 'Register your food-receiving organisation.',
+    audience: 'Charities · Shelters · Care Homes'
+  },
+  {
+    name: 'Recycler',
+    detail: 'Register your waste-collection organisation.',
+    audience: 'Composters · Bio-gas · Processors'
+  },
+  {
+    name: 'Volunteer',
+    detail: 'Help with local pickups and deliveries.',
+    audience: 'Couriers · Riders · Drivers'
+  },
+  {
+    name: 'Admin',
+    detail: 'Manage accounts, verification and activity.',
+    audience: 'Verification & Audits'
+  },
 ];
 
 const faqs = [
@@ -47,18 +67,53 @@ export default function HomePage() {
             <span><span className="fb-principle-dot" aria-hidden="true" />Food for sharing</span>
             <span><span className="fb-principle-dot fb-principle-dot--waste" aria-hidden="true" />Waste for separate collection</span>
           </div>
-          <a className="fb-home-explore" href="#how-it-works">See how it works <ArrowDown size={20} aria-hidden="true" /></a>
+          <div className="fb-home-pulse-strip" role="status" aria-label="Platform operational status">
+            <span className="fb-pulse-live">
+              <span className="fb-pulse-radar" aria-hidden="true" />
+              Platform active
+            </span>
+            <span className="fb-pulse-item">25 districts supported</span>
+            <span className="fb-pulse-item">Verified handovers only</span>
+            <span className="fb-pulse-item">Zero platform fees</span>
+          </div>
+          <div className="fb-home-actions">
+            <a className="fb-home-explore" href="#how-it-works">See how it works <ArrowDown size={20} aria-hidden="true" /></a>
+            {user ? (
+              <Link className="fb-home-subaction" to={`/${user.role}`}>
+                Open your {user.role} dashboard <ArrowRight size={18} aria-hidden="true" />
+              </Link>
+            ) : (
+              <Link className="fb-home-subaction" to="/login">
+                Already active? Sign in <ArrowRight size={18} aria-hidden="true" />
+              </Link>
+            )}
+          </div>
         </div>
         <div className="fb-home-directory">
           <div className="fb-home-directory-heading"><h2>Find your place.</h2><p>{user ? 'You are signed in. Each role link opens your dashboard.' : 'Five roles. One connected community.'}</p></div>
           <nav className="fb-role-picker" aria-label="Choose your role">
-            {roles.map(({ name, detail }) => {
+            {roles.map(({ name, detail, audience }) => {
               const role = name.toLowerCase();
               const target = user ? `/${user.role}` : role === 'admin' ? '/login' : `/register?role=${role}`;
-              return <Link key={role} to={target} aria-label={user ? `${name}: open your dashboard` : role === 'admin' ? 'Admin sign in' : `Register as ${name}`}><span><strong>{name}</strong><span className="fb-role-detail">{detail}</span></span><ArrowUpRight size={24} aria-hidden="true" /></Link>;
+              return (
+                <Link key={role} to={target} aria-label={user ? `${name}: open your dashboard` : role === 'admin' ? 'Admin sign in' : `Register as ${name}`}>
+                  <span className="fb-role-body">
+                    <span className="fb-role-header">
+                      <strong>{name}</strong>
+                      <span className="fb-role-audience">{audience}</span>
+                    </span>
+                    <span className="fb-role-detail">{detail}</span>
+                  </span>
+                  <ArrowUpRight size={24} aria-hidden="true" />
+                </Link>
+              );
             })}
           </nav>
           <p className="fb-home-availability">Recipient and recycler browsing and claims are not available yet. Admin access requires sign-in.</p>
+          <div className="fb-home-coverage">
+            <span className="fb-coverage-icon" aria-hidden="true">📍</span>
+            <span>Coordinating locally across <strong>Colombo</strong>, <strong>Gampaha</strong>, <strong>Kandy</strong>, <strong>Galle</strong>, <strong>Jaffna</strong> &amp; all 25 Sri Lankan districts</span>
+          </div>
         </div>
       </section>
 
