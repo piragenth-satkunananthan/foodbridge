@@ -1,51 +1,51 @@
 @font-face { font-family: 'Inter Tight'; src: url('/fonts/inter-tight-400.ttf') format('truetype'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'Inter Tight'; src: url('/fonts/inter-tight-600.ttf') format('truetype'); font-weight: 600; font-display: swap; }
 @font-face { font-family: 'Inter Tight'; src: url('/fonts/inter-tight-700.ttf') format('truetype'); font-weight: 700; font-display: swap; }
- .fb-home { --home-ink: #102516; --home-paper: #fff; --home-green: #b7ef32; --home-gutter: clamp(24px, 5vw, 128px); width: 100%; background: var(--home-paper); color: var(--home-ink); font-family: 'Inter Tight', sans-serif; }
+.fb-home { --home-ink: #102516; --home-paper: #fff; --home-green: #b7ef32; --home-gutter: clamp(24px, 5vw, 128px); --home-section: clamp(64px, 7vw, 112px); --home-columns: minmax(0, 3fr) minmax(0, 2fr); --home-column-gap: clamp(32px, 5vw, 80px); width: 100%; background: var(--home-paper); color: var(--home-ink); font-family: 'Inter Tight', sans-serif; }
 .fb-home ::selection { background: var(--home-green); color: var(--home-ink); }
 .fb-home a:focus-visible { outline: 3px solid #26743b; outline-offset: 6px; }
 .fb-home h1, .fb-home h2, .fb-home h3, .fb-home p { margin: 0; }
 .fb-home-hero { padding-top: 72px; }
-.fb-home-copy { display: grid; grid-template-columns: 1.4fr 1fr; align-items: end; gap: 6vw; padding: 0 var(--home-gutter) 56px; }
+.fb-home-copy { display: grid; grid-template-columns: var(--home-columns); align-items: start; gap: var(--home-column-gap); padding: 0 var(--home-gutter) 56px; }
 .fb-home h1 { font-size: clamp(60px, 6.5vw, 96px); font-weight: 700; line-height: 1.06; letter-spacing: -.025em; }
 .fb-home h1 span { color: #26743b; }
 .fb-home-intro > p { max-width: 38ch; font-size: 22px; line-height: 1.6; }
-.fb-home-action { display: inline-flex; align-items: center; justify-content: space-between; gap: 48px; margin-top: 28px; padding: 18px 24px; background: var(--home-green); color: var(--home-ink); font-size: 18px; font-weight: 600; text-decoration: none; }
+.fb-home-action { display: inline-flex; align-items: center; justify-content: space-between; gap: 48px; margin-top: 32px; padding: 16px 24px; min-height: 56px; background: var(--home-green); color: var(--home-ink); font-size: 18px; font-weight: 600; text-decoration: none; }
 .fb-home-action:hover { background: #a5dd24; }
 .fb-home-photo { margin: 0; }
 .fb-home-photo img { display: block; width: 100%; height: auto; aspect-ratio: 2.2; object-fit: cover; object-position: center 55%; }
-.fb-home-photo figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; padding: 20px var(--home-gutter); font-size: 14px; line-height: 1.5; color: #49614c; }
-.fb-home-entry { padding: 104px var(--home-gutter) 112px; }
+.fb-home-photo figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding: 24px var(--home-gutter); font-size: 14px; line-height: 1.5; color: #49614c; }
+.fb-home-entry { padding: var(--home-section) var(--home-gutter); }
 .fb-home h2 { font-size: clamp(36px, 3.5vw, 60px); font-weight: 600; line-height: 1.15; letter-spacing: -.02em; }
 #role-title, #how-it-works { scroll-margin-top: 40px; }
-.fb-role-intro { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px 6vw; align-items: start; }
+.fb-role-intro { display: grid; grid-template-columns: var(--home-columns); gap: 16px var(--home-column-gap); align-items: start; }
 .fb-role-intro h2 { grid-row: 1 / 3; }
 .fb-role-intro > p { font-size: 20px; line-height: 1.65; max-width: 38ch; }
 .fb-role-intro .fb-home-notes { font-size: 15px; color: #49614c; }
-.fb-role-picker { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px; margin-top: 64px; }
-.fb-role-picker a { display: flex; flex-direction: column; align-items: start; gap: 24px; padding: 28px 0; border-top: 2px solid #26743b; color: inherit; text-decoration: none; transition: background-color 180ms ease-out; }
+.fb-role-picker { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 32px; margin-top: 56px; }
+.fb-role-picker a { display: flex; flex-direction: column; align-items: start; gap: 24px; padding: 32px 0; border-top: 2px solid #26743b; color: inherit; text-decoration: none; transition: background-color 180ms ease-out; }
 .fb-role-picker a:hover { background: #f2f8e6; }
 .fb-role-name { font-size: clamp(24px, 2vw, 32px); font-weight: 600; }
 .fb-role-description { font-size: 17px; line-height: 1.6; color: #49614c; flex: 1; }
 .fb-role-picker svg { transition: transform 180ms ease-out; }
 .fb-role-picker a:hover svg { transform: translateX(4px); }
-.fb-how { padding: 112px var(--home-gutter); background: #f2f8e6; }
-.fb-how-heading { display: flex; align-items: end; justify-content: space-between; gap: 48px; }
-.fb-how-heading > p { max-width: 28ch; font-size: 20px; line-height: 1.65; }
-.fb-how ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5vw; list-style: none; counter-reset: step; margin: 72px 0 0; padding: 0; }
-.fb-how li { counter-increment: step; border-top: 1px solid #b4c5a7; padding-top: 28px; }
+.fb-how { padding: var(--home-section) var(--home-gutter); background: #f2f8e6; }
+.fb-how-heading { display: grid; grid-template-columns: var(--home-columns); align-items: start; gap: var(--home-column-gap); }
+.fb-how-heading > p { max-width: 38ch; font-size: 20px; line-height: 1.65; }
+.fb-how ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; list-style: none; counter-reset: step; margin: 56px 0 0; padding: 0; }
+.fb-how li { counter-increment: step; border-top: 1px solid #b4c5a7; padding-top: 32px; }
 .fb-how li::before { content: 'Step ' counter(step); display: block; font-size: 14px; margin-bottom: 32px; color: #49614c; }
-.fb-how h3 { font-size: 28px; font-weight: 600; margin-bottom: 20px; }
+.fb-how h3 { font-size: 28px; font-weight: 600; margin-bottom: 16px; }
 .fb-how li p { color: #49614c; line-height: 1.7; font-size: 18px; max-width: 38ch; }
-.fb-home-impact { padding: 104px var(--home-gutter); background: var(--home-green); display: flex; align-items: end; justify-content: space-between; gap: 64px; }
-.fb-home-impact > div { max-width: 33ch; }
-.fb-home-impact p { font-size: 20px; line-height: 1.65; margin-bottom: 28px; }
+.fb-home-impact { padding: var(--home-section) var(--home-gutter); background: var(--home-green); display: grid; grid-template-columns: var(--home-columns); align-items: start; gap: var(--home-column-gap); }
+.fb-home-impact > div { max-width: 38ch; }
+.fb-home-impact p { font-size: 20px; line-height: 1.65; margin-bottom: 24px; }
 .fb-home-impact a { display: inline-flex; align-items: center; gap: 24px; color: inherit; min-height: 48px; font-size: 18px; text-underline-offset: 8px; }
 @media (max-width: 1100px) {
-  .fb-home-copy { grid-template-columns: 1.2fr 1fr; gap: 32px; }
+  .fb-home { --home-column-gap: 32px; }
   .fb-home h1 { font-size: clamp(48px, 6.5vw, 72px); }
   .fb-home-intro > p { font-size: 20px; }
-  .fb-role-picker { gap: 20px; }
+  .fb-role-picker { gap: 24px; }
   .fb-role-name { font-size: 24px; }
   .fb-role-description { font-size: 16px; }
 }
@@ -55,7 +55,7 @@
 }
 @media (max-width: 759px) {
   .fb-home-hero { padding-top: 40px; }
-  .fb-home-copy { grid-template-columns: 1fr; gap: 28px; padding-bottom: 40px; }
+  .fb-home-copy { grid-template-columns: 1fr; gap: 32px; padding-bottom: 40px; }
   .fb-home h1 { font-size: clamp(48px, 9vw, 68px); }
   .fb-home-intro > p { font-size: 19px; }
   .fb-home-photo img { aspect-ratio: 1.5; object-position: right center; }
@@ -70,8 +70,8 @@
   .fb-how { padding-top: 64px; padding-bottom: 64px; }
   .fb-how-heading { display: block; }
   .fb-how-heading > p { margin-top: 24px; }
-  .fb-how ol { grid-template-columns: 1fr; gap: 36px; margin-top: 40px; }
-  .fb-how li::before { margin-bottom: 20px; }
-  .fb-home-impact { flex-direction: column; align-items: start; padding-top: 64px; padding-bottom: 64px; gap: 32px; }
+  .fb-how ol { grid-template-columns: 1fr; gap: 40px; margin-top: 40px; }
+  .fb-how li::before { margin-bottom: 16px; }
+  .fb-home-impact { grid-template-columns: 1fr; align-items: start; padding-top: 64px; padding-bottom: 64px; gap: 32px; }
 }
 @media (prefers-reduced-motion: reduce) { .fb-role-picker a, .fb-role-picker svg { transition: none; } }

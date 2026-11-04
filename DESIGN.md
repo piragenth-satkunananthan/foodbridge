@@ -21,7 +21,7 @@ typography:
     lineHeight: 1.65
 spacing:
   gutter: "clamp(24px, 5vw, 128px)"
-  section: "112px"
+  section: "clamp(64px, 7vw, 112px)"
   mobile-section: "64px"
 ---
 
@@ -36,3 +36,7 @@ A full-width composition uses a shared fluid gutter. The headline and introducti
 Below 901px, roles become equal rows rather than squeezing five columns. At 759px, introduction and workflow stack with 64px section spacing. The image uses 1.5:1 framing. Headlines wrap naturally.
 
 Preserve registration preselection, admin sign-in, authenticated dashboard routing and visible recipient/recycler limitations. Green focus outlines and reduced-motion support remain.
+
+## Alignment and spacing refinement
+
+Use the same 3:2 content grid for the hero introduction, role introduction, workflow heading and impact section. Supporting text starts at the same horizontal position. The shared column gap scales from 32px to 80px; section padding scales from 64px to 112px. Role and workflow grids use 32px gaps on desktop, with 56px between introductions and their grids. Mobile content groups use 16/24/32/40px spacing and 64px section insets. Header navigation uses gaps without additional link margins. Preserve the full-width image and existing theme.

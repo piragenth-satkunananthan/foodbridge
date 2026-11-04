@@ -33,3 +33,9 @@ Finish disposition: implemented and locally verified. Earlier V2-2 fidelity targ
 User selected Fresh & bold: white, vivid green, oversized sans-serif headline, panoramic hero and five equal role columns. Implemented with equal rows below 901px, preserving content, limitations and role routing. Independent visual review returned Ship; improved panorama framing from 2.4:1 to 2.2:1 following its minor crop feedback.
 
 Finish: locally implemented. Eight-width browser checks and production build pass after final crop change; both frontend tests pass. Layout detector found no issues. Existing bundle-size warning remains. No deployment or backend workflow checks performed.
+
+## Alignment refinement with ui-ux-pro-max
+
+Kept direction A and all content. Aligned section introductions to a common 3:2 grid; standardized fluid section spacing, grid gaps and internal spacing; removed compounded header link margins. Changes are homepage-only CSS.
+
+Validation: production build passes with the existing chunk-size warning. Existing eight-width browser smoke checks pass. Additional checks at 375px, landscape 812px, 760px, 1100px and 1536px pass shared-column alignment, desktop role-arrow alignment and text-spacing reflow with reduced motion. Desktop/mobile captures inspected. Backend checks omitted for CSS-only work; no deployment.
