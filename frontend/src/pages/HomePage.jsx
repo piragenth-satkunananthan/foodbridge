@@ -20,8 +20,8 @@ export default function HomePage() {
         <div className="fb-home-message">
           <h1 id="home-title">A little sharing.<br />A lot of<br /><span>possibility.</span></h1>
           <p>Food sharing and waste collection in Sri Lanka. Bring what you have. Find where you can help.</p>
-          <a className="fb-home-explore" href="#how-it-works">See how it works <ArrowDown size={20} aria-hidden="true" /></a>
           <div className="fb-home-principle"><span>Food for sharing.</span><span>Waste for separate collection.</span></div>
+          <a className="fb-home-explore" href="#how-it-works">See how it works <ArrowDown size={20} aria-hidden="true" /></a>
         </div>
         <div className="fb-home-directory">
           <div className="fb-home-directory-heading"><h2>Find your place.</h2><p>{user ? 'You are signed in. Each role link opens your dashboard.' : 'Five roles. One connected community.'}</p></div>
