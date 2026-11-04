@@ -21,7 +21,7 @@ FINISH: Independent reviewer returned ship after the impact-link focus outline w
 
 ## Content and interaction
 
-All five role rows are visible: Donor, Recipient, Recycler, Volunteer and Admin. Anonymous non-admin links preselect the registration role; Admin links to sign-in. Authenticated users are routed to their own role dashboard, and the directory heading explicitly explains that every role link opens their existing dashboard. The workflow anchor scrolls to three steps, followed by a dark closing section linking to community impact.
+All five role rows are visible: Donor, Recipient, Recycler, Volunteer and Admin. Anonymous non-admin links preselect the registration role; Admin links to sign-in. Authenticated users are routed to their own role dashboard, and the directory heading explicitly explains that every role link opens their existing dashboard. The workflow anchor scrolls to three steps, followed by a dual-stream breakdown (edible food vs separate waste recovery), a three-pillar safety and verification standards section, a native accessible FAQ accordion, and a dark closing section linking to community impact.
 
 Recipient and recycler browsing and claims remain unavailable; the directory states this limitation. Food deliveries and waste collection are reported separately. No fabricated statistics or photography are included.
 
