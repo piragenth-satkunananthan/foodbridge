@@ -111,63 +111,8 @@ export default function HomePage() {
           </nav>
           <p className="fb-home-availability">Recipient and recycler browsing and claims are not available yet. Admin access requires sign-in.</p>
           <div className="fb-home-coverage">
-            <div className="fb-coverage-graphic" aria-hidden="true">
-              <svg viewBox="0 0 240 360" className="fb-srilanka-map" role="img" aria-label="Sri Lanka District Coordination Network">
-                <defs>
-                  <linearGradient id="islandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#e8f3ea" />
-                    <stop offset="100%" stopColor="#dcefe0" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M 55,12 C 68,16 82,32 90,42 C 105,55 125,75 145,95 C 160,108 172,118 178,135 C 190,160 212,185 216,215 C 218,235 210,265 198,285 C 185,310 165,328 152,335 C 135,345 115,354 100,352 C 85,350 72,342 65,335 C 52,320 45,298 42,280 C 35,255 33,235 32,210 C 30,185 24,160 26,145 C 28,125 36,95 40,75 C 44,55 48,25 55,12 Z"
-                  fill="url(#islandGrad)"
-                  stroke="#b8d9c0"
-                  strokeWidth="1.5"
-                />
-                <g className="fb-map-routes" stroke="#3c7959" strokeWidth="1.2" strokeDasharray="3,3" opacity="0.75">
-                  <line x1="55" y1="22" x2="96" y2="95" />
-                  <line x1="96" y1="95" x2="87" y2="131" />
-                  <line x1="87" y1="131" x2="165" y2="115" />
-                  <line x1="165" y1="115" x2="204" y2="186" />
-                  <line x1="87" y1="131" x2="83" y2="209" />
-                  <line x1="83" y1="209" x2="112" y2="226" />
-                  <line x1="112" y1="226" x2="204" y2="186" />
-                  <line x1="83" y1="209" x2="42" y2="258" />
-                  <line x1="112" y1="226" x2="149" y2="253" />
-                  <line x1="42" y1="258" x2="69" y2="335" />
-                  <line x1="69" y1="335" x2="102" y2="346" />
-                  <line x1="102" y1="346" x2="156" y2="330" />
-                  <line x1="149" y1="253" x2="156" y2="330" />
-                </g>
-                <g className="fb-map-nodes">
-                  <circle cx="55" cy="22" r="3.5" fill="#167347" />
-                  <circle cx="87" cy="131" r="3" fill="#167347" />
-                  <circle cx="165" cy="115" r="3" fill="#167347" />
-                  <circle cx="112" cy="226" r="4" fill="#167347" />
-                  <circle cx="204" cy="186" r="3" fill="#167347" />
-                  <circle cx="42" cy="258" r="6" fill="#167347" opacity="0.3" className="fb-colombo-pulse" />
-                  <circle cx="42" cy="258" r="4" fill="#b54726" />
-                  <circle cx="69" cy="335" r="3.5" fill="#167347" />
-                  <circle cx="149" cy="253" r="3" fill="#167347" />
-                </g>
-              </svg>
-            </div>
-            <div className="fb-coverage-details">
-              <div className="fb-coverage-header">
-                <span className="fb-coverage-live-badge">Dispatch Map</span>
-                <strong>25 Administrative Districts</strong>
-              </div>
-              <p>Surplus food &amp; recyclable waste are coordinated locally across Sri Lanka to minimize travel time and prevent spoilage.</p>
-              <div className="fb-coverage-districts-list">
-                <span>Colombo</span>
-                <span>Gampaha</span>
-                <span>Kandy</span>
-                <span>Galle</span>
-                <span>Jaffna</span>
-                <span>+20 more</span>
-              </div>
-            </div>
+            <span className="fb-coverage-icon" aria-hidden="true">📍</span>
+            <span>Coordinating locally across <strong>Colombo</strong>, <strong>Gampaha</strong>, <strong>Kandy</strong>, <strong>Galle</strong>, <strong>Jaffna</strong> &amp; all 25 Sri Lankan districts</span>
           </div>
         </div>
       </section>
