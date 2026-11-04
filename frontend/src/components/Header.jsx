@@ -16,11 +16,12 @@ export default function Header() {
     if (event.key === 'Escape' && open) { setOpen(false); menuRef.current?.focus(); }
   };
   return (
-    <header className="fb-header" onKeyDown={closeMenu}>
+    <header className={`fb-header ${pathname === '/' ? 'fb-header--home' : ''}`} onKeyDown={closeMenu}>
       <div className="fb-header-inner">
         <Link to="/" className="fb-brand">FoodBridge<span aria-hidden="true">.</span></Link>
         <Button ref={menuRef} className="fb-menu-toggle" variant="secondary" aria-expanded={open} aria-controls="site-navigation" onClick={() => setOpen(!open)}>{open ? 'Close' : 'Menu'}</Button>
         <nav id="site-navigation" className={`fb-navigation ${open ? 'is-open' : ''}`} aria-label="Main navigation" onClick={() => setOpen(false)}>
+          {pathname === '/' && <a href="#how-it-works">How it works</a>}
           <Link to="/impact" aria-current={pathname === '/impact' ? 'page' : undefined}>Community impact</Link>
           {user ? <><Button to={`/${user.role}`} variant="secondary">My dashboard</Button><Button variant="ghost" onClick={() => { logout(); navigate('/login'); }}>Sign out</Button></> : <><Button to="/login" variant="ghost">Sign in</Button><Button to="/register">Sign up</Button></>}
         </nav>
