@@ -1,61 +1,38 @@
 ---
 name: FoodBridge homepage
-description: Open, full-width food-sharing homepage
+description: Spacious editorial homepage with a split hero and role directory
 colors:
-  ink: "#08130a"
-  lime: "#b7ef32"
-  soft: "#e7f7d2"
-  surface: "#ffffff"
-  muted: "#466044"
+  ink: "#233d32"
+  surface: "#f8f6ef"
+  white: "#ffffff"
+  muted: "#596958"
+  accent: "#a84c2d"
 typography:
   display:
     fontFamily: "Inter Tight, sans-serif"
-    fontSize: "clamp(64px, 6.5vw, 112px)"
+    fontSize: "clamp(60px, 5.7vw, 96px)"
     fontWeight: 600
-    lineHeight: 1.04
-    letterSpacing: "-0.015em"
+    lineHeight: 1.08
+    letterSpacing: "-0.025em"
   body:
     fontFamily: "Inter Tight, sans-serif"
-    fontSize: "19px"
+    fontSize: "21px"
     fontWeight: 400
-    lineHeight: 1.7
+    lineHeight: 1.65
 spacing:
-  gutter: "clamp(24px, 6vw, 144px)"
-  section: "80px"
-  section-large: "120px"
+  gutter: "clamp(24px, 5vw, 128px)"
+  section: "112px"
+  mobile-section: "64px"
 ---
 
-## Overview
+## Homepage direction
 
-This record describes the homepage only. Role dashboards retain their existing system. The user requested a breathable redesign using the full available width and delegated design choices. This replaces the V2-2 composition as homepage authority.
+The user requested a redesign from scratch after rejecting the previous compositions. This replaces their layout and palette. Dashboards and other routes retain the existing design system.
 
-## Colors
+Warm paper and deep green create a calm, open canvas. Self-hosted Inter Tight carries headings and body copy; Georgia italic provides selective editorial emphasis. No shadows, enclosing cards, invented metrics or decorative icons.
 
-White provides the continuous ground. Evergreen ink carries text. Lime marks sign-in; pale green separates the impact section. Muted evergreen carries supporting copy.
+The full-width layout has a shared fluid gutter. A split hero pairs the introduction and role anchor with a square image, focused on the receiving person. Its caption discloses the AI-generated illustration. The white role section pairs an introduction with five equal, ruled rows containing role names, explanations and links. A three-step workflow follows on paper. A dark green impact section closes the narrative.
 
-## Typography
+At 1100px role descriptions wrap beneath names. At 759px the hero, role introduction, workflow and impact content stack, with 64px section spacing. The image becomes 1.2:1. Headlines remain readable without squeezing their tracking.
 
-Use self-hosted Inter Tight. Display type is medium-weight and open, with a 1.04 line height. Supporting copy has a readable measure and generous line spacing.
-
-## Layout
-
-Use the full viewport width. A shared fluid gutter aligns header, copy, role links, impact content, explanatory steps and footer. The introduction places headline and supporting copy in separate columns above a full-width 2:1 photograph. Roles occupy their own section, with five equal links and no enclosing pill. At 759px and below, copy stacks, photography uses a 1.65 ratio, and roles form two columns. Never fit the entire narrative into one screen by compressing it.
-
-## Elevation & Depth
-
-No homepage shadows. Space, subtle rules and a pale-green field distinguish sections.
-
-## Shapes
-
-Role links use simple bottom rules. Sign-in remains a compact rounded control. Photography has no decorative mask.
-
-## Components
-
-The introductory role anchor moves to the five direct role links. Signed-out admins sign in; other roles register with the role preselected. Signed-in visitors continue to their dashboard. Keep organisation availability disclosures visible.
-
-## Do's and Don'ts
-
-- Give content room to scroll and preserve the photograph's proportions.
-- Keep all five roles equally discoverable.
-- Preserve factual limitations and illustrative-image disclosure.
-- Do not restore the dense numbered directory or enclosing role pill.
+Role links preserve registration preselection, admin sign-in and authenticated dashboard routing. Recipient and recycler limitations remain visible. Keyboard focus uses a rust outline; hover feedback is limited to role rows and actions, with reduced-motion support.

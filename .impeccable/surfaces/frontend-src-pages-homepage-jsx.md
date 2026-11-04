@@ -11,14 +11,14 @@ Mode: Persuade. The user requested a full-width breathable redesign and delegate
 
 ## Direction contract
 
-THESIS: Let the story use the full page rather than fit its content into one viewport.
+THESIS: Give food sharing a new beginning with an open editorial page.
 
-OWN-WORLD: White space, evergreen type, lime sign-in, pale-green impact field; natural photography, open medium-weight type and flat surfaces.
+OWN-WORLD: Warm paper, deep green, restrained serif emphasis and flat photographic presentation. No lime bar or full-width image below the headline.
 
-STORY: Understand FoodBridge, follow the introductory role anchor, choose among five equal roles, or inspect actual community impact.
+STORY: Understand FoodBridge, find a role in five equal descriptive rows, understand the workflow and inspect recorded impact.
 
-FIRST VIEWPORT: Spacious full-width masthead, a headline and supporting copy in separate columns, then the beginning of a full-width photograph. Role links form the next independent section.
+FIRST VIEWPORT: Split hero with headline, introductory copy and role anchor on the left; a square handover image and honest illustration caption on the right. Stack on mobile.
 
-FORM: User-directed full-width photographic redesign. The user explicitly replaced the constrained composition and delegated decisions; prior seed:b6c22949f7aa1b0f is historical.
+FORM: The user's explicit "redesign from scratch" replaces previous layout contracts. Existing images are reused; past comps remain historical references.
 
-FINISH: Independent visual review passed across desktop, phone and wide captures. Build, both frontend tests, browser checks at eight widths and layout detector pass. DESIGN.md and its sidecar document the implemented homepage. No deployment is claimed.
+FINISH: Production build and frontend tests pass. Browser checks at eight widths (320-2560px) verify role routes, touch targets, overflow and registration preselection. Desktop and mobile captures visually inspected. No deployment is claimed.

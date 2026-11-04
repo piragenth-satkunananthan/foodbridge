@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-11-03T17:39:11.892294+00:00",
-  "title": "FoodBridge homepage",
+  "title": "FoodBridge editorial homepage",
   "extensions": {
     "breakpoints": [
       {
@@ -16,36 +16,28 @@
     "motion": [
       {
         "name": "role-hover",
-        "value": "160ms ease",
-        "purpose": "Subtle background and padding response; disabled for reduced motion."
+        "value": "180ms ease-out",
+        "purpose": "Row background and arrow response; reduced-motion disables transitions."
       }
     ]
   },
-  "components": [
-    {
-      "name": "Role link",
-      "kind": "nav",
-      "description": "One of five equally visible role entry links.",
-      "html": "<a class=\"role\" href=\"#\">Donor <span aria-hidden=\"true\">&rarr;</span></a>",
-      "css": ".role {display:flex;align-items:center;justify-content:space-between;min-height:76px;padding:16px 0;border-bottom:1px solid #93a58b;color:#08130a;font-size:28px;text-decoration:none;} .role:hover {background:#e7f7d2;}"
-    }
-  ],
+  "components": [],
   "narrative": {
-    "northStar": "Space for sharing",
-    "overview": "A full-width photographic homepage with separate, generously spaced introduction, role selection, impact and workflow sections.",
+    "northStar": "A new beginning for surplus",
+    "overview": "Warm paper split hero, an equal-weight role directory, open workflow and dark impact closing section.",
     "keyCharacteristics": [
-      "Full width",
-      "Open typography",
-      "Separate role section",
-      "Natural photography"
+      "Full-width fluid gutters",
+      "Split photographic hero",
+      "Five descriptive role rows",
+      "Restrained serif emphasis"
     ],
     "dos": [
-      "Use the available width",
-      "Keep generous section spacing"
+      "Allow room to scroll",
+      "Keep actual feature limitations visible"
     ],
     "donts": [
-      "Compress the narrative into one viewport",
-      "Enclose all roles in a pill"
+      "Invent impact figures",
+      "Compress roles into a narrow bar"
     ]
   }
 }

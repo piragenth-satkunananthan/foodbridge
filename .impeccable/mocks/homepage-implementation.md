@@ -19,3 +19,11 @@ Revalidated the production build, both frontend tests, and headless browser role
 The user subsequently replaced the V2-2 reproduction goal with a full-width breathable redesign and delegated all decisions. Introductory copy now sits above the photograph, all primary homepage sections use the available viewport with consistent fluid gutters, roles have their own open section, and vertical spacing intentionally supports scrolling. The new homepage authority is DESIGN.md and the updated surface brief. Earlier mock-comparison failures describe a superseded composition.
 
 Production build, both frontend tests, layout detector and browser checks pass. Checked 320, 390, 768, 901, 1440, 1536, 1920 and 2560px widths for role routes, touch targets, overflow and applicable menu behavior. Independent review of the new composition found no material visual issues and additionally checked intermediate breakpoints. No publication or backend validation was performed.
+
+## Scratch redesign - 2026-11-04
+
+User requested replacement of the previous composition. Implemented warm paper/deep green split hero, descriptive equal-weight role rows, open workflow and dark impact closing section. Reused the existing disclosed illustration with right-aligned subject framing. Updated homepage-only navigation styling and design records.
+
+Validation: production build passes (existing >500 kB chunk warning); both frontend tests pass; Playwright checks at 320, 390, 768, 901, 1440, 1536, 1920 and 2560px pass role routing, touch targets, overflow, registration preselection and page-error checks. Mobile Menu/Escape checked. Independent visual reviewer returned Ship for desktop/mobile/wide and checked 760/1101px boundaries. Layout detector returned no findings; git diff whitespace check passes.
+
+Finish disposition: implemented and locally verified. Earlier V2-2 fidelity target is superseded by the user's scratch redesign request. No deployment or backend workflow validation performed.
