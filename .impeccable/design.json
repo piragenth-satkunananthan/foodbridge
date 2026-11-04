@@ -1,84 +1,154 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-04T02:07:47.427896+00:00",
-  "title": "Design System: FoodBridge homepage",
+  "generatedAt": "2026-11-04T09:34:00Z",
+  "title": "Design System: FoodBridge",
   "extensions": {
+    "colorMeta": {
+      "primary":            { "role": "primary",   "displayName": "Forest Operational Green",  "canonical": "#167347", "tonalRamp": ["#06200f","#0a3019","#0d4022","#10512c","#136337","#167347","#2a8c5e","#4da87e","#7fc5a1","#b3dfc6"] },
+      "primary-hover":      { "role": "primary",   "displayName": "Forest Hover",              "canonical": "#105b37", "tonalRamp": ["#04180e","#082b1a","#0b3b24","#0e4c2e","#105b37","#166947","#2b8460","#52a07e","#86c0a4","#bddecf"] },
+      "primary-soft":       { "role": "primary",   "displayName": "Mint Wash",                 "canonical": "#eaf5ee", "tonalRamp": ["#c8e8d2","#d2edda","#daf1e2","#e2f3e9","#eaf5ee","#eef7f1","#f2f9f4","#f6fbf7","#fafdfb","#ffffff"] },
+      "accent":             { "role": "secondary", "displayName": "Terracotta Accent",          "canonical": "#b54726", "tonalRamp": ["#3a1209","#5c1f0f","#7f2c15","#a33b1b","#b54726","#cc6040","#da8465","#e8a991","#f3ccbd","#faeee9"] },
+      "home-ink":           { "role": "primary",   "displayName": "Deep Forest Ink",           "canonical": "#163e32", "tonalRamp": ["#06160d","#0b2619","#0f3524","#13452f","#163e32","#1f5a44","#38785d","#5e9b7f","#92bfa8","#c8dfd5"] },
+      "home-yellow":        { "role": "tertiary",  "displayName": "Warm Yellow",               "canonical": "#f5de87", "tonalRamp": ["#4f3f00","#7a6200","#a68700","#cfaf00","#eece2c","#f5de87","#f8e9a3","#faf2c0","#fdf8e0","#fffef5"] },
+      "background":         { "role": "neutral",   "displayName": "Sage Off-White",            "canonical": "#f7f9f7", "tonalRamp": ["#c8d4c8","#d6e0d6","#e2ebe2","#ecf2ec","#f4f7f4","#f7f9f7","#f9fbf9","#fbfcfb","#fdfefd","#ffffff"] },
+      "surface":            { "role": "neutral",   "displayName": "Surface White",             "canonical": "#ffffff", "tonalRamp": ["#c8d4c8","#d6e0d6","#e2ebe2","#ecf2ec","#f4f7f4","#f7f9f7","#f9fbf9","#fbfcfb","#fdfefd","#ffffff"] },
+      "text":               { "role": "neutral",   "displayName": "Deep Text",                 "canonical": "#17251c", "tonalRamp": ["#060d09","#0b1710","#101e17","#14261e","#17251c","#253d2e","#3f5c47","#608068","#92a899","#c8d8cc"] },
+      "muted":              { "role": "neutral",   "displayName": "Muted Text — Dashboard",    "canonical": "#526158", "tonalRamp": ["#1a1f1b","#272e28","#353d36","#434c44","#526158","#687970","#86958d","#a5b4ad","#c5d1cd","#e5eceb"] },
+      "border":             { "role": "neutral",   "displayName": "Hairline Border",           "canonical": "#dce4de", "tonalRamp": ["#9fb0a4","#b2c1b8","#c3d0c9","#d1dbd5","#dce4de","#e5ece8","#edf2ef","#f3f7f5","#f9faf9","#ffffff"] },
+      "danger":             { "role": "neutral",   "displayName": "Danger Red",                "canonical": "#b42318", "tonalRamp": ["#3a0905","#5c160c","#802213","#a32118","#b42318","#cc3f34","#da6660","#e89590","#f3c4c2","#faeaea"] },
+      "warning":            { "role": "neutral",   "displayName": "Warning Amber",             "canonical": "#805514", "tonalRamp": ["#2a1a04","#422a08","#5c3c0d","#704a0f","#805514","#9e6e22","#bb8e48","#d4b278","#e9d1aa","#f8eed8"] }
+    },
+    "typographyMeta": {
+      "display":  { "displayName": "Display",  "purpose": "Homepage h1 hero headline only. Manrope variable font 700. Max 37ch." },
+      "headline": { "displayName": "Headline", "purpose": "Homepage section h2 headings. Manrope variable font 650." },
+      "title":    { "displayName": "Title",    "purpose": "Role names, workflow steps (homepage Manrope 700); dashboard section titles (system-ui 600)." },
+      "body":     { "displayName": "Body",     "purpose": "Task copy in dashboards (1rem/1.6); lead copy on homepage (20px/1.75, capped 37–45ch)." },
+      "label":    { "displayName": "Label",    "purpose": "Buttons, input labels, table headers, badge text, secondary nav links." }
+    },
+    "shadows": [
+      { "name": "ambient-card", "value": "0 2px 8px rgb(23 37 28 / 5%)",   "purpose": "Cards, auth surfaces, and toasts at rest. Near-invisible lift over the page background." },
+      { "name": "dialog",       "value": "0 16px 48px rgb(23 37 28 / 15%)", "purpose": "Modals. Provides visual interruption of content beneath the overlay." }
+    ],
     "motion": [
-      {
-        "name": "role-hover",
-        "value": "background-color 160ms ease-out",
-        "purpose": "Role row hover; disabled for reduced motion."
-      }
+      { "name": "fast",               "value": "150ms",                              "purpose": "Button and input state transitions." },
+      { "name": "role-hover-physics", "value": "180ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Tactile micro-interaction for homepage role rows and action buttons." },
+      { "name": "skeleton-pulse",     "value": "1.5s ease-in-out infinite alternate", "purpose": "Skeleton loading shimmer to opacity 0.45." }
     ],
     "breakpoints": [
-      {
-        "name": "compact-desktop-max",
-        "value": "1100px"
-      },
-      {
-        "name": "navigation-gap-max",
-        "value": "900px"
-      },
-      {
-        "name": "mobile-max",
-        "value": "759px"
-      },
-      {
-        "name": "desktop-navigation-min",
-        "value": "760px"
-      }
-    ],
-    "shadows": []
+      { "name": "mobile-nav",    "value": "760px",  "purpose": "Nav switches from hamburger to horizontal inline row." },
+      { "name": "home-mid",      "value": "900px",  "purpose": "Homepage nav gap reduces from 24px to 12px." },
+      { "name": "home-collapse", "value": "1100px", "purpose": "Homepage welcome grid drops from 1fr/1.3fr to 1fr/1fr; display type scales down." },
+      { "name": "home-stack",    "value": "759px",  "purpose": "All homepage sections stack to single column." }
+    ]
   },
   "components": [
     {
-      "name": "Workflow link",
+      "name": "Primary Button",
       "kind": "button",
-      "refersTo": "explore-link",
-      "description": "Yellow anchor to the explanatory workflow.",
-      "html": "<a class=\"ds-explore\" href=\"#workflow\">See how it works <span aria-hidden=\"true\">&#8595;</span></a>",
-      "css": ".ds-explore {font-family:Manrope,sans-serif;display:inline-flex;gap:40px;align-items:center;min-height:56px;padding:16px 24px;background:#f5de87;color:#163e32;font-size:16px;font-weight:700;border-radius:8px;text-decoration:none;} .ds-explore:hover {background:#ead077;}a:focus-visible {outline:3px solid #226c4f;outline-offset:5px;}"
+      "refersTo": "button-primary",
+      "description": "Main call-to-action in dashboards and auth pages. Forest green fill, white label.",
+      "html": "<button class=\"ds-btn-primary\">Share food</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 20px; background: #167347; color: #fff; border: 1px solid transparent; border-radius: 8px; font-size: 0.875rem; font-weight: 600; line-height: 1.5; cursor: pointer; text-decoration: none; transition: background-color 150ms; } .ds-btn-primary:hover { background: #105b37; } .ds-btn-primary:focus-visible { outline: 3px solid #167347; outline-offset: 3px; } .ds-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }"
     },
     {
-      "name": "Role row",
-      "kind": "nav",
-      "refersTo": "role-row",
-      "description": "Equal title, description and arrow treatment for every role.",
-      "html": "<a class=\"ds-role\" href=\"/register?role=donor\"><span><strong>Donor</strong><small>Share surplus food or post waste for collection.</small></span><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></a>",
-      "css": ".ds-role {font-family:Manrope,sans-serif;display:flex;justify-content:space-between;align-items:center;gap:24px;padding:24px 0;min-height:106px;border-top:1px solid #c5d8c9;background:#edf5ee;color:#163e32;text-decoration:none;transition:background-color 160ms ease-out;} .ds-role strong {display:block;font-size:22px;line-height:1.4;font-weight:700;} .ds-role small {display:block;margin-top:6px;font-size:14px;line-height:1.6;color:#48675c;} .ds-role svg {flex-shrink:0;} .ds-role:hover {background:#dfecdf;}a:focus-visible {outline:3px solid #226c4f;outline-offset:5px;}@media(prefers-reduced-motion:reduce){.ds-role{transition:none;}}"
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Alternative action and demo account buttons. White fill with control-border stroke.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 20px; background: #fff; color: #17251c; border: 1px solid #7c8b80; border-radius: 8px; font-size: 0.875rem; font-weight: 600; line-height: 1.5; cursor: pointer; text-decoration: none; transition: background-color 150ms, border-color 150ms; } .ds-btn-secondary:hover { background: #eaf5ee; } .ds-btn-secondary:focus-visible { outline: 3px solid #167347; outline-offset: 3px; } .ds-btn-secondary:disabled { opacity: 0.55; cursor: not-allowed; }"
     },
     {
-      "name": "Directory container",
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Transparent, text-only. Used for Sign out and navigation actions.",
+      "html": "<button class=\"ds-btn-ghost\">Sign out</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 20px; background: transparent; color: #167347; border: 1px solid transparent; border-radius: 8px; font-size: 0.875rem; font-weight: 600; line-height: 1.5; cursor: pointer; text-decoration: none; transition: background-color 150ms; } .ds-btn-ghost:hover { background: #eaf5ee; } .ds-btn-ghost:focus-visible { outline: 3px solid #167347; outline-offset: 3px; }"
+    },
+    {
+      "name": "Card",
       "kind": "card",
-      "refersTo": "directory",
-      "description": "Mint grouping for the role directory.",
-      "html": "<section class=\"ds-directory\"><h2>Find your place.</h2><p>Five roles. One connected community.</p></section>",
-      "css": ".ds-directory {font-family:Manrope,sans-serif;background:#edf5ee;color:#163e32;padding:40px;border-radius:16px;} .ds-directory h2 {margin:0;font-size:30px;font-weight:700;line-height:1.3;letter-spacing:-.02em;} .ds-directory p {margin:12px 0 0;font-size:16px;line-height:1.6;color:#48675c;} @media(max-width:1100px){.ds-directory{padding:28px;}} @media(max-width:759px){.ds-directory{padding:24px;}.ds-directory h2{font-size:27px;}}"
+      "refersTo": "card",
+      "description": "Primary container in dashboards and auth pages. White surface, hairline border, ambient shadow.",
+      "html": "<div class=\"ds-card\"><p>Card content</p></div>",
+      "css": ".ds-card { padding: 24px; background: #fff; border: 1px solid #dce4de; border-radius: 12px; box-shadow: 0 2px 8px rgb(23 37 28 / 5%); }"
     },
     {
-      "name": "Impact link",
-      "kind": "button",
-      "description": "White link on the dark closing panel, with a yellow keyboard focus outline.",
-      "html": "<div class=\"ds-impact\"><a href=\"/impact\">Explore community impact <span aria-hidden=\"true\">&#8594;</span></a></div>",
-      "css": ".ds-impact {background:#163e32;padding:24px;font-family:Manrope,sans-serif;} .ds-impact a {display:inline-flex;align-items:center;justify-content:space-between;gap:32px;padding:20px 0;color:#fff;font-size:17px;text-decoration:none;border-bottom:1px solid #92b59f;} .ds-impact a:hover {color:#f5de87;} .ds-impact a:focus-visible {outline:3px solid #f5de87;outline-offset:5px;}"
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard text field. Border darkens to primary on focus with field-level guidance.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-input-1\">Email address</label><input class=\"ds-input\" id=\"ds-input-1\" type=\"email\" placeholder=\"you@example.com\" /></div>",
+      "css": ".ds-field { display: grid; gap: 8px; } .ds-field-label { font-size: 0.875rem; font-weight: 600; color: #17251c; } .ds-input { width: 100%; min-height: 44px; padding: 10px 12px; color: #17251c; background: #fff; border: 1px solid #7c8b80; border-radius: 8px; font-size: 1rem; font-family: inherit; } .ds-input:focus { outline: none; border-color: #167347; } .ds-input[aria-invalid='true'] { border-color: #b42318; }"
+    },
+    {
+      "name": "Status Badge — Success",
+      "kind": "chip",
+      "refersTo": "badge-success",
+      "description": "Completed / active status. Mint background, forest text.",
+      "html": "<span class=\"ds-badge ds-badge--success\">Delivered</span>",
+      "css": ".ds-badge { display: inline-flex; padding: 4px 10px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; line-height: 1.5; } .ds-badge--success { background: #eaf5ee; color: #105b37; } .ds-badge--warning { background: #fff5df; color: #805514; } .ds-badge--danger { background: #fff0ee; color: #b42318; } .ds-badge--neutral { background: #f7f9f7; color: #526158; }"
+    },
+    {
+      "name": "Civic Principle Tag",
+      "kind": "chip",
+      "refersTo": null,
+      "description": "Live status pill on the homepage with a 7px indicator dot.",
+      "html": "<span class=\"ds-pill\"><span class=\"ds-pill-dot\"></span>Food for sharing</span>",
+      "css": ".ds-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; background: #f0f6f1; border: 1px solid #d4e5d8; border-radius: 20px; font-size: 13px; font-weight: 600; color: #48675c; font-family: Manrope, sans-serif; } .ds-pill-dot { width: 7px; height: 7px; border-radius: 50%; background: #167347; flex-shrink: 0; }"
+    },
+    {
+      "name": "Homepage Role Row",
+      "kind": "nav",
+      "refersTo": "home-directory",
+      "description": "One of five equal role-picker rows on the homepage with tactile hover physics.",
+      "html": "<nav class=\"ds-role-nav\"><a href=\"/register?role=donor\" class=\"ds-role-row\"><span class=\"ds-role-body\"><strong>Donor</strong><span class=\"ds-role-detail\">Share surplus food or post waste for collection.</span></span><svg class=\"ds-role-arrow\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></a></nav>",
+      "css": ".ds-role-nav { font-family: Manrope, sans-serif; } .ds-role-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px 16px; margin: 0 -16px; min-height: 104px; border-top: 1px solid #c5d8c9; text-decoration: none; color: #163e32; transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1), transform 160ms ease; border-radius: 8px; } .ds-role-row:hover { background: #dfecdf; transform: translateX(2px); } .ds-role-row:focus-visible { outline: 3px solid #226c4f; outline-offset: 5px; border-radius: 4px; } .ds-role-body { display: flex; flex-direction: column; } .ds-role-body strong { font-size: 21px; font-weight: 700; line-height: 1.35; } .ds-role-detail { font-size: 14px; line-height: 1.55; color: #48675c; margin-top: 4px; } .ds-role-arrow { flex-shrink: 0; color: #48675c; transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), color 160ms ease; } .ds-role-row:hover .ds-role-arrow { transform: translate(3px, -3px); color: #163e32; }"
+    },
+    {
+      "name": "Modal Dialog",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Native <dialog> modal. Forest-tinted backdrop, 12px radius, dialog shadow.",
+      "html": "<dialog class=\"ds-modal\" open><div class=\"ds-modal-heading\"><h2>Confirm action</h2><button class=\"ds-modal-close\" aria-label=\"Close\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg></button></div><p>Are you sure you want to proceed?</p></dialog>",
+      "css": ".ds-modal { width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 24px; color: #17251c; background: #fff; border: 1px solid #dce4de; border-radius: 12px; box-shadow: 0 16px 48px rgb(23 37 28 / 15%); } .ds-modal::backdrop { background: rgb(23 37 28 / 45%); } .ds-modal-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; } .ds-modal-heading h2 { font-size: 1.5rem; font-weight: 650; margin: 0; } .ds-modal-close { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; background: transparent; border: none; cursor: pointer; color: #526158; border-radius: 8px; } .ds-modal-close:hover { background: #f7f9f7; } .ds-modal-close:focus-visible { outline: 3px solid #167347; outline-offset: 3px; }"
     }
   ],
   "narrative": {
-    "northStar": "The community directory",
-    "overview": "Typography, whitespace and clear rows make participation approachable. This records the implemented homepage and its homepage-specific navigation treatments; it does not redefine dashboard styling. The direction was delegated and implemented in code, without an approved visual comp.",
+    "northStar": "The Public Record Office",
+    "overview": "FoodBridge carries the visual weight of a civic institution — a place where real outcomes are filed, not implied. The design system divides cleanly into two registers: the homepage, which is a Manrope-set community directory with deep forest-green type on white, and the dashboards and auth surfaces, which are a system-ui Operate surface built for task completion with a clean green-and-white token system. Neither surface overrides the other's aesthetic choices.\n\nThe dashboard register is sparse and generous — white surfaces, single-weight shadows, subdued borders, and a primary action colour that earns its place because it appears only on controls and status tokens. Auth screens (Sign In and Register) share this language via centred auth-card surfaces using the shared Button and Field primitives. The homepage register is typographically bold with one structural panel — the dark closing bar — providing the only dramatic tonal change. Both registers are accessibility-first: 44px touch targets, 3px focus rings, and all disabled states via opacity 0.55.",
     "keyCharacteristics": [
-      "Spacious, typography-led composition.",
-      "Flat white and mint surfaces with deep green text.",
-      "Warm yellow for the explanatory action."
+      "Two-register system: homepage (Manrope, editorial) and dashboards/auth (system-ui, operational).",
+      "Forest green primary throughout both registers; accent terracotta only in dashboard nav branding and waste stream tags.",
+      "Flat surfaces with hairline borders in the dashboard; tonal contrast and ruled rows in the homepage.",
+      "Warm yellow marks the one explanatory action on the homepage; it never appears in dashboard UI.",
+      "Semantic HTML throughout; accessible focus rings at --color-focus on all interactive elements."
     ],
-    "rules": [],
+    "rules": [
+      { "name": "The Two-Green Rule",        "body": "#163e32 (homepage ink) and #167347 (dashboard primary) are not interchangeable. Homepage elements use the ink; dashboard controls use the primary. Mixing them into the same surface is a system error.", "section": "colors" },
+      { "name": "The Yellow Fence Rule",     "body": "Warm yellow (#f5de87) lives only on the public homepage, only on the explanatory action. It is not a brand highlight, a CTA colour, or a notification colour for dashboards.", "section": "colors" },
+      { "name": "The Two-Stack Rule",        "body": "Manrope and system-ui do not share a screen. If a surface needs to transition between homepage and dashboard styling, it transitions completely — not partially.", "section": "typography" },
+      { "name": "The Flat Homepage Rule",    "body": "No box-shadow appears on the public homepage. If a new homepage component needs to feel elevated, use a tinted background (mint or yellow) rather than a shadow.", "section": "elevation" },
+      { "name": "The No-Card-Per-Row Rule",  "body": "Individual role-picker rows and workflow steps are not wrapped in cards. They use ruled borders and background-colour hover states.", "section": "shapes" }
+    ],
     "dos": [
-      "Do preserve equal role visibility and clear keyboard focus.",
-      "Do keep food sharing and waste collection visually and verbally understandable as separate activities."
+      "Do use #167347 (dashboard primary) for all interactive controls in dashboard and auth surfaces.",
+      "Do use #163e32 (homepage ink) exclusively for homepage headings, the closing panel, and the homepage wordmark.",
+      "Do keep all interactive elements at 44px minimum height or width.",
+      "Do write aria-label on icon-only buttons and nav links whose text alone is ambiguous.",
+      "Do label skeleton states with role=\"status\" on the loading container.",
+      "Do distinguish food-sharing outcomes from waste-collection quantities in copy and in dashboard KPIs.",
+      "Do mark estimated values (meal equivalents, distance) as estimates in copy."
     ],
     "donts": [
-      "Don't apply this homepage scope to dashboards without a separate design decision.",
-      "Don't invent availability, approval status or impact figures."
+      "Don't use Manrope on dashboard or auth surfaces, or system-ui on the homepage.",
+      "Don't use warm yellow (#f5de87) anywhere in the dashboard system.",
+      "Don't apply box-shadow to homepage elements.",
+      "Don't wrap individual role-picker rows or workflow steps in card components.",
+      "Don't invent impact figures, availability claims, or registration status.",
+      "Don't mix #163e32 and #167347 on the same surface as equivalent primary colours.",
+      "Don't use the terracotta accent (#b54726) on operational controls, notifications, or status indicators."
     ]
   }
 }
