@@ -1,12 +1,16 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-11-03T17:39:11.892294+00:00",
-  "title": "FoodBridge editorial homepage",
+  "title": "FoodBridge fresh and bold homepage",
   "extensions": {
     "breakpoints": [
       {
         "name": "compact",
         "value": "1100px"
+      },
+      {
+        "name": "role-rows",
+        "value": "900px"
       },
       {
         "name": "mobile",
@@ -23,13 +27,13 @@
   },
   "components": [],
   "narrative": {
-    "northStar": "A new beginning for surplus",
-    "overview": "Warm paper split hero, an equal-weight role directory, open workflow and dark impact closing section.",
+    "northStar": "Fresh and bold",
+    "overview": "White and vivid green, broad sans-serif headline, panoramic photography and five equal role columns.",
     "keyCharacteristics": [
-      "Full-width fluid gutters",
-      "Split photographic hero",
-      "Five descriptive role rows",
-      "Restrained serif emphasis"
+      "Full-width photography",
+      "Oversized sans-serif typography",
+      "Five equal role columns",
+      "Vivid green actions"
     ],
     "dos": [
       "Allow room to scroll",

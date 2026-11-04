@@ -18,9 +18,9 @@ export default function HomePage() {
     <main id="main-content" className="fb-home">
       <section className="fb-home-hero" aria-labelledby="home-title">
         <div className="fb-home-copy">
-          <h1 id="home-title">Good food.<br />A new <em>beginning.</em></h1>
-          <p>Make room for sharing. Connect surplus food, waste collection and willing hands across Sri Lanka.</p>
-          <a className="fb-home-action" href="#role-title">Find your place <ArrowDown size={20} aria-hidden="true" /></a>
+          <h1 id="home-title">Good food.<br />A new <span>beginning.</span></h1>
+          <div className="fb-home-intro"><p>Make room for sharing. Connect surplus food, waste collection and willing hands across Sri Lanka.</p>
+          <a className="fb-home-action" href="#role-title">Find your place <ArrowDown size={20} aria-hidden="true" /></a></div>
         </div>
         <figure className="fb-home-photo">
           <img src="/images/homepage-handover-wide.png" width="1536" height="1024" alt="Illustration of two people sharing a crate of fresh vegetables" fetchPriority="high" />
@@ -50,7 +50,7 @@ export default function HomePage() {
         </ol>
       </section>
       <section className="fb-home-impact" aria-labelledby="impact-title">
-        <h2 id="impact-title">See the work.<br /><em>Follow the impact.</em></h2>
+        <h2 id="impact-title">See the work.<br /><span>Follow the impact.</span></h2>
         <div><p>Food shared and waste collected, recorded separately.</p><Link to="/impact">View community impact <ArrowRight size={22} aria-hidden="true" /></Link></div>
       </section>
     </main>

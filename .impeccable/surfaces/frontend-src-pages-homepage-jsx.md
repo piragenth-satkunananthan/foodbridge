@@ -11,14 +11,14 @@ Mode: Persuade. The user requested a full-width breathable redesign and delegate
 
 ## Direction contract
 
-THESIS: Give food sharing a new beginning with an open editorial page.
+THESIS: Fresh and bold, selected by the user as direction A.
 
-OWN-WORLD: Warm paper, deep green, restrained serif emphasis and flat photographic presentation. No lime bar or full-width image below the headline.
+OWN-WORLD: White, vivid lime, evergreen sans-serif type, panoramic photography and flat surfaces.
 
-STORY: Understand FoodBridge, find a role in five equal descriptive rows, understand the workflow and inspect recorded impact.
+STORY: Understand FoodBridge, choose among five equal roles, follow the workflow and inspect recorded impact.
 
-FIRST VIEWPORT: Split hero with headline, introductory copy and role anchor on the left; a square handover image and honest illustration caption on the right. Stack on mobile.
+FIRST VIEWPORT: Broad headline and introductory action above a full-width 2.2:1 handover image. No serif accents or split-photo hero.
 
-FORM: The user's explicit "redesign from scratch" replaces previous layout contracts. Existing images are reused; past comps remain historical references.
+FORM: Five equal role columns above 900px, equal rows below. Existing illustration reused with visible disclosure. Earlier compositions remain historical references.
 
-FINISH: Production build and frontend tests pass. Browser checks at eight widths (320-2560px) verify role routes, touch targets, overflow and registration preselection. Desktop and mobile captures visually inspected. No deployment is claimed.
+FINISH: Production build and both frontend tests pass. Eight viewport checks (320-2560px) pass role routing, registration preselection, touch targets and overflow. Desktop and mobile captures visually inspected. Not deployed.

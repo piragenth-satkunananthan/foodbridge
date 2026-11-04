@@ -27,3 +27,9 @@ User requested replacement of the previous composition. Implemented warm paper/d
 Validation: production build passes (existing >500 kB chunk warning); both frontend tests pass; Playwright checks at 320, 390, 768, 901, 1440, 1536, 1920 and 2560px pass role routing, touch targets, overflow, registration preselection and page-error checks. Mobile Menu/Escape checked. Independent visual reviewer returned Ship for desktop/mobile/wide and checked 760/1101px boundaries. Layout detector returned no findings; git diff whitespace check passes.
 
 Finish disposition: implemented and locally verified. Earlier V2-2 fidelity target is superseded by the user's scratch redesign request. No deployment or backend workflow validation performed.
+
+## Selected direction A
+
+User selected Fresh & bold: white, vivid green, oversized sans-serif headline, panoramic hero and five equal role columns. Implemented with equal rows below 901px, preserving content, limitations and role routing. Independent visual review returned Ship; improved panorama framing from 2.4:1 to 2.2:1 following its minor crop feedback.
+
+Finish: locally implemented. Eight-width browser checks and production build pass after final crop change; both frontend tests pass. Layout detector found no issues. Existing bundle-size warning remains. No deployment or backend workflow checks performed.
