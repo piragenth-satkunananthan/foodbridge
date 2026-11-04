@@ -1,7 +1,0 @@
-{
-  "tool": "image_gen",
-  "prompt": "Edit the reference photographic asset for a wide website hero. Keep the same realistic food handover, smiling Sri Lankan woman in beige shirt and dark green apron at right, donor arms from the left, and green crate of vegetables. Correct the composition for a 2.3:1 panoramic crop: create a 1536x1024 white canvas but keep ALL essential photographic subject matter (woman's full hair, face, arms, hands, crate and vegetables) within the central horizontal band y=210 to y=840. Leave white padding above y=210 and below y=840 so cropping approximately 190 pixels from top and 160 from bottom loses no essential anatomy. Subject at right edge and arms enter from left edge, no rectangular internal image boundaries. Keep the entire upper-left and middle-left region white for headline and subtitle; the donor's shoulder must stay below y=550. Woman's hair can begin at y=220 on the far right; crate and hands occupy y=570 to y=820. Normal undistorted proportions, no squash, no stretched anatomy, natural editorial daylight. No letters, words, logos, controls or UI. Preserve a clean white background.",
-  "reference": "frontend/public/images/homepage-handover.png",
-  "asset": "frontend/public/images/homepage-handover-wide.png",
-  "note": "Reframed for panoramic crop; AI-generated illustration, not evidence of real activity."
-}

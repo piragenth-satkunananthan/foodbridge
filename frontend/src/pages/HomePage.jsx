@@ -1,58 +1,54 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowDown } from 'lucide-react';
+import { ArrowRight, ClipboardList, Truck, PackageCheck, Leaf, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
 import '../styles/home.css';
 
-const roles = [
-  { name: 'Donor', description: 'List surplus food or waste for collection.' },
-  { name: 'Recipient', description: 'Join as an organisation receiving food.' },
-  { name: 'Recycler', description: 'Join as an organisation collecting waste.' },
-  { name: 'Volunteer', description: 'Help with pickups and deliveries in your district.' },
-  { name: 'Admin', description: 'Manage users, verification and activity.' },
+const steps = [
+  { icon: ClipboardList, title: 'Post the details', text: 'Add the food, quantity, storage details, district, and collection deadline.' },
+  { icon: Truck, title: 'Collect and deliver', text: 'Volunteers accept available pickups and record the collection and delivery.' },
+  { icon: PackageCheck, title: 'Keep a record', text: 'Follow status updates from your dashboard and review completed deliveries.' }
 ];
 
 export default function HomePage() {
   const { user } = useAuth();
+  const dashboard = user ? `/${user.role}` : null;
+  const shareTarget = dashboard || '/register?role=donor';
+  const volunteerTarget = dashboard || '/register?role=volunteer';
   return (
     <main id="main-content" className="fb-home">
       <section className="fb-home-hero" aria-labelledby="home-title">
         <div className="fb-home-copy">
-          <h1 id="home-title">Good food.<br />A new <span>beginning.</span></h1>
-          <div className="fb-home-intro"><p>Make room for sharing. Connect surplus food, waste collection and willing hands across Sri Lanka.</p>
-          <a className="fb-home-action" href="#role-title">Find your place <ArrowDown size={20} aria-hidden="true" /></a></div>
+          <p className="fb-overline"><MapPin size={16} aria-hidden="true" /> Food sharing in Sri Lanka</p>
+          <h1 id="home-title">Share food with<br />your community.</h1>
+          <p className="fb-home-lead">Share surplus food or help collect it for people who need it.</p>
+          <div className="fb-home-actions"><Button to={shareTarget}>Share food <ArrowRight size={18} aria-hidden="true" /></Button><Button to={volunteerTarget} variant="secondary">Volunteer</Button></div>
+          <p className="fb-home-caption">{user ? 'Continue to your dashboard for the actions available to your account.' : 'For restaurants, households, and local volunteers.'}</p>
         </div>
-        <figure className="fb-home-photo">
-          <img src="/images/homepage-handover-wide.png" width="1536" height="1024" alt="Illustration of two people sharing a crate of fresh vegetables" fetchPriority="high" />
-          <figcaption>Food sharing starts with a handover.<span>AI-generated illustration</span></figcaption>
-        </figure>
+        <Card as="aside" className="fb-preparation" aria-labelledby="prepare-title">
+          <div className="fb-preparation-heading"><span className="fb-icon-tile"><Leaf size={24} aria-hidden="true" /></span><span>Before you share</span></div>
+          <h2 id="prepare-title">A few details make<br />collection easier.</h2>
+          <ul className="fb-preparation-list">
+            <li><span>01</span><div><h3>What you have</h3><p>Food type, quantity, and a photo of the food.</p></div></li>
+            <li><span>02</span><div><h3>How it is stored</h3><p>Storage conditions and when it was prepared.</p></div></li>
+            <li><span>03</span><div><h3>When to collect</h3><p>Your district and the collection deadline.</p></div></li>
+          </ul>
+        </Card>
       </section>
-      <section className="fb-home-entry" aria-labelledby="role-title">
-        <div className="fb-role-intro">
-          <h2 id="role-title">Different roles.<br />Shared purpose.</h2>
-          <p>Choose where you fit. Every role has a place in FoodBridge.</p>
-          <p className="fb-home-notes">Recipient and recycler browsing and claims are not available yet. Admin access requires sign-in.</p>
-        </div>
-        <nav className="fb-role-picker" aria-label="Choose your role">
-          {roles.map(({ name, description }) => {
-            const role = name.toLowerCase();
-            const target = user ? `/${user.role}` : role === 'admin' ? '/login' : `/register?role=${role}`;
-            return <Link key={role} to={target} aria-label={user ? `${name}: open your dashboard` : role === 'admin' ? 'Admin sign in' : `Register as ${name}`}><span className="fb-role-name">{name}</span><span className="fb-role-description">{description}</span><ArrowRight size={24} aria-hidden="true" /></Link>;
-          })}
-        </nav>
+
+      <section className="fb-how" aria-labelledby="how-title">
+        <div className="fb-section-intro"><p className="fb-overline">From posting to delivery</p><h2 id="how-title">How FoodBridge works</h2></div>
+        <ol className="fb-steps">{steps.map(({ icon: Icon, title, text }, index) => <li key={title}><span className="fb-step-number">Step {index + 1}</span><Icon size={24} aria-hidden="true" /><h3>{title}</h3><p>{text}</p></li>)}</ol>
       </section>
-      <section id="how-it-works" className="fb-how" aria-labelledby="how-title">
-        <div className="fb-how-heading"><h2 id="how-title">A little coordination.<br />A clear next step.</h2><p>From listing to delivery, keep the details together.</p></div>
-        <ol>
-          <li><h3>Post the details</h3><p>Add the food or waste type, quantity, district, storage details and collection deadline.</p></li>
-          <li><h3>Collect and deliver</h3><p>Volunteers accept available pickups and record collection and delivery.</p></li>
-          <li><h3>Keep a record</h3><p>Follow status updates from your dashboard and review completed deliveries.</p></li>
-        </ol>
+
+      <section className="fb-home-more" aria-label="Other ways to take part">
+        <Card as="article"><p className="fb-overline">Waste collection</p><h2>Keep food and waste separate.</h2><p>Donors can also post organic waste and recyclable materials as collection requests.</p><Link to={shareTarget}>Post a collection request <ArrowRight size={16} aria-hidden="true" /></Link></Card>
+        <Card as="article"><p className="fb-overline">Recipient organisations & recyclers</p><h2>Register your organisation.</h2><p>Create an account for admin review. Food browsing and claims are not available in these dashboards yet.</p><Link to={dashboard || '/register?role=recipient'}>{user ? 'Open your dashboard' : 'Register an organisation'} <ArrowRight size={16} aria-hidden="true" /></Link></Card>
       </section>
-      <section className="fb-home-impact" aria-labelledby="impact-title">
-        <h2 id="impact-title">See the work.<br /><span>Follow the impact.</span></h2>
-        <div><p>Food shared and waste collected, recorded separately.</p><Link to="/impact">View community impact <ArrowRight size={22} aria-hidden="true" /></Link></div>
-      </section>
+
+      <section className="fb-home-impact" aria-labelledby="home-impact-title"><div><h2 id="home-impact-title">See the recorded results.</h2><p>Completed deliveries, recycling quantities, and districts covered.</p></div><Button to="/impact" variant="ghost">Community impact <ArrowRight size={18} aria-hidden="true" /></Button></section>
     </main>
   );
 }
