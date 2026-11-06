@@ -124,6 +124,8 @@ export const fetchReports = (params = {}) => {
 // ==========================================
 
 export const fetchPublicImpact = () => apiFetch('/impact');
+export const fetchLiveFeed = () => apiFetch('/impact/live-feed');
+export const fetchDistrictStats = () => apiFetch('/impact/district-stats');
 
 export const snapshotImpact = (period) => {
   return apiFetch('/admin/impact/snapshot', {
@@ -307,6 +309,15 @@ export const cancelDonationClaim = (donationId, reason = '') => {
   return apiFetch(`/match/${donationId}/cancel-claim`, {
     method: 'PUT',
     body: JSON.stringify({ reason })
+  });
+};
+
+export const fetchWasteCertificate = (id) => apiFetch(`/waste/${id}/certificate`);
+
+export const confirmPickupReceipt = (id, data = {}) => {
+  return apiFetch(`/pickups/${id}/confirm-receipt`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
   });
 };
 

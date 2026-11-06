@@ -128,8 +128,85 @@ const recordMonthlySnapshot = endpoint(async (req, res) => {
     record
   });
 });
+
+const getLiveFeed = endpoint(async (req, res) => {
+  const [recentDonations, recentWaste] = await Promise.all([
+    Donation.find({ isDemo: { $ne: true } })
+      .populate('donor', 'name district')
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .lean(),
+    WasteRequest.find({ isDemo: { $ne: true } })
+      .populate('donor', 'name district')
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .lean()
+  ]);
+
+  const items = [
+    ...recentDonations.map((d) => ({
+      id: d._id,
+      type: 'food',
+      itemTitle: d.foodType,
+      quantity: d.quantity,
+      origin: d.donor?.name || 'Commercial Donor',
+      district: d.district || 'Colombo',
+      status: d.status,
+      spec: d.storageCondition ? `${d.storageCondition.toUpperCase()} storage` : 'Ambient',
+      createdAt: d.createdAt,
+      deadline: d.pickupDeadline
+    })),
+    ...recentWaste.map((w) => ({
+      id: w._id,
+      type: 'waste',
+      itemTitle: `${w.wasteCategory.toUpperCase()} Recovery`,
+      quantity: w.quantity,
+      origin: w.donor?.name || 'Commercial Donor',
+      district: w.district || 'Colombo',
+      status: w.status,
+      spec: `Category: ${w.wasteCategory}`,
+      createdAt: w.createdAt,
+      deadline: w.pickupDeadline
+    }))
+  ].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+  res.json({ success: true, items });
+});
+
+const getDistrictStats = endpoint(async (req, res) => {
+  const [donationsByDistrict, orgsByDistrict, volunteersByDistrict] = await Promise.all([
+    Donation.aggregate([
+      { $match: { isDemo: { $ne: true } } },
+      { $group: { _id: '$district', count: { $sum: 1 } } }
+    ]),
+    Organization.aggregate([
+      { $match: { isDemo: { $ne: true }, verificationStatus: 'verified' } },
+      { $group: { _id: '$district', count: { $sum: 1 } } }
+    ]),
+    User.aggregate([
+      { $match: { isDemo: { $ne: true }, role: 'volunteer', status: 'active' } },
+      { $group: { _id: '$district', count: { $sum: 1 } } }
+    ])
+  ]);
+
+  const districtMap = {};
+  for (const item of donationsByDistrict) {
+    if (item._id) districtMap[item._id] = { ...(districtMap[item._id] || {}), donations: item.count };
+  }
+  for (const item of orgsByDistrict) {
+    if (item._id) districtMap[item._id] = { ...(districtMap[item._id] || {}), organizations: item.count };
+  }
+  for (const item of volunteersByDistrict) {
+    if (item._id) districtMap[item._id] = { ...(districtMap[item._id] || {}), volunteers: item.count };
+  }
+
+  res.json({ success: true, districts: districtMap });
+});
+
 module.exports = {
   getPublicImpact,
+  getLiveFeed,
+  getDistrictStats,
   calculateImpactMetrics,
   recordMonthlySnapshot,
   parseMealsCount,

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import {
   Utensils, PlusCircle, History, Clock, MapPin, Package,
@@ -104,318 +105,327 @@ export default function DonorDashboard() {
     }
   };
 
-  // Status badge styling helper
   const renderStatusBadge = (status) => {
     switch (status) {
       case 'posted':
-        return <span className="badge amber" style={{ fontSize: '11.5px' }}> Posted</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-extrabold uppercase bg-amber-100 text-amber-800">Posted</span>;
       case 'matched':
-        return <span className="badge blue" style={{ fontSize: '11.5px' }}> Matched to Recipient</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-extrabold uppercase bg-blue-100 text-blue-800">Matched</span>;
       case 'pickup_scheduled':
-        return <span className="badge blue" style={{ fontSize: '11.5px' }}> Pickup scheduled</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-extrabold uppercase bg-indigo-100 text-indigo-800">Courier Assigned</span>;
       case 'picked_up':
-        return <span className="badge" style={{ background: '#eef1e7', color: '#285943', fontSize: '11.5px' }}> In Transit</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-extrabold uppercase bg-purple-100 text-purple-800">In Transit</span>;
       case 'delivered':
       case 'completed':
       case 'recycled':
-        return <span className="badge green" style={{ fontSize: '11.5px' }}> Completed / Delivered</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-extrabold uppercase bg-emerald-100 text-emerald-800">Delivered</span>;
       case 'cancelled':
-        return <span className="badge" style={{ background: '#fee2e2', color: '#991b1b', fontSize: '11.5px' }}> Cancelled</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-extrabold uppercase bg-rose-100 text-rose-800">Cancelled</span>;
       default:
-        return <span className="badge">{status}</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold uppercase bg-slate-100 text-slate-700">{status}</span>;
     }
   };
 
-  // Keep finished, cancelled, and expired donations in history.
   const historyDonations = donations.filter(d => ['delivered', 'completed', 'cancelled', 'expired'].includes(d.status));
-  // Active donations for main tab
   const activeDonationsList = statusFilter === 'all'
     ? donations.filter(d => ['posted', 'matched', 'pickup_scheduled', 'picked_up'].includes(d.status))
     : donations;
 
-  if (error) return <main className="main-content" role="alert"><h1>Donations could not be loaded</h1><p>{error}</p><button className="btn btn-primary" onClick={loadAllData}>Try again</button></main>;
-
   return (
-    <div className="main-content">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Top Welcome & Action Header */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginBottom: '24px', flexWrap: 'wrap', gap: '16px'
-      }}>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span className="badge donor">Your donations</span>
-            <span style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <MapPin size={13} /> {user?.district || 'Colombo'}, Sri Lanka
+          <div className="flex items-center gap-2 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold tracking-wide uppercase bg-emerald-100 text-emerald-800">
+              <Utensils size={13} /> Module 1 • Donor Surplus Portal
+            </span>
+            <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
+              <MapPin size={13} className="text-emerald-600" /> {user?.district || 'Colombo'}, Sri Lanka
             </span>
           </div>
-          <h2 style={{ fontSize: '26px', fontWeight: '650', color: '#0f172a' }}>
-            {user?.name || 'Donor dashboard'}
-          </h2>
-          <p style={{ fontSize: '14px', color: '#64748b', marginTop: '2px' }}>
-            Post surplus food or waste and follow collection progress.
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            {user?.name || 'Commercial Donor Dashboard'}
+          </h1>
+          <p className="mt-1 text-sm text-slate-600">
+            Publish edible food surplus or organic waste batches and track automated redistribution.
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={loadAllData}
-            className="plaid-btn-light"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '9px 15px' }}
-            title="Refresh data"
+            disabled={loading}
+            className="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            title="Refresh dashboard"
           >
-            <RefreshCw size={15} className={loading ? 'spin' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             <span>Refresh</span>
           </button>
 
           <button
             type="button"
-            className="plaid-btn-emerald"
             onClick={() => setIsNewModalOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', padding: '9px 18px' }}
+            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition-all flex items-center gap-2 cursor-pointer"
           >
-            <PlusCircle size={18} />
-            <span style={{ fontWeight: '700' }}>Post surplus</span>
+            <PlusCircle size={16} />
+            <span>Post Surplus</span>
           </button>
         </div>
       </div>
 
-      {/* KPI Overview Grid with Motion and AnimatedCounter */}
-      <div className="kpi-grid" style={{ marginBottom: '28px' }}>
-        <div
-          className="kpi-card green"
-        >
-          <div className="kpi-icon green"><Utensils size={22} /></div>
-          <div className="kpi-details">
-            <h3>Active Food Donations</h3>
-            <div className="kpi-value">
-              <AnimatedCounter value={stats.activeDonations} />
-            </div>
-            <div className="kpi-sub">Open food donations</div>
+      {/* Error Alert */}
+      {error && (
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 flex items-start gap-3 text-sm text-rose-800 shadow-2xs">
+          <AlertCircle size={18} className="text-rose-600 shrink-0 mt-0.5" />
+          <div className="flex-1 flex items-center justify-between">
+            <span>{error}</span>
+            <button
+              onClick={loadAllData}
+              className="text-xs font-bold underline hover:text-rose-900 cursor-pointer"
+            >
+              Try again
+            </button>
           </div>
         </div>
+      )}
 
-        <div
-          className="kpi-card blue"
-        >
-          <div className="kpi-icon blue"><Recycle size={22} /></div>
-          <div className="kpi-details">
-            <h3>Waste Collection Requests</h3>
-            <div className="kpi-value">
-              <AnimatedCounter value={stats.activeWasteRequests || wasteRequests.filter(w => w.status === 'posted').length} />
+      {/* KPI Overview Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Active Food Donations</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <Utensils size={18} />
             </div>
-            <div className="kpi-sub">Organic and recyclable waste</div>
           </div>
+          <div className="text-3xl font-extrabold text-slate-900">
+            <AnimatedCounter value={stats.activeDonations} />
+          </div>
+          <p className="mt-1 text-xs font-semibold text-emerald-600">
+            Live in matching engine
+          </p>
         </div>
 
-        <div
-          className="kpi-card amber"
-        >
-          <div className="kpi-icon amber"><History size={22} /></div>
-          <div className="kpi-details">
-            <h3>Estimated Meals Rescued</h3>
-            <div className="kpi-value">
-              <AnimatedCounter value={stats.estimatedMeals} />
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Waste Requests</span>
+            <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600">
+              <Recycle size={18} />
             </div>
-            <div className="kpi-sub">Based on completed donation quantities</div>
           </div>
+          <div className="text-3xl font-extrabold text-slate-900">
+            <AnimatedCounter value={stats.activeWasteRequests || wasteRequests.filter(w => w.status === 'posted').length} />
+          </div>
+          <p className="mt-1 text-xs font-semibold text-sky-600">
+            Recyclable & organic streams
+          </p>
         </div>
 
-        <div
-          className="kpi-card purple"
-        >
-          <div className="kpi-icon purple"><CheckCircle2 size={22} /></div>
-          <div className="kpi-details">
-            <h3>Completed Rescues</h3>
-            <div className="kpi-value">
-              <AnimatedCounter value={stats.completedDonations} />
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Portions Rescued</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+              <History size={18} />
             </div>
-            <div className="kpi-sub">Donations marked delivered or completed</div>
           </div>
+          <div className="text-3xl font-extrabold text-slate-900">
+            <AnimatedCounter value={stats.estimatedMeals} />
+          </div>
+          <p className="mt-1 text-xs font-semibold text-amber-600">
+            Beneficiary meals delivered
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Completed Rescues</span>
+            <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+              <CheckCircle2 size={18} />
+            </div>
+          </div>
+          <div className="text-3xl font-extrabold text-slate-900">
+            <AnimatedCounter value={stats.completedDonations} />
+          </div>
+          <p className="mt-1 text-xs font-semibold text-purple-600">
+            Fully delivered & closed
+          </p>
         </div>
       </div>
 
       {/* Main Tabbed Navigation Container */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{
-          padding: '16px 20px', borderBottom: '1px solid #e2e8f0',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          flexWrap: 'wrap', gap: '14px', background: '#ffffff'
-        }}>
-          {/* Tab Switcher */}
-          <div style={{ display: 'flex', gap: '8px' }}>
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          {/* Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
             <button
               type="button"
-              className={`btn ${activeTab === 'postings' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setActiveTab('postings')}
-              style={{ fontSize: '13.5px', padding: '8px 16px' }}
+              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'postings'
+                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
             >
-               Active Food Donations ({activeDonationsList.length})
+              Active Food Donations ({activeDonationsList.length})
             </button>
             <button
               type="button"
-              className={`btn ${activeTab === 'waste' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setActiveTab('waste')}
-              style={{ fontSize: '13.5px', padding: '8px 16px' }}
+              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'waste'
+                  ? 'bg-sky-600 text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
             >
-               Waste Collection Requests ({wasteRequests.length})
+              Waste Requests ({wasteRequests.length})
             </button>
             <button
               type="button"
-              className={`btn ${activeTab === 'history' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setActiveTab('history')}
-              style={{ fontSize: '13.5px', padding: '8px 16px' }}
+              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'history'
+                  ? 'bg-slate-800 text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
             >
-              Donation history ({historyDonations.length})
+              Donation History ({historyDonations.length})
             </button>
           </div>
 
-          {/* Search & Filter Controls */}
+          {/* Search & Status Filter */}
           {activeTab === 'postings' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ position: 'relative' }}>
-                <Search size={15} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '10px' }} />
+            <div className="flex items-center gap-2.5">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search food type..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  style={{
-                    padding: '8px 12px 8px 32px', borderRadius: '8px', border: '1px solid #cbd5e1',
-                    fontSize: '13px', width: '200px'
-                  }}
+                  className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent w-44 sm:w-56"
                 />
               </div>
 
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                style={{
-                  padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1',
-                  fontSize: '13px', color: '#334155'
-                }}
+                className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               >
-                <option value="all">All Active Statuses</option>
-                <option value="posted">Posted (Unmatched)</option>
-                <option value="matched">Matched to NGO</option>
-                <option value="pickup_scheduled">Pickup Scheduled</option>
+                <option value="all">All Active</option>
+                <option value="posted">Posted</option>
+                <option value="matched">Matched</option>
+                <option value="pickup_scheduled">Scheduled</option>
                 <option value="picked_up">In Transit</option>
               </select>
             </div>
           )}
         </div>
 
-
         {/* TAB 1: ACTIVE FOOD DONATIONS */}
         {activeTab === 'postings' && (
-          <div style={{ padding: '20px' }}>
+          <div className="p-4 sm:p-6">
             {loading ? (
-              <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-                Loading your food surplus postings...
+              <div className="p-12 text-center text-slate-500 animate-pulse">
+                <RefreshCw size={24} className="animate-spin mx-auto mb-2 text-slate-400" />
+                <p className="text-sm">Loading your food surplus postings...</p>
               </div>
             ) : activeDonationsList.length === 0 ? (
-              <div className="empty-state" style={{ padding: '60px 20px', textAlign: 'center' }}>
-                <Utensils size={44} color="#cbd5e1" style={{ margin: '0 auto 12px' }} />
-                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', marginBottom: '6px' }}>
-                  No Active Food Donations
+              <div className="p-12 text-center max-w-md mx-auto space-y-4">
+                <Utensils size={36} className="text-slate-300 mx-auto" />
+                <h3 className="text-base font-bold text-slate-900">
+                  No active surplus postings
                 </h3>
-                <p style={{ color: '#64748b', fontSize: '13.5px', maxWidth: '440px', margin: '0 auto 20px' }}>
-                  You have no pending food surplus postings. Create a post whenever your kitchen has extra prepared meals or fresh produce!
+                <p className="text-xs text-slate-500">
+                  You have no pending surplus items in the matching pool. Create a new posting when extra food becomes available.
                 </p>
                 <button
                   type="button"
-                  className="btn btn-primary"
                   onClick={() => setIsNewModalOpen(true)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-2xs inline-flex items-center gap-1.5 cursor-pointer"
                 >
-                  <PlusCircle size={16} />
-                  <span>Post surplus</span>
+                  <PlusCircle size={14} />
+                  <span>Post Surplus</span>
                 </button>
               </div>
             ) : (
-              <div className="table-responsive">
-                <table className="data-table">
-                  <thead>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-slate-100 text-2xs uppercase tracking-wider text-slate-400 font-bold bg-slate-50/50">
                     <tr>
-                      <th>Food Surplus Details</th>
-                      <th>Quantity</th>
-                      <th>Storage Condition</th>
-                      <th>Pickup Deadline</th>
-                      <th>Lifecycle Status</th>
-                      <th>Matched Recipient</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
+                      <th className="py-3 px-4">Food Surplus</th>
+                      <th className="py-3 px-4">Quantity</th>
+                      <th className="py-3 px-4">Storage</th>
+                      <th className="py-3 px-4">Pickup Deadline</th>
+                      <th className="py-3 px-4">Lifecycle Status</th>
+                      <th className="py-3 px-4">Recipient</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100">
                     {activeDonationsList.map((d) => (
-                      <tr key={d._id} style={{ cursor: 'pointer' }} onClick={() => handleOpenDetails(d._id)}>
-                        <td>
-                          <div style={{ fontWeight: '700', color: '#0f172a', fontSize: '14px' }}>
-                            {d.foodType}
-                          </div>
-                          <div style={{ fontSize: '11.5px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <tr 
+                        key={d._id} 
+                        onClick={() => handleOpenDetails(d._id)}
+                        className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                      >
+                        <td className="py-3.5 px-4">
+                          <div className="font-bold text-slate-900 text-sm">{d.foodType}</div>
+                          <div className="text-2xs text-slate-500 flex items-center gap-1 mt-0.5">
                             <Clock size={11} /> Prepared {new Date(d.preparedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {d.district}
                           </div>
                         </td>
-                        <td>
-                          <span style={{ fontWeight: '600', color: '#0f172a' }}>{d.quantity}</span>
+                        <td className="py-3.5 px-4 font-bold text-slate-800">
+                          {d.quantity}
                         </td>
-                        <td>
-                          <span className="badge" style={{ textTransform: 'capitalize', fontSize: '11.5px' }}>
-                            {d.storageCondition?.replace('_', ' ')}
+                        <td className="py-3.5 px-4 capitalize text-slate-600 font-medium">
+                          {d.storageCondition?.replace('_', ' ')}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="font-semibold text-rose-700">
+                            {new Date(d.pickupDeadline).toLocaleDateString()} {new Date(d.pickupDeadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </td>
-                        <td>
-                          <div style={{ fontSize: '12.5px', fontWeight: '600', color: '#dc2626' }}>
-                            {new Date(d.pickupDeadline).toLocaleDateString()} {new Date(d.pickupDeadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </td>
-                        <td>
+                        <td className="py-3.5 px-4">
                           {renderStatusBadge(d.status)}
                         </td>
-                        <td>
+                        <td className="py-3.5 px-4">
                           {d.matchedRecipient ? (
-                            <span className="badge green" style={{ fontSize: '11.5px' }}>
+                            <span className="inline-block px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800">
                               {d.matchedRecipient.name}
                             </span>
                           ) : (
-                            <span style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' }}>
-                              Matching algorithm searching...
-                            </span>
+                            <span className="text-2xs text-slate-400 italic">Matching engine searching...</span>
                           )}
                         </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
                               onClick={() => handleOpenDetails(d._id)}
-                              className="btn-icon"
-                              title="View Full Tracking & Timeline"
-                              style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '6px', borderRadius: '6px' }}
+                              className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors"
+                              title="View details"
                             >
-                              <Eye size={15} color="#334155" />
+                              <Eye size={13} />
                             </button>
-
                             {d.status === 'posted' && (
                               <>
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEdit(d)}
-                                  className="btn-icon"
-                                  title="Edit Posting Details"
-                                  style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '6px', borderRadius: '6px' }}
+                                  className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-sky-600 transition-colors"
+                                  title="Edit posting"
                                 >
-                                  <Edit3 size={15} color="#0284c7" />
+                                  <Edit3 size={13} />
                                 </button>
                                 <button
                                   type="button"
                                   onClick={(e) => handleCancelDonation(d._id, e)}
-                                  className="btn-icon"
-                                  title="Cancel Posting"
-                                  style={{ background: '#fee2e2', border: '1px solid #fca5a5', padding: '6px', borderRadius: '6px' }}
+                                  className="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition-colors"
+                                  title="Cancel posting"
                                 >
-                                  <Trash2 size={15} color="#dc2626" />
+                                  <Trash2 size={13} />
                                 </button>
                               </>
                             )}
@@ -432,82 +442,75 @@ export default function DonorDashboard() {
 
         {/* TAB 2: WASTE COLLECTION REQUESTS */}
         {activeTab === 'waste' && (
-          <div style={{ padding: '20px' }}>
+          <div className="p-4 sm:p-6">
             {wasteRequests.length === 0 ? (
-              <div className="empty-state" style={{ padding: '60px 20px', textAlign: 'center' }}>
-                <Recycle size={44} color="#cbd5e1" style={{ margin: '0 auto 12px' }} />
-                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', marginBottom: '6px' }}>
-                  No Waste Collection Requests
+              <div className="p-12 text-center max-w-md mx-auto space-y-4">
+                <Recycle size={36} className="text-slate-300 mx-auto" />
+                <h3 className="text-base font-bold text-slate-900">
+                  No waste collection requests
                 </h3>
-                <p style={{ color: '#64748b', fontSize: '13.5px', maxWidth: '440px', margin: '0 auto 20px' }}>
-                  Post packaging or organic waste for collection.
+                <p className="text-xs text-slate-500">
+                  Post inedible organic scraps or packaging recyclables to route them to certified facilities.
                 </p>
                 <button
                   type="button"
-                  className="btn btn-primary"
                   onClick={() => setIsNewModalOpen(true)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#0284c7' }}
+                  className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold transition-all shadow-2xs inline-flex items-center gap-1.5 cursor-pointer"
                 >
-                  <PlusCircle size={16} />
-                  <span>Post Waste for Collection</span>
+                  <PlusCircle size={14} />
+                  <span>Post Waste Batch</span>
                 </button>
               </div>
             ) : (
-              <div className="table-responsive">
-                <table className="data-table">
-                  <thead>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-slate-100 text-2xs uppercase tracking-wider text-slate-400 font-bold bg-slate-50/50">
                     <tr>
-                      <th>Material Stream</th>
-                      <th>Quantity</th>
-                      <th>District</th>
-                      <th>Pickup Deadline</th>
-                      <th>Status</th>
-                      <th>Matched Collector</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
+                      <th className="py-3 px-4">Material Stream</th>
+                      <th className="py-3 px-4">Quantity</th>
+                      <th className="py-3 px-4">District</th>
+                      <th className="py-3 px-4">Pickup Deadline</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4">Matched Collector</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100">
                     {wasteRequests.map((w) => (
-                      <tr key={w._id}>
-                        <td>
-                          <div style={{ fontWeight: '700', textTransform: 'capitalize', color: '#0f172a' }}>
-                            {w.wasteCategory} Waste
-                          </div>
-                          <div style={{ fontSize: '11.5px', color: '#64748b' }}>
-                            Created: {new Date(w.createdAt).toLocaleDateString()}
-                          </div>
+                      <tr key={w._id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-slate-900 capitalize">
+                          {w.wasteCategory} Waste
                         </td>
-                        <td>
-                          <strong>{w.quantity}</strong>
+                        <td className="py-3.5 px-4 font-bold text-slate-800">
+                          {w.quantity}
                         </td>
-                        <td>{w.district}</td>
-                        <td>
-                          <div style={{ fontSize: '12.5px', color: '#dc2626', fontWeight: '600' }}>
-                            {new Date(w.pickupDeadline).toLocaleDateString()}
-                          </div>
+                        <td className="py-3.5 px-4 text-slate-600">
+                          {w.district}
                         </td>
-                        <td>
+                        <td className="py-3.5 px-4 font-semibold text-rose-700">
+                          {new Date(w.pickupDeadline).toLocaleDateString()}
+                        </td>
+                        <td className="py-3.5 px-4">
                           {renderStatusBadge(w.status)}
                         </td>
-                        <td>
+                        <td className="py-3.5 px-4">
                           {w.matchedCollector ? (
-                            <span className="badge blue">{w.matchedCollector.name}</span>
-                          ) : (
-                            <span style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' }}>
-                              Awaiting recycler match...
+                            <span className="inline-block px-2 py-0.5 rounded text-2xs font-bold bg-sky-100 text-sky-800">
+                              {w.matchedCollector.name}
                             </span>
+                          ) : (
+                            <span className="text-2xs text-slate-400 italic">Awaiting recycler match...</span>
                           )}
                         </td>
-                        <td style={{ textAlign: 'right' }}>
+                        <td className="py-3.5 px-4 text-right">
                           {w.status === 'posted' && (
                             <button
                               type="button"
                               onClick={(e) => handleCancelWaste(w._id, e)}
-                              className="btn-icon"
-                              title="Cancel Request"
-                              style={{ background: '#fee2e2', border: '1px solid #fca5a5', padding: '6px', borderRadius: '6px' }}
+                              className="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition-colors"
+                              title="Cancel waste request"
                             >
-                              <Trash2 size={15} color="#dc2626" />
+                              <Trash2 size={13} />
                             </button>
                           )}
                         </td>
@@ -520,57 +523,47 @@ export default function DonorDashboard() {
           </div>
         )}
 
-        {/* TAB 3: DONATION HISTORY & IMPACT */}
+        {/* TAB 3: DONATION HISTORY */}
         {activeTab === 'history' && (
-          <div style={{ padding: '20px' }}>
+          <div className="p-4 sm:p-6">
             {historyDonations.length === 0 ? (
-              <div className="empty-state" style={{ padding: '60px 20px', textAlign: 'center' }}>
-                <History size={44} color="#cbd5e1" style={{ margin: '0 auto 12px' }} />
-                <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', marginBottom: '6px' }}>
-                  No Past Donation History Yet
-                </h3>
-                <p style={{ color: '#64748b', fontSize: '13.5px', maxWidth: '440px', margin: '0 auto' }}>
-                  Delivered, cancelled, and expired donations appear here.
-                </p>
+              <div className="p-12 text-center text-slate-500 text-xs">
+                No past donations in historical archive.
               </div>
             ) : (
-              <div className="table-responsive">
-                <table className="data-table">
-                  <thead>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-slate-100 text-2xs uppercase tracking-wider text-slate-400 font-bold bg-slate-50/50">
                     <tr>
-                      <th>Item Description</th>
-                      <th>Quantity</th>
-                      <th>Date Completed</th>
-                      <th>Outcome Status</th>
-                      <th>Receiving Partner</th>
-                      <th style={{ textAlign: 'right' }}>Details</th>
+                      <th className="py-3 px-4">Food Surplus</th>
+                      <th className="py-3 px-4">Quantity</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4">Date</th>
+                      <th className="py-3 px-4 text-right">Details</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100">
                     {historyDonations.map((d) => (
-                      <tr key={d._id} onClick={() => handleOpenDetails(d._id)} style={{ cursor: 'pointer' }}>
-                        <td>
-                          <div style={{ fontWeight: '700', color: '#0f172a' }}>{d.foodType}</div>
-                          <div style={{ fontSize: '11.5px', color: '#64748b' }}>{d.district}</div>
+                      <tr key={d._id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-slate-900">
+                          {d.foodType}
                         </td>
-                        <td><strong>{d.quantity}</strong></td>
-                        <td>{new Date(d.updatedAt || d.createdAt).toLocaleDateString()}</td>
-                        <td>{renderStatusBadge(d.status)}</td>
-                        <td>
-                          {d.matchedRecipient ? (
-                            <span className="badge green">{d.matchedRecipient.name}</span>
-                          ) : (
-                            <span style={{ color: '#94a3b8' }}>—</span>
-                          )}
+                        <td className="py-3.5 px-4 font-bold text-slate-800">
+                          {d.quantity}
                         </td>
-                        <td style={{ textAlign: 'right' }}>
+                        <td className="py-3.5 px-4">
+                          {renderStatusBadge(d.status)}
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-500">
+                          {new Date(d.updatedAt || d.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
                           <button
                             type="button"
                             onClick={() => handleOpenDetails(d._id)}
-                            className="btn-icon"
-                            style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '6px', borderRadius: '6px' }}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors"
                           >
-                            <Eye size={15} color="#334155" />
+                            <Eye size={13} />
                           </button>
                         </td>
                       </tr>
@@ -583,33 +576,35 @@ export default function DonorDashboard() {
         )}
       </div>
 
-      {/* Guided Multi-Step Surplus Post Modal */}
+      {/* Modals */}
       <NewSurplusModal
         isOpen={isNewModalOpen}
         onClose={() => setIsNewModalOpen(false)}
         onCreated={loadAllData}
-        userDistrict={user?.district}
       />
 
-      {/* Donation Details & Lifecycle Tracking Modal */}
-      <DonationDetailsModal
-        donationId={selectedDonationId}
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
-        onUpdated={loadAllData}
-        onEdit={(d) => handleOpenEdit(d)}
-      />
+      {selectedDonationId && (
+        <DonationDetailsModal
+          isOpen={isDetailsOpen}
+          onClose={() => {
+            setIsDetailsOpen(false);
+            setSelectedDonationId(null);
+          }}
+          donationId={selectedDonationId}
+        />
+      )}
 
-      {/* Edit Donation Modal */}
-      <EditDonationModal
-        donation={editingDonation}
-        isOpen={isEditOpen}
-        onClose={() => {
-          setIsEditOpen(false);
-          setEditingDonation(null);
-        }}
-        onUpdated={loadAllData}
-      />
+      {editingDonation && (
+        <EditDonationModal
+          isOpen={isEditOpen}
+          onClose={() => {
+            setIsEditOpen(false);
+            setEditingDonation(null);
+          }}
+          donation={editingDonation}
+          onUpdated={loadAllData}
+        />
+      )}
     </div>
   );
 }

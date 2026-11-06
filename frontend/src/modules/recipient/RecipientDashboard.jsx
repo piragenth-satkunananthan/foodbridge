@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-
 import { 
   HeartHandshake, MapPin, Clock, Search, ShieldCheck, 
   Filter, AlertTriangle, CheckCircle2, ChevronRight, 
   RotateCw, Truck, ArrowRight, Package, Phone, Calendar, 
-  Utensils, Info, Check, XCircle
+  Utensils, Info, Check, XCircle, AlertCircle, FileCheck
 } from 'lucide-react';
 import { 
   fetchNearbyDonations, 
   fetchRecipientStats, 
   fetchRecipientClaims, 
   claimDonation, 
-  cancelDonationClaim 
+  cancelDonationClaim,
+  confirmPickupReceipt
 } from '../../api/client';
 import ClaimDonationModal from './ClaimDonationModal';
 import AnimatedCounter from '../../components/AnimatedCounter';
@@ -53,9 +53,14 @@ export default function RecipientDashboard() {
   const [storageFilter, setStorageFilter] = useState('all');
   const [sortBy, setSortBy] = useState('smart_match');
 
-  // Modals
+  // Modals & Action States
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
+
+  // Receipt Confirmation State (for couriers arriving with delivered_or_recycled)
+  const [receiptModalPickup, setReceiptModalPickup] = useState(null);
+  const [receiptNote, setReceiptNote] = useState('');
+  const [receiptSubmitting, setReceiptSubmitting] = useState(false);
 
   const isVerified = user?.verificationStatus === 'verified' || stats.isVerified;
 
@@ -107,10 +112,9 @@ export default function RecipientDashboard() {
   };
 
   const handleClaimDonation = async (donationId, notes) => {
-    const res = await claimDonation(donationId, notes);
+    await claimDonation(donationId, notes);
     setActionSuccess('Donation successfully claimed! Courier logistics has been notified.');
     setTimeout(() => setActionSuccess(null), 5000);
-    // Reload data and navigate to active claims
     setActiveTab('active_claims');
     loadData();
   };
@@ -129,157 +133,100 @@ export default function RecipientDashboard() {
     }
   };
 
+  const handleConfirmReceipt = async (pickupId, accepted = true) => {
+    setReceiptSubmitting(true);
+    try {
+      await confirmPickupReceipt(pickupId, {
+        accepted,
+        note: receiptNote || (accepted ? 'Food verified in good condition and distributed to beneficiaries.' : 'Rejected upon physical inspection.')
+      });
+      setActionSuccess(accepted ? 'Delivery receipt confirmed! Rescue mission marked completed.' : 'Delivery rejected and recorded.');
+      setReceiptModalPickup(null);
+      setReceiptNote('');
+      setTimeout(() => setActionSuccess(null), 5000);
+      loadData();
+    } catch (err) {
+      setError(err.message || 'Failed to confirm receipt');
+    } finally {
+      setReceiptSubmitting(false);
+    }
+  };
+
   const getUrgencyBadge = (hoursRemaining) => {
     if (hoursRemaining === null || hoursRemaining === undefined) return null;
     if (hoursRemaining <= 2) {
       return (
-        <span 
-          style={{
-            background: '#fee2e2',
-            color: '#b91c1c',
-            border: '1px solid #fecaca',
-            padding: '3px 8px',
-            borderRadius: '6px',
-            fontSize: '11px',
-            fontWeight: '700',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">
           <Clock size={12} /> {hoursRemaining}h left (Critical)
         </span>
       );
     }
     if (hoursRemaining <= 6) {
       return (
-        <span 
-          style={{
-            background: '#fef3c7',
-            color: '#b45309',
-            border: '1px solid #fde68a',
-            padding: '3px 8px',
-            borderRadius: '6px',
-            fontSize: '11px',
-            fontWeight: '700',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
           <Clock size={12} /> {hoursRemaining}h left
         </span>
       );
     }
     return (
-      <span 
-        style={{
-          background: '#f1f5f9',
-          color: '#475569',
-          padding: '3px 8px',
-          borderRadius: '6px',
-          fontSize: '11px',
-          fontWeight: '600',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}
-      >
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
         <Clock size={12} /> {hoursRemaining}h window
       </span>
     );
   };
 
   return (
-    <div className="main-content" style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 20px' }}>
-      {/* Header Banner */}
-      <div 
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-          marginBottom: '28px',
-          paddingBottom: '20px',
-          borderBottom: '1px solid #e2e8f0'
-        }}
-      >
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span className="badge recipient" style={{ padding: '4px 10px', fontSize: '12px' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold tracking-wide uppercase bg-emerald-100 text-emerald-800">
               Charity & Shelter Allocation Portal
             </span>
-            <span style={{ fontSize: '12.5px', color: '#64748b' }}>
-              Module 2: Proximity Smart Matching
+            <span className="text-xs text-slate-500 font-medium">
+              Module 2 • Proximity Smart Matching
             </span>
           </div>
-          <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: '0 0 6px 0' }}>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Recipient Operations — {user?.name || 'NGO / Charity'}
-          </h2>
-          <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
-            Real-time proximity feed and smart algorithmic matching to claim and redirect edible food before spoilage.
+          </h1>
+          <p className="mt-1 text-sm text-slate-600 max-w-2xl">
+            Live proximity feed and algorithmic matching to claim and redirect edible food before spoilage.
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="flex items-center gap-3">
           {isVerified ? (
-            <span 
-              className="badge verified" 
-              style={{
-                padding: '8px 14px',
-                fontSize: '13px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#ecfdf5',
-                color: '#059669',
-                border: '1px solid #a7f3d0'
-              }}
-            >
-              <ShieldCheck size={18} /> Verified Charity Partner
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+              <ShieldCheck size={16} className="text-emerald-600" />
+              Verified Charity Partner
             </span>
           ) : (
-            <span 
-              className="badge pending" 
-              style={{
-                padding: '8px 14px',
-                fontSize: '13px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#fffbeb',
-                color: '#d97706',
-                border: '1px solid #fde68a'
-              }}
-            >
-              <Clock size={18} /> Verification Pending Admin Review
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
+              <Clock size={16} className="text-amber-600" />
+              Verification Pending Review
             </span>
           )}
+          <button
+            onClick={loadData}
+            className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer"
+            title="Refresh portal data"
+            aria-label="Refresh data"
+          >
+            <RotateCw size={16} className={loading ? 'animate-spin' : ''} />
+          </button>
         </div>
       </div>
 
-      {/* Verification Warning Alert */}
+      {/* Verification Notice Banner */}
       {!isVerified && (
-        <div 
-          style={{
-            background: '#fffbeb',
-            border: '1px solid #fde68a',
-            borderRadius: '12px',
-            padding: '16px 20px',
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '14px'
-          }}
-        >
-          <AlertTriangle size={22} color="#d97706" style={{ flexShrink: 0, marginTop: '2px' }} />
-          <div>
-            <h4 style={{ margin: '0 0 4px 0', fontSize: '14.5px', fontWeight: '700', color: '#92400e' }}>
-              Notice: Account Verification Pending
-            </h4>
-            <p style={{ margin: 0, fontSize: '13px', color: '#b45309', lineHeight: 1.5 }}>
-              Your organization profile is currently being reviewed by platform administrators. You can browse live surplus donations in read-only mode. Once your official charity license is approved, one-click rescue claims will be instantly unlocked.
+        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 flex items-start gap-3 shadow-2xs">
+          <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <h4 className="font-bold text-amber-900">Account Verification Pending</h4>
+            <p className="text-amber-800 mt-0.5">
+              Your charity profile is currently undergoing verification by platform administrators. You can browse live surplus donations in read-only mode. Once approved, one-click claims will be unlocked.
             </p>
           </div>
         </div>
@@ -288,165 +235,119 @@ export default function RecipientDashboard() {
       {/* Success Notification Alert */}
       {actionSuccess && (
         <motion.div 
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{
-            background: '#ecfdf5',
-            border: '1px solid #a7f3d0',
-            borderRadius: '12px',
-            padding: '14px 20px',
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            color: '#065f46',
-            fontSize: '14px',
-            fontWeight: '600'
-          }}
+          className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3 text-sm font-semibold text-emerald-800 shadow-2xs"
         >
-          <CheckCircle2 size={20} color="#059669" />
+          <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
           <span>{actionSuccess}</span>
         </motion.div>
       )}
 
+      {/* Error Alert */}
+      {error && (
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 flex items-start gap-3 text-sm text-rose-800 shadow-2xs">
+          <AlertCircle size={18} className="text-rose-600 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold">Error:</span> {error}
+          </div>
+        </div>
+      )}
+
       {/* KPI Stats Grid */}
-      <div 
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px',
-          marginBottom: '28px'
-        }}
-      >
-        <div className="card" style={{ padding: '20px', borderRadius: '14px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: '#64748b' }}>Surplus in District</span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Utensils size={18} color="#059669" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Surplus in District</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <Utensils size={18} />
             </div>
           </div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a' }}>
+          <div className="text-3xl font-extrabold text-slate-900">
             <AnimatedCounter value={stats.availableInDistrict} />
           </div>
-          <span style={{ fontSize: '12px', color: '#059669', fontWeight: '600' }}>
+          <p className="mt-1 text-xs font-semibold text-emerald-600">
             {selectedDistrict} Logistics Hub
-          </span>
+          </p>
         </div>
 
-        <div className="card" style={{ padding: '20px', borderRadius: '14px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: '#64748b' }}>Active Claims</span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Truck size={18} color="#2563eb" />
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Active Claims</span>
+            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+              <Truck size={18} />
             </div>
           </div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a' }}>
+          <div className="text-3xl font-extrabold text-slate-900">
             <AnimatedCounter value={stats.activeClaimsCount} />
           </div>
-          <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '600' }}>
+          <p className="mt-1 text-xs font-semibold text-blue-600">
             Courier Dispatched / In Transit
-          </span>
+          </p>
         </div>
 
-        <div className="card" style={{ padding: '20px', borderRadius: '14px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: '#64748b' }}>Meals Rescued</span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fdf4ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <HeartHandshake size={18} color="#a855f7" />
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Meals Rescued</span>
+            <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+              <HeartHandshake size={18} />
             </div>
           </div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a' }}>
+          <div className="text-3xl font-extrabold text-slate-900">
             <AnimatedCounter value={stats.estimatedMealsRescued} />
           </div>
-          <span style={{ fontSize: '12px', color: '#a855f7', fontWeight: '600' }}>
+          <p className="mt-1 text-xs font-semibold text-purple-600">
             Beneficiary Portions Delivered
-          </span>
+          </p>
         </div>
 
-        <div className="card" style={{ padding: '20px', borderRadius: '14px', background: '#ffffff', border: '1px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: '#64748b' }}>Primary District</span>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <MapPin size={18} color="#d97706" />
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Service District</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+              <MapPin size={18} />
             </div>
           </div>
-          <div style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', marginTop: '6px' }}>
+          <div className="text-2xl font-extrabold text-slate-900 truncate">
             {user?.district || 'Colombo'}
           </div>
-          <span style={{ fontSize: '12px', color: '#64748b' }}>
-            Autonomous Geo-Match Radius
-          </span>
+          <p className="mt-1 text-xs text-slate-500">
+            Autonomous Proximity Radius
+          </p>
         </div>
       </div>
 
       {/* Tabs Navigation */}
-      <div 
-        style={{
-          display: 'flex',
-          gap: '8px',
-          borderBottom: '2px solid #e2e8f0',
-          marginBottom: '24px'
-        }}
-      >
+      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-px">
         <button
           onClick={() => setActiveTab('available')}
-          style={{
-            padding: '12px 20px',
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'available' ? '3px solid #059669' : '3px solid transparent',
-            color: activeTab === 'available' ? '#059669' : '#64748b',
-            fontWeight: activeTab === 'available' ? '700' : '600',
-            fontSize: '14.5px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
+            activeTab === 'available'
+              ? 'border-emerald-600 text-emerald-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          }`}
         >
-          <Utensils size={18} />
-          Smart Matching Feed
-          <span 
-            style={{
-              background: activeTab === 'available' ? '#ecfdf5' : '#f1f5f9',
-              color: activeTab === 'available' ? '#059669' : '#64748b',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontSize: '12px'
-            }}
-          >
+          <Utensils size={17} />
+          <span>Smart Matching Feed</span>
+          <span className={`px-2 py-0.5 rounded-full text-xs ${
+            activeTab === 'available' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
+          }`}>
             {donations.length}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('active_claims')}
-          style={{
-            padding: '12px 20px',
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'active_claims' ? '3px solid #059669' : '3px solid transparent',
-            color: activeTab === 'active_claims' ? '#059669' : '#64748b',
-            fontWeight: activeTab === 'active_claims' ? '700' : '600',
-            fontSize: '14.5px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
+            activeTab === 'active_claims'
+              ? 'border-emerald-600 text-emerald-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          }`}
         >
-          <Truck size={18} />
-          Active Rescue Logistics
+          <Truck size={17} />
+          <span>Active Rescue Logistics</span>
           {stats.activeClaimsCount > 0 && (
-            <span 
-              style={{
-                background: '#2563eb',
-                color: '#ffffff',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                fontSize: '12px'
-              }}
-            >
+            <span className="px-2 py-0.5 rounded-full text-xs bg-blue-600 text-white font-bold">
               {stats.activeClaimsCount}
             </span>
           )}
@@ -454,81 +355,42 @@ export default function RecipientDashboard() {
 
         <button
           onClick={() => setActiveTab('history')}
-          style={{
-            padding: '12px 20px',
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'history' ? '3px solid #059669' : '3px solid transparent',
-            color: activeTab === 'history' ? '#059669' : '#64748b',
-            fontWeight: activeTab === 'history' ? '700' : '600',
-            fontSize: '14.5px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
+            activeTab === 'history'
+              ? 'border-emerald-600 text-emerald-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          }`}
         >
-          <CheckCircle2 size={18} />
-          Completed Rescues
+          <CheckCircle2 size={17} />
+          <span>Completed Rescues</span>
         </button>
       </div>
 
-      {/* Tab Content: Available Donations */}
+      {/* Tab 1: Available Smart Matching Feed */}
       {activeTab === 'available' && (
-        <>
+        <div className="space-y-6">
           {/* Controls & Filter Bar */}
-          <div 
-            className="card"
-            style={{
-              padding: '16px 20px',
-              borderRadius: '14px',
-              marginBottom: '24px',
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '14px',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            {/* Search */}
-            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', flex: '1 1 260px' }}>
-              <div style={{ position: 'relative', width: '100%' }}>
-                <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                <input 
-                  type="text" 
-                  className="form-input"
-                  placeholder="Search food type or donor..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    paddingLeft: '36px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    border: '1px solid #cbd5e1',
-                    width: '100%'
-                  }}
-                />
-              </div>
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            {/* Search Input */}
+            <form onSubmit={handleSearchSubmit} className="relative flex-1">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search food type or commercial donor..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-slate-800 placeholder-slate-400 bg-slate-50/50"
+              />
             </form>
 
             {/* Dropdown Filters */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-              {/* District Select */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MapPin size={15} color="#059669" />
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex items-center gap-1.5">
+                <MapPin size={15} className="text-emerald-600 shrink-0" />
                 <select
                   value={selectedDistrict}
                   onChange={(e) => setSelectedDistrict(e.target.value)}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '13px',
-                    background: '#ffffff',
-                    color: '#334155'
-                  }}
+                  className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                 >
                   {DISTRICTS_LIST.map((dist) => (
                     <option key={dist} value={dist}>
@@ -538,18 +400,10 @@ export default function RecipientDashboard() {
                 </select>
               </div>
 
-              {/* Storage Condition */}
               <select
                 value={storageFilter}
                 onChange={(e) => setStorageFilter(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  fontSize: '13px',
-                  background: '#ffffff',
-                  color: '#334155'
-                }}
+                className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               >
                 <option value="all">All Storage Types</option>
                 <option value="room_temperature">Room Temp</option>
@@ -557,241 +411,135 @@ export default function RecipientDashboard() {
                 <option value="frozen">Frozen</option>
               </select>
 
-              {/* Sort By */}
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  fontSize: '13px',
-                  background: '#ffffff',
-                  color: '#334155',
-                  fontWeight: '600'
-                }}
+                className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               >
                 <option value="smart_match">★ Smart Match Score</option>
                 <option value="urgency">⏳ Expiring Soonest</option>
                 <option value="distance">📍 Nearest Proximity</option>
                 <option value="newest">Newest Listed</option>
               </select>
-
-              <button
-                onClick={loadData}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  background: '#f8fafc',
-                  cursor: 'pointer',
-                  color: '#475569',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-                title="Refresh list"
-              >
-                <RotateCw size={15} />
-              </button>
             </div>
           </div>
 
-          {/* List or Empty State */}
+          {/* Cards or Empty State */}
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
-              <RotateCw size={32} className="spin-slow" style={{ margin: '0 auto 12px auto' }} />
-              <p style={{ margin: 0, fontSize: '14px' }}>Computing district distance and smart matching scores...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-4 animate-pulse">
+                  <div className="h-5 bg-slate-200 rounded w-2/3" />
+                  <div className="h-4 bg-slate-100 rounded w-1/2" />
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <div className="h-4 bg-slate-100 rounded" />
+                    <div className="h-4 bg-slate-100 rounded" />
+                  </div>
+                  <div className="h-10 bg-slate-100 rounded-xl" />
+                </div>
+              ))}
             </div>
           ) : donations.length === 0 ? (
-            <div 
-              className="card"
-              style={{
-                textAlign: 'center',
-                padding: '60px 20px',
-                borderRadius: '16px',
-                background: '#ffffff',
-                border: '1px dashed #cbd5e1'
-              }}
-            >
-              <HeartHandshake size={48} color="#94a3b8" style={{ margin: '0 auto 16px auto' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1e293b', marginBottom: '6px' }}>
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center max-w-xl mx-auto space-y-4">
+              <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                <HeartHandshake size={28} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">
                 No active surplus found in {selectedDistrict}
               </h3>
-              <p style={{ fontSize: '13.5px', color: '#64748b', maxWidth: '440px', margin: '0 auto 20px auto' }}>
-                All nearby donations have either been claimed or safely allocated. Check other neighbouring districts or check back shortly.
+              <p className="text-sm text-slate-500 leading-relaxed">
+                All donations in this district have either been claimed or allocated. Check neighbouring districts or check back shortly.
               </p>
               <button
                 onClick={() => setSelectedDistrict('Colombo')}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  background: '#f8fafc',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: '#0f172a',
-                  cursor: 'pointer'
-                }}
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
               >
                 Switch to Colombo Hub
               </button>
             </div>
           ) : (
-            <div 
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-                gap: '20px'
-              }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {donations.map((donation) => {
                 const matchScore = donation.matchScore || 0;
                 return (
                   <motion.div
                     key={donation._id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="card"
-                    style={{
-                      borderRadius: '16px',
-                      background: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-                      transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-                    }}
+                    className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden"
                   >
-                    {/* Card Header with Badges */}
-                    <div 
-                      style={{
-                        padding: '16px 20px 12px 20px',
-                        borderBottom: '1px solid #f1f5f9',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        background: '#fcfcfd'
-                      }}
-                    >
-                      <div>
-                        {/* Match Score Badge */}
-                        <span 
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            background: matchScore >= 80 ? '#ecfdf5' : '#eff6ff',
-                            color: matchScore >= 80 ? '#059669' : '#2563eb',
-                            border: `1px solid ${matchScore >= 80 ? '#a7f3d0' : '#bfdbfe'}`,
-                            fontSize: '11px',
-                            fontWeight: '700',
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            marginBottom: '6px'
-                          }}
-                        >
-                          ★ {matchScore}% Smart Match
+                    {/* Header */}
+                    <div className="p-5 pb-4 border-b border-slate-100 bg-slate-50/40">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold mb-2 border ${
+                            matchScore >= 80 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}>
+                            ★ {matchScore}% Smart Match
+                          </span>
+                          <h3 className="text-base font-bold text-slate-900 leading-snug">
+                            {donation.foodType}
+                          </h3>
+                        </div>
+                        <span className="shrink-0 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-extrabold text-slate-800 shadow-2xs">
+                          {donation.quantity}
                         </span>
-                        <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>
-                          {donation.foodType}
-                        </h3>
                       </div>
-                      <span 
-                        style={{
-                          background: '#f8fafc',
-                          border: '1px solid #e2e8f0',
-                          padding: '4px 10px',
-                          borderRadius: '8px',
-                          fontWeight: '700',
-                          fontSize: '13px',
-                          color: '#0f172a'
-                        }}
-                      >
-                        {donation.quantity}
-                      </span>
                     </div>
 
-                    {/* Card Body */}
-                    <div style={{ padding: '16px 20px', flex: 1 }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '14px', fontSize: '13px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#475569' }}>
-                          <MapPin size={15} color="#059669" />
-                          <span>
+                    {/* Body */}
+                    <div className="p-5 space-y-4 flex-1">
+                      <div className="grid grid-cols-2 gap-2.5 text-xs text-slate-600">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <MapPin size={14} className="text-emerald-600 shrink-0" />
+                          <span className="truncate">
                             {donation.district} ({donation.distanceKm ? `${donation.distanceKm} km` : 'Local'})
                           </span>
                         </div>
                         <div>
                           {getUrgencyBadge(donation.hoursRemaining)}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#475569' }}>
-                          <Package size={15} color="#6366f1" />
-                          <span style={{ textTransform: 'capitalize' }}>
-                            {(donation.storageCondition || 'room_temperature').replace('_', ' ')}
-                          </span>
+                        <div className="flex items-center gap-1.5 capitalize">
+                          <Package size={14} className="text-indigo-600 shrink-0" />
+                          <span>{(donation.storageCondition || 'room_temperature').replace('_', ' ')}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#475569' }}>
-                          <Phone size={15} color="#0284c7" />
-                          <span>{donation.donor?.contactNumber || 'Contact on Claim'}</span>
+                        <div className="flex items-center gap-1.5">
+                          <Phone size={14} className="text-sky-600 shrink-0" />
+                          <span className="truncate">{donation.donor?.contactNumber || 'Contact on Claim'}</span>
                         </div>
                       </div>
 
-                      {/* Donor Info & Special Instructions */}
-                      <div 
-                        style={{
-                          background: '#f8fafc',
-                          borderRadius: '8px',
-                          padding: '10px 12px',
-                          fontSize: '12.5px',
-                          color: '#475569',
-                          marginBottom: '14px'
-                        }}
-                      >
+                      {/* Donor Box */}
+                      <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600 space-y-1 border border-slate-100">
                         <div>
-                          <strong>Donor:</strong> {donation.donor?.name || 'Verified Commercial Donor'}
+                          <strong className="text-slate-800">Donor:</strong> {donation.donor?.name || 'Commercial Donor'}
                         </div>
                         {donation.specialInstructions && (
-                          <div style={{ marginTop: '4px', color: '#64748b' }}>
-                            <strong>Instructions:</strong> {donation.specialInstructions}
+                          <div className="text-slate-500 italic">
+                            "{donation.specialInstructions}"
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Card Footer Action */}
-                    <div 
-                      style={{
-                        padding: '12px 20px',
-                        borderTop: '1px solid #f1f5f9',
-                        background: '#fcfcfd',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <span style={{ fontSize: '12px', color: '#64748b' }}>
-                        {donation.estimatedPortions ? `~${donation.estimatedPortions} Portions` : 'Food Surplus'}
+                    {/* Action Footer */}
+                    <div className="p-4 px-5 border-t border-slate-100 bg-slate-50/30 flex items-center justify-between">
+                      <span className="text-xs text-slate-500 font-medium">
+                        {donation.estimatedPortions ? `~${donation.estimatedPortions} Portions` : 'Verified Surplus'}
                       </span>
                       <button
                         onClick={() => handleOpenClaimModal(donation)}
                         disabled={!isVerified}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          background: isVerified ? '#059669' : '#94a3b8',
-                          color: '#ffffff',
-                          fontWeight: '600',
-                          fontSize: '13px',
-                          cursor: isVerified ? 'pointer' : 'not-allowed',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'background 0.15s ease'
-                        }}
+                        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
+                          isVerified
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        }`}
                       >
-                        <HeartHandshake size={15} /> Claim for Rescue
+                        <HeartHandshake size={14} />
+                        Claim for Rescue
                       </button>
                     </div>
                   </motion.div>
@@ -799,47 +547,31 @@ export default function RecipientDashboard() {
               })}
             </div>
           )}
-        </>
+        </div>
       )}
 
-      {/* Tab Content: Active Claims Pipeline */}
+      {/* Tab 2: Active Claims Pipeline */}
       {activeTab === 'active_claims' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="space-y-5">
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
-              <RotateCw size={32} className="spin-slow" style={{ margin: '0 auto 12px auto' }} />
-              <p>Fetching active rescue missions...</p>
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500 animate-pulse">
+              <RotateCw size={24} className="animate-spin mx-auto mb-2 text-slate-400" />
+              <p className="text-sm">Fetching active rescue missions...</p>
             </div>
           ) : claims.length === 0 ? (
-            <div 
-              className="card"
-              style={{
-                textAlign: 'center',
-                padding: '60px 20px',
-                borderRadius: '16px',
-                background: '#ffffff',
-                border: '1px dashed #cbd5e1'
-              }}
-            >
-              <Truck size={48} color="#94a3b8" style={{ margin: '0 auto 16px auto' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1e293b', marginBottom: '6px' }}>
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center max-w-xl mx-auto space-y-4">
+              <div className="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                <Truck size={28} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">
                 No active claims in progress
               </h3>
-              <p style={{ fontSize: '13.5px', color: '#64748b', maxWidth: '440px', margin: '0 auto 20px auto' }}>
+              <p className="text-sm text-slate-500">
                 Browse the Smart Matching Feed to claim surplus food for your shelter or community.
               </p>
               <button
                 onClick={() => setActiveTab('available')}
-                style={{
-                  padding: '9px 18px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: '#059669',
-                  color: '#ffffff',
-                  fontSize: '13.5px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors cursor-pointer"
               >
                 Browse Available Surplus
               </button>
@@ -849,69 +581,45 @@ export default function RecipientDashboard() {
               const donation = claim.donation || {};
               const volunteer = claim.volunteer;
               const pipelineStage = claim.statusPipeline;
+              const isDeliveredAwaitingConfirmation = pipelineStage === 'delivered_or_recycled';
 
               return (
                 <div 
                   key={claim._id}
-                  className="card"
-                  style={{
-                    borderRadius: '16px',
-                    background: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    padding: '24px',
-                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
-                  }}
+                  className={`bg-white rounded-2xl border transition-all p-6 shadow-2xs space-y-5 ${
+                    isDeliveredAwaitingConfirmation 
+                      ? 'border-emerald-400 ring-2 ring-emerald-500/10' 
+                      : 'border-slate-200/80'
+                  }`}
                 >
-                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                      <span 
-                        style={{
-                          background: '#eff6ff',
-                          color: '#2563eb',
-                          border: '1px solid #bfdbfe',
-                          padding: '3px 8px',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          fontWeight: '700',
-                          textTransform: 'uppercase'
-                        }}
-                      >
-                        Pipeline: {pipelineStage.replace(/_/g, ' ')}
-                      </span>
-                      <h3 style={{ margin: '6px 0 0 0', fontSize: '19px', fontWeight: '800', color: '#0f172a' }}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-extrabold uppercase tracking-wide bg-blue-100 text-blue-800">
+                          Pipeline: {pipelineStage.replace(/_/g, ' ')}
+                        </span>
+                        {isDeliveredAwaitingConfirmation && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold uppercase bg-amber-100 text-amber-800 animate-pulse">
+                            <AlertCircle size={11} /> Recipient Confirmation Required
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-extrabold text-slate-900">
                         {donation.foodType || 'Food Surplus Claim'}
                       </h3>
-                      <span style={{ fontSize: '13px', color: '#64748b' }}>
-                        Donor: {donation.donor?.name || 'Commercial Partner'} • District: {donation.district || 'Colombo'}
-                      </span>
+                      <p className="text-xs text-slate-500">
+                        Donor: <strong className="text-slate-700">{donation.donor?.name || 'Commercial Partner'}</strong> • District: {donation.district || 'Colombo'}
+                      </p>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span 
-                        style={{
-                          background: '#f1f5f9',
-                          padding: '6px 14px',
-                          borderRadius: '8px',
-                          fontWeight: '700',
-                          fontSize: '14px',
-                          color: '#0f172a'
-                        }}
-                      >
-                        {donation.quantity || 'Portion Reserved'}
+                    <div className="flex items-center gap-3">
+                      <span className="px-3 py-1 rounded-lg bg-slate-100 text-slate-800 text-sm font-bold">
+                        {donation.quantity || 'Reserved Quantity'}
                       </span>
                       {pipelineStage === 'matched' && (
                         <button
                           onClick={() => handleCancelClaim(donation._id)}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            border: '1px solid #fecaca',
-                            background: '#fff1f2',
-                            color: '#b91c1c',
-                            fontSize: '12.5px',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                          }}
+                          className="px-3 py-1 text-xs font-semibold rounded-lg bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer"
                         >
                           Release Claim
                         </button>
@@ -919,25 +627,14 @@ export default function RecipientDashboard() {
                     </div>
                   </div>
 
-                  {/* 5-Step Pipeline Progress Indicator */}
-                  <div 
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(5, 1fr)',
-                      gap: '8px',
-                      background: '#f8fafc',
-                      borderRadius: '12px',
-                      padding: '14px',
-                      marginBottom: '16px',
-                      border: '1px solid #e2e8f0'
-                    }}
-                  >
+                  {/* 5-Step Pipeline Progress Bar */}
+                  <div className="grid grid-cols-5 gap-2 bg-slate-50/80 rounded-xl p-3 border border-slate-100">
                     {[
                       { key: 'matched', label: '1. Matched' },
                       { key: 'pickup_scheduled', label: '2. Courier Assigned' },
                       { key: 'picked_up', label: '3. In Transit' },
-                      { key: 'delivered_or_recycled', label: '4. Delivered' },
-                      { key: 'completed', label: '5. Completed' }
+                      { key: 'delivered_or_recycled', label: '4. Arrived' },
+                      { key: 'completed', label: '5. Confirmed' }
                     ].map((step, idx) => {
                       const stages = ['matched', 'pickup_scheduled', 'picked_up', 'delivered_or_recycled', 'completed'];
                       const currentIdx = stages.indexOf(pipelineStage);
@@ -945,22 +642,15 @@ export default function RecipientDashboard() {
                       const isCurrent = currentIdx === idx;
 
                       return (
-                        <div key={step.key} style={{ textAlign: 'center' }}>
+                        <div key={step.key} className="text-center">
                           <div 
-                            style={{
-                              height: '6px',
-                              borderRadius: '3px',
-                              background: isComplete ? '#059669' : '#e2e8f0',
-                              marginBottom: '8px'
-                            }}
+                            className={`h-1.5 rounded-full mb-1.5 transition-colors ${
+                              isComplete ? 'bg-emerald-600' : 'bg-slate-200'
+                            }`}
                           />
-                          <span 
-                            style={{
-                              fontSize: '11px',
-                              fontWeight: isCurrent ? '800' : '600',
-                              color: isComplete ? '#059669' : '#94a3b8'
-                            }}
-                          >
+                          <span className={`text-2xs sm:text-xs font-semibold block truncate ${
+                            isCurrent ? 'text-emerald-700 font-extrabold' : isComplete ? 'text-slate-700' : 'text-slate-400'
+                          }`}>
                             {step.label}
                           </span>
                         </div>
@@ -968,23 +658,59 @@ export default function RecipientDashboard() {
                     })}
                   </div>
 
-                  {/* Volunteer Dispatch Status */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: '#475569' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Truck size={16} color={volunteer ? '#059669' : '#94a3b8'} />
+                  {/* Two-Party Confirmation Card when Arrived */}
+                  {isDeliveredAwaitingConfirmation && (
+                    <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                          <FileCheck size={18} className="text-emerald-700" />
+                          <span>Volunteer has delivered the surplus food!</span>
+                        </div>
+                        <p className="text-xs text-emerald-800">
+                          Please inspect the cargo condition. Confirming receipt closes the pickup workflow and officially credits platform diversion impact.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => setReceiptModalPickup(claim)}
+                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+                        >
+                          <Check size={14} /> Confirm Receipt
+                        </button>
+                        <button
+                          onClick={() => {
+                            const reason = prompt('State rejection reason (e.g. food spoiled, temperature compromised):');
+                            if (reason) {
+                              setReceiptNote(reason);
+                              handleConfirmReceipt(claim._id, false);
+                            }
+                          }}
+                          className="px-3 py-2 rounded-xl bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          Reject Cargo
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Volunteer Courier Info */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <Truck size={15} className={volunteer ? 'text-emerald-600' : 'text-slate-400'} />
                       <span>
                         {volunteer ? (
-                          <>Volunteer Courier: <strong>{volunteer.name}</strong> ({volunteer.contactNumber})</>
+                          <>Volunteer Courier: <strong className="text-slate-800">{volunteer.name}</strong> ({volunteer.contactNumber})</>
                         ) : (
-                          <span style={{ color: '#d97706' }}>Awaiting community volunteer assignment</span>
+                          <span className="text-amber-600 font-medium">Awaiting community volunteer assignment</span>
                         )}
                       </span>
                     </div>
 
                     {donation.pickupDeadline && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Clock size={15} color="#64748b" />
-                        <span>Deadline: {new Date(donation.pickupDeadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <div className="flex items-center gap-1.5">
+                        <Clock size={14} className="text-slate-400" />
+                        <span>Pickup Window: {new Date(donation.pickupDeadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                     )}
                   </div>
@@ -995,67 +721,52 @@ export default function RecipientDashboard() {
         </div>
       )}
 
-      {/* Tab Content: Completed Rescues History */}
+      {/* Tab 3: Completed Rescues Archive */}
       {activeTab === 'history' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div className="space-y-4">
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
-              <RotateCw size={32} className="spin-slow" style={{ margin: '0 auto 12px auto' }} />
-              <p>Loading rescue archive...</p>
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500 animate-pulse">
+              <RotateCw size={24} className="animate-spin mx-auto mb-2 text-slate-400" />
+              <p className="text-sm">Loading rescue archive...</p>
             </div>
           ) : claims.length === 0 ? (
-            <div 
-              className="card"
-              style={{
-                textAlign: 'center',
-                padding: '60px 20px',
-                borderRadius: '16px',
-                background: '#ffffff',
-                border: '1px dashed #cbd5e1'
-              }}
-            >
-              <CheckCircle2 size={48} color="#94a3b8" style={{ margin: '0 auto 16px auto' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1e293b', marginBottom: '6px' }}>
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center max-w-xl mx-auto space-y-4">
+              <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mx-auto">
+                <CheckCircle2 size={28} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">
                 No completed rescue missions yet
               </h3>
-              <p style={{ fontSize: '13.5px', color: '#64748b', margin: 0 }}>
-                When active rescue missions are delivered, they will be archived here for your impact report.
+              <p className="text-sm text-slate-500">
+                When active rescue missions are delivered and confirmed, they will be archived here with official receipt timestamps.
               </p>
             </div>
           ) : (
             claims.map((claim) => (
               <div 
                 key={claim._id}
-                className="card"
-                style={{
-                  borderRadius: '12px',
-                  background: '#ffffff',
-                  border: '1px solid #e2e8f0',
-                  padding: '16px 20px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
+                className="bg-white rounded-xl border border-slate-200/80 p-4 sm:p-5 flex items-center justify-between gap-4 shadow-2xs hover:shadow-xs transition-shadow"
               >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <CheckCircle2 size={16} color="#059669" />
-                    <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                    <h4 className="font-bold text-slate-900 text-sm sm:text-base">
                       {claim.donation?.foodType || 'Completed Food Rescue'}
                     </h4>
-                    <span className="badge verified" style={{ padding: '2px 8px', fontSize: '11px' }}>
-                      Delivered
+                    <span className="px-2 py-0.5 rounded text-2xs font-extrabold bg-emerald-100 text-emerald-800">
+                      Delivered & Confirmed
                     </span>
                   </div>
-                  <span style={{ fontSize: '12.5px', color: '#64748b' }}>
+                  <p className="text-xs text-slate-500">
                     Donor: {claim.donation?.donor?.name || 'Commercial Donor'} • District: {claim.donation?.district}
-                  </span>
+                  </p>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>
+
+                <div className="text-right shrink-0">
+                  <div className="text-sm font-extrabold text-slate-900">
                     {claim.donation?.quantity}
                   </div>
-                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                  <span className="text-2xs text-slate-400">
                     {new Date(claim.updatedAt).toLocaleDateString()}
                   </span>
                 </div>
@@ -1073,6 +784,77 @@ export default function RecipientDashboard() {
         onClaim={handleClaimDonation}
         isVerified={isVerified}
       />
+
+      {/* Recipient Receipt Confirmation Dialog */}
+      <AnimatePresence>
+        {receiptModalPickup && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full overflow-hidden"
+            >
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="flex items-center gap-2">
+                  <FileCheck size={20} className="text-emerald-600" />
+                  <h3 className="font-bold text-slate-900 text-base">
+                    Confirm Pickup Delivery Receipt
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setReceiptModalPickup(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                >
+                  <XCircle size={18} />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div className="text-xs text-slate-600 space-y-1">
+                  <p>
+                    <strong className="text-slate-900">Food Item:</strong> {receiptModalPickup.donation?.foodType} ({receiptModalPickup.donation?.quantity})
+                  </p>
+                  <p>
+                    <strong className="text-slate-900">Delivered By:</strong> {receiptModalPickup.volunteer?.name || 'Volunteer Courier'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                    Physical Inspection & Acceptance Note
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={receiptNote}
+                    onChange={(e) => setReceiptNote(e.target.value)}
+                    placeholder="e.g. Received intact, packaging sealed, temperature compliant. Distributed to shelter kitchen."
+                    className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2.5 pt-2">
+                  <button
+                    onClick={() => setReceiptModalPickup(null)}
+                    disabled={receiptSubmitting}
+                    className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleConfirmReceipt(receiptModalPickup._id, true)}
+                    disabled={receiptSubmitting}
+                    className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    {receiptSubmitting ? <RotateCw size={13} className="animate-spin" /> : <Check size={14} />}
+                    Confirm & Complete Rescue
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
