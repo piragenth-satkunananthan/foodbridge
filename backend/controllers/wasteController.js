@@ -331,6 +331,35 @@ const getEligibleCollectorsForWaste = endpoint(async (req, res) => {
     eligibleCollectors
   });
 });
+
+const getWasteCertificate = endpoint(async (req, res) => {
+  const wasteRequest = await WasteRequest.findById(req.params.id).populate('donor', 'name district contactNumber');
+  if (!wasteRequest) fail(404, 'Waste request not found');
+
+  const pickup = await Pickup.findOne({ wasteRequest: wasteRequest._id }).populate('receivingOrganization');
+  const org = pickup?.receivingOrganization || (wasteRequest.claimedBy ? await Organization.findById(wasteRequest.claimedBy) : null);
+
+  res.json({
+    success: true,
+    certificate: {
+      certificateId: `FB-DIV-${String(wasteRequest._id).slice(-6).toUpperCase()}`,
+      issuedAt: wasteRequest.processedAt || pickup?.completedAt || wasteRequest.updatedAt,
+      donorName: wasteRequest.donor?.name || 'Verified FoodBridge Donor',
+      donorDistrict: wasteRequest.district || 'Colombo',
+      facilityName: org?.name || 'Authorized Recycling Partner',
+      facilityLicense: org?.registrationInfo || 'LIC-REC-CERTIFIED',
+      facilityDistrict: org?.district || wasteRequest.district || 'Colombo',
+      wasteCategory: wasteRequest.wasteCategory,
+      quantity: wasteRequest.quantity,
+      amount: wasteRequest.amount || 0,
+      unit: wasteRequest.unit || 'kg',
+      processingOutcome: wasteRequest.processingOutcome || 'recycled',
+      processingNotes: wasteRequest.processingNotes || 'Processed per registered facility diversion guidelines',
+      status: wasteRequest.status
+    }
+  });
+});
+
 module.exports = {
   classifyWaste,
   createWasteRequest,
@@ -344,5 +373,6 @@ module.exports = {
   getRecyclerClaims,
   confirmWasteRecycled,
   getRecyclerStats,
-  getEligibleCollectorsForWaste
+  getEligibleCollectorsForWaste,
+  getWasteCertificate
 };

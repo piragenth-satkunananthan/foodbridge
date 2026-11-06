@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Recycle, AlertCircle, CheckCircle2, ShieldCheck,
-  MapPin, Clock, Package, Leaf, ArrowRight
+  MapPin, Clock, Package, RotateCw
 } from 'lucide-react';
 import { claimWasteRequest } from '../../api/client';
 
@@ -38,233 +39,138 @@ export default function ClaimWasteModal({ isOpen, onClose, wasteRequest, onClaim
   };
 
   return (
-    <div
-      className="modal-overlay"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(15, 23, 42, 0.65)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 9999,
-        padding: '20px'
-      }}
-    >
+    <AnimatePresence>
       <div
-        className="card"
-        style={{
-          maxWidth: '560px',
-          width: '100%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          borderRadius: '16px',
-          padding: 0,
-          background: '#ffffff',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-        }}
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4"
+        onClick={(e) => { if (e.target === e.currentTarget && !loading) onClose(); }}
       >
-        {/* Header */}
-        <div
-          style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid #e2e8f0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: 'linear-gradient(to right, #f8fafc, #f1f5f9)'
-          }}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 8 }}
+          transition={{ duration: 0.15 }}
+          className="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200"
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '8px',
-                background: '#0284c7',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <Recycle size={20} />
-            </div>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#0f172a' }}>
-                Accept Waste Collection Batch
-              </h3>
-              <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b' }}>
-                Module 3 Circular Sourcing & Material Intake
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="btn-icon"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px' }}
-          >
-            <X size={20} color="#64748b" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <form onSubmit={handleClaim} style={{ padding: '24px' }}>
-          {error && (
-            <div
-              style={{
-                background: '#fee2e2',
-                border: '1px solid #ef4444',
-                borderRadius: '8px',
-                padding: '12px 16px',
-                color: '#991b1b',
-                marginBottom: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                fontSize: '13.5px'
-              }}
-            >
-              <AlertCircle size={18} />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Batch Summary Card */}
-          <div
-            style={{
-              background: '#f0f9ff',
-              border: '1px solid #bae6fd',
-              borderRadius: '12px',
-              padding: '16px',
-              marginBottom: '20px'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-              <div>
-                <span className="badge blue" style={{ fontSize: '12px', fontWeight: '600' }}>
-                  {categoryLabels[wasteRequest.wasteCategory] || wasteRequest.wasteCategory}
-                </span>
-                <h4 style={{ margin: '8px 0 0 0', fontSize: '18px', fontWeight: '700', color: '#0369a1' }}>
-                  {wasteRequest.quantity}
-                </h4>
+          {/* Header */}
+          <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                <Recycle size={20} />
               </div>
-              {wasteRequest.impact && (
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '11px', color: '#0284c7', display: 'block', fontWeight: '600' }}>
-                    EST. CO₂e SAVINGS
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Accept Waste Collection Batch
+                </h3>
+                <p className="text-xs text-slate-500 font-medium">
+                  Module 3 Circular Sourcing & Material Intake
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              aria-label="Close dialog"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <form onSubmit={handleClaim} className="p-6 space-y-5">
+            {error && (
+              <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 flex items-center gap-2.5 text-xs text-rose-800">
+                <AlertCircle size={16} className="text-rose-600 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Batch Summary Card */}
+            <div className="bg-sky-50/60 border border-sky-200/80 rounded-xl p-4 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="inline-block px-2.5 py-0.5 rounded text-2xs font-bold uppercase bg-sky-100 text-sky-800 mb-1">
+                    {categoryLabels[wasteRequest.wasteCategory] || wasteRequest.wasteCategory}
                   </span>
-                  <span style={{ fontSize: '15px', fontWeight: '700', color: '#059669' }}>
-                    ~{wasteRequest.impact.co2eSavedKg} kg CO₂e
-                  </span>
+                  <h4 className="text-lg font-extrabold text-sky-950">
+                    {wasteRequest.quantity}
+                  </h4>
+                </div>
+                <span className="px-2.5 py-1 rounded-lg bg-white border border-sky-200 text-xs font-bold text-sky-900 shadow-2xs">
+                  {wasteRequest.district || 'Local'} District
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                <div className="flex items-center gap-1.5 truncate">
+                  <MapPin size={14} className="text-sky-600 shrink-0" />
+                  <span className="truncate">{wasteRequest.donor?.name || 'Commercial Donor'}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Clock size={14} className="text-slate-500 shrink-0" />
+                  <span>Posted {new Date(wasteRequest.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              {wasteRequest.handlingRequirements && (
+                <div className="pt-2 border-t border-sky-200/60 text-xs text-slate-600">
+                  <strong className="text-slate-800">Handling:</strong> {wasteRequest.handlingRequirements}
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '12.5px', color: '#334155' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MapPin size={15} color="#0284c7" />
-                <span>
-                  <strong>District:</strong> {wasteRequest.district} {wasteRequest.distanceKm ? `(~${wasteRequest.distanceKm} km)` : ''}
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Clock size={15} color="#d97706" />
-                <span>
-                  <strong>Pickup Deadline:</strong> {new Date(wasteRequest.pickupDeadline).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-
-            {wasteRequest.donor && (
-              <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #e0f2fe', fontSize: '12px', color: '#0369a1' }}>
-                <strong>Donor Premise:</strong> {wasteRequest.donor.name || 'Verified Donor'}
-              </div>
-            )}
-          </div>
-
-          {/* Circular Pathway Notice */}
-          {wasteRequest.pathwayTitle && (
-            <div style={{ marginBottom: '18px', background: '#ecfdf5', padding: '12px 14px', borderRadius: '10px', border: '1px solid #a7f3d0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#065f46', fontWeight: '600', fontSize: '13px', marginBottom: '4px' }}>
-                <Leaf size={16} />
-                <span>Target Circular Pathway:</span>
-              </div>
-              <p style={{ margin: 0, fontSize: '12px', color: '#047857' }}>
-                {wasteRequest.pathwayTitle}
-              </p>
-            </div>
-          )}
-
-          {/* Pre-Treatment & Handling Guidelines */}
-          {Array.isArray(wasteRequest.handlingGuidelines) && wasteRequest.handlingGuidelines.length > 0 && (
-            <div style={{ marginBottom: '18px' }}>
-              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
-                Pre-Treatment & Facility Guidelines:
+            {/* Intake Notes */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                Facility Intake / Processing Notes (Optional)
               </label>
-              <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12px', color: '#64748b', lineHeight: '1.5' }}>
-                {wasteRequest.handlingGuidelines.map((g, idx) => (
-                  <li key={idx}>{g}</li>
-                ))}
-              </ul>
+              <textarea
+                rows={3}
+                placeholder="e.g. Pre-allocated to shredder stream 2. Containerized collection truck dispatched."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white text-slate-800"
+              />
             </div>
-          )}
 
-          {/* Operational Notes / Logistics Instructions */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
-              Intake Notes & Courier Instructions (Optional):
-            </label>
-            <textarea
-              rows="3"
-              className="form-control"
-              placeholder="e.g. Schedule warehouse bay #3 intake; courier should verify baled bags before sign-off."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
-            />
-          </div>
+            <div className="rounded-xl bg-slate-50 border border-slate-200/70 p-3 flex gap-2.5 text-xs text-slate-600">
+              <ShieldCheck size={16} className="text-sky-600 shrink-0 mt-0.5" />
+              <span>
+                Claiming locks this batch exclusively to your recycling facility. A volunteer courier or your own logistics team will be routed for collection.
+              </span>
+            </div>
 
-          {/* Footer Actions */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={onClose}
-              disabled={loading}
-              style={{ padding: '10px 18px', fontSize: '13.5px' }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-              style={{
-                padding: '10px 20px',
-                fontSize: '13.5px',
-                background: '#0284c7',
-                borderColor: '#0284c7',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              {loading ? (
-                <span>Confirming Claim...</span>
-              ) : (
-                <>
-                  <CheckCircle2 size={16} />
-                  <span>Claim Waste Batch</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                {loading ? (
+                  <>
+                    <RotateCw size={13} className="animate-spin" />
+                    <span>Claiming Batch...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={15} />
+                    <span>Confirm Claim & Sourcing</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </motion.div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 }

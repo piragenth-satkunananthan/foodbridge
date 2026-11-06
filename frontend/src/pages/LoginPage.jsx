@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Button from '../components/ui/Button';
+import Field from '../components/ui/Field';
 
 const demoAccounts = [
   ['Admin', 'admin@foodbridge.com', 'admin123'],
@@ -9,6 +11,7 @@ const demoAccounts = [
   ['Recycler', 'info@ecocycle.lk', 'user123'],
   ['Volunteer', 'saman@volunteer.org', 'user123']
 ];
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,21 +23,60 @@ export default function LoginPage() {
     setSubmitting(true);
     setError('');
     try { const user = await login(address, secret); navigate(`/${user.role}`); }
-    catch (err) { setError(err.message || 'Sign-in failed. Please try again.'); }
+    catch (err) { setError(err.message || 'Email or password didn\'t match — please try again.'); }
     finally { setSubmitting(false); }
   };
-  return <main className="auth-layout">
-    <div className="auth-intro"><h1>Sign in</h1><p>New to FoodBridge? <Link to="/register">Create an account</Link></p></div>
-    <section className="auth-form" aria-label="Sign in">
-      {error && <p className="report-error" role="alert">{error}</p>}
-      <form onSubmit={e => { e.preventDefault(); signIn(email, password); }}>
-        <label htmlFor="login-email">Email address</label>
-        <input id="login-email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} />
-        <label htmlFor="login-password">Password</label>
-        <input id="login-password" type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} />
-        <button className="btn btn-primary" disabled={submitting}>{submitting ? 'Signing in…' : 'Sign in'}</button>
-      </form>
-      <details className="demo-accounts"><summary>Try a demo account</summary><p>These shared accounts require demo data to be available.</p><div className="report-actions">{demoAccounts.map(([role, address, secret]) => <button key={role} type="button" className="btn btn-secondary" disabled={submitting} onClick={() => { setEmail(address); setPassword(secret); signIn(address, secret); }}>{role}</button>)}</div></details>
-    </section>
-  </main>;
+  return (
+    <main className="auth-page">
+      <div className="fb-card auth-card">
+        <div className="auth-intro">
+          <h1>Sign in</h1>
+          <p>New to FoodBridge? <Link to="/register">Create an account</Link></p>
+        </div>
+        <section aria-label="Sign in">
+          <form onSubmit={e => { e.preventDefault(); signIn(email, password); }}>
+            <Field
+              id="login-email"
+              label="Email address"
+              type="email"
+              autoComplete="username"
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+            />
+            <Field
+              id="login-password"
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+            />
+            <Button type="submit" variant="primary" className="auth-submit" disabled={submitting}>
+              {submitting ? 'Signing in…' : 'Sign in'}
+            </Button>
+            {error && <p className="fb-field-error auth-form-error" role="alert">{error}</p>}
+          </form>
+          <details className="auth-demo">
+            <summary>Try a demo account</summary>
+            <p className="auth-demo-note">These shared accounts require demo data to be available.</p>
+            <div className="auth-demo-actions">
+              {demoAccounts.map(([role, address, secret]) => (
+                <Button
+                  key={role}
+                  type="button"
+                  variant="secondary"
+                  disabled={submitting}
+                  onClick={() => { setEmail(address); setPassword(secret); signIn(address, secret); }}
+                >
+                  {role}
+                </Button>
+              ))}
+            </div>
+          </details>
+        </section>
+      </div>
+    </main>
+  );
 }

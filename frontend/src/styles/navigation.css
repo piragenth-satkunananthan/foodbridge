@@ -15,3 +15,192 @@
   .fb-navigation, .fb-navigation.is-open { display: flex; flex-direction: row; width: auto; align-items: center; gap: var(--space-3); }
   .fb-navigation > a:not(.fb-button) { margin-right: var(--space-3); }
 }
+
+.fb-header--home {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(15, 41, 30, 0.08);
+  font-family: 'Manrope', system-ui, sans-serif;
+  transition: all 200ms ease;
+}
+.fb-header--home .fb-header-inner, .fb-footer--home .fb-footer-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 16px clamp(20px, 4.5vw, 80px);
+}
+.fb-header--home .fb-brand {
+  color: #0f291e;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -.035em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.fb-brand-country {
+  font-size: 10px;
+  font-weight: 800;
+  color: #167347;
+  background: #eaf5ee;
+  border: 1px solid #c4e1cf;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+.fb-header--home .fb-navigation {
+  gap: 20px;
+}
+.fb-header--home .fb-navigation > a:not(.fb-button) {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #0f291e;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 150ms ease, color 150ms ease;
+}
+.fb-header--home .fb-navigation > a:not(.fb-button):hover {
+  background: #f0f6f2;
+  color: #167347;
+  text-decoration: none;
+}
+.fb-header--home .fb-button {
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.fb-header--home .fb-button--primary {
+  background: #0f291e;
+  color: #fff;
+}
+.fb-header--home .fb-button--primary:hover {
+  background: #194331;
+}
+.fb-footer--home {
+  background: #ffffff;
+  border-top: 1px solid #d7e2da;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+.fb-footer--home .fb-footer-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 64px clamp(20px, 4.5vw, 80px) 48px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 48px;
+  align-items: start;
+}
+.fb-footer-col {
+  display: flex;
+  flex-direction: column;
+}
+.fb-footer-tagline {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #3a5246;
+  margin-top: 12px;
+  max-width: 38ch;
+}
+.fb-footer-district-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #147044;
+  background: #e7f5ed;
+  border: 1px solid #bfe0cc;
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-top: 16px;
+  width: fit-content;
+}
+.fb-footer-copy {
+  font-size: 12px;
+  color: #60796d;
+  margin-top: 24px;
+}
+.fb-footer-heading {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #0b2319;
+  margin-bottom: 16px;
+}
+.fb-footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+.fb-footer-links a {
+  font-size: 14px;
+  color: #3a5246;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+.fb-footer-links a:hover {
+  color: #147044;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.fb-footer-guarantee-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f5f8f5;
+  border: 1px solid #d7e2da;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.fb-footer-shield {
+  color: #147044;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.fb-footer-guarantee-card p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #3a5246;
+  margin: 0;
+}
+.fb-footer-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #147044;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.fb-footer-cta-link:hover {
+  color: #0b2319;
+}
+@media (max-width: 1024px) {
+  .fb-footer--home .fb-footer-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+}
+@media (max-width: 640px) {
+  .fb-footer--home .fb-footer-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding-top: 40px;
+  }
+}
+@media (max-width: 900px) and (min-width: 760px) { .fb-header--home .fb-navigation { gap: 12px; } }
+@media (max-width: 759px) { .fb-header--home .fb-navigation { gap: 8px; } .fb-header--home .fb-header-inner { padding-top: 16px; padding-bottom: 16px; } }
