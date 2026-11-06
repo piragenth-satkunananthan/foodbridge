@@ -6,7 +6,7 @@ import {
   Filter, AlertTriangle, CheckCircle2, ChevronRight,
   RotateCw, Truck, ArrowRight, Package, Phone, Calendar,
   Leaf, Award, Sparkles, Building2, AlertCircle, Eye,
-  Check, XCircle, Info, ChevronDown, CheckCheck
+  Check, XCircle, Info, FileCheck, CheckCheck
 } from 'lucide-react';
 import {
   fetchRecyclerFeed,
@@ -14,7 +14,9 @@ import {
   fetchRecyclerStats,
   cancelWasteClaim,
   confirmWasteRecycled,
-  classifyWasteItem
+  classifyWasteItem,
+  fetchWasteCertificate,
+  confirmPickupReceipt
 } from '../../api/client';
 import ClaimWasteModal from './ClaimWasteModal';
 import RecyclingCertificateModal from './RecyclingCertificateModal';
@@ -30,11 +32,11 @@ const SRI_LANKA_DISTRICTS = [
 
 const WASTE_CATEGORIES = [
   { key: 'all', label: 'All Material Streams' },
-  { key: 'plastic', label: '🧴 Plastics & Polymers', icon: '🧴' },
-  { key: 'glass', label: '🍾 Glass Bottles & Cullet', icon: '🍾' },
-  { key: 'paper', label: '📦 Paper & Cardboard', icon: '📦' },
-  { key: 'metal', label: '🥫 Scrap Metals', icon: '🥫' },
-  { key: 'organic', label: '🥬 Organic Food Scraps', icon: '🥬' }
+  { key: 'plastic', label: '🧴 Plastics & Polymers' },
+  { key: 'glass', label: '🍾 Glass Bottles & Cullet' },
+  { key: 'paper', label: '📦 Paper & Cardboard' },
+  { key: 'metal', label: '🥫 Scrap Metals' },
+  { key: 'organic', label: '🥬 Organic Food Scraps' }
 ];
 
 export default function RecyclerDashboard() {
@@ -49,8 +51,7 @@ export default function RecyclerDashboard() {
     activeBatches: 0,
     completedBatches: 0,
     totalWeightKg: 0,
-    totalCo2eSavedKg: 0,
-    treeEquivalents: 0,
+    totalDivertedKg: 0,
     materialBreakdown: {}
   });
   const [feed, setFeed] = useState([]);
@@ -63,7 +64,7 @@ export default function RecyclerDashboard() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedDistrict, setSelectedDistrict] = useState(user?.district || 'Colombo');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('urgency'); // 'urgency' | 'distance' | 'quantity'
+  const [sortBy, setSortBy] = useState('urgency');
 
   // Modals
   const [selectedBatchForClaim, setSelectedBatchForClaim] = useState(null);
@@ -71,8 +72,10 @@ export default function RecyclerDashboard() {
   const [activeCertificate, setActiveCertificate] = useState(null);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
 
-  // Processing state for recycling confirmation
-  const [processingId, setProcessingId] = useState(null);
+  // Recycled Certification Dialog Modal State (replaces prompt)
+  const [certifyingBatch, setCertifyingBatch] = useState(null);
+  const [certifyingNotes, setCertifyingNotes] = useState('Passed facility intake inspection. Reprocessed into circular feedstock.');
+  const [submittingCertification, setSubmittingCertification] = useState(false);
 
   // Smart Classifier State (Tab 4)
   const [classifierInput, setClassifierInput] = useState('');
@@ -112,10 +115,9 @@ export default function RecyclerDashboard() {
 
         const allClaims = claimsRes?.claims || [];
         if (activeTab === 'active_claims') {
-          // Filter to in-progress statuses
-          setClaims(allClaims.filter((c) => c.status === 'matched' || c.status === 'pickup_scheduled' || c.status === 'picked_up'));
+          setClaims(allClaims.filter((c) => c.status === 'matched' || c.status === 'pickup_scheduled' || c.status === 'picked_up' || c.statusPipeline === 'delivered_or_recycled'));
         } else {
-          setClaims(allClaims.filter((c) => c.status === 'recycled' || c.status === 'completed'));
+          setClaims(allClaims.filter((c) => c.status === 'recycled' || c.status === 'completed' || c.statusPipeline === 'completed'));
         }
       }
       setLoading(false);
@@ -152,15 +154,14 @@ export default function RecyclerDashboard() {
     }
   };
 
-  const handleConfirmRecycled = async (batch) => {
-    const notes = prompt('Enter optional facility processing / sorting notes:', 'Passed contamination inspection. Reprocessed into circular feedstock.');
-    if (notes === null) return; // User pressed Cancel
-
-    setProcessingId(batch._id);
+  const handleSubmitRecycleCertification = async () => {
+    if (!certifyingBatch) return;
+    setSubmittingCertification(true);
     try {
-      const res = await confirmWasteRecycled(batch._id, { processingNotes: notes });
-      setProcessingId(null);
-      setActionSuccess('Batch certified as successfully recycled! ESG Diversion Certificate issued.');
+      const res = await confirmWasteRecycled(certifyingBatch._id, { processingNotes: certifyingNotes });
+      setSubmittingCertification(false);
+      setCertifyingBatch(null);
+      setActionSuccess('Batch certified as successfully processed! ESG Diversion Certificate issued.');
       setTimeout(() => setActionSuccess(null), 5000);
 
       // Open certificate modal with generated certificate
@@ -170,8 +171,20 @@ export default function RecyclerDashboard() {
       }
       loadDashboardData();
     } catch (err) {
-      setProcessingId(null);
-      setError(err.message || 'Failed to confirm batch recycling');
+      setSubmittingCertification(false);
+      setError(err.message || 'Failed to certify batch recycling');
+    }
+  };
+
+  const handleViewCertificate = async (batch) => {
+    try {
+      const cert = await fetchWasteCertificate(batch._id);
+      if (cert) {
+        setActiveCertificate(cert);
+        setIsCertModalOpen(true);
+      }
+    } catch (err) {
+      setError(err.message || 'Could not load certificate for this batch');
     }
   };
 
@@ -191,946 +204,592 @@ export default function RecyclerDashboard() {
   };
 
   return (
-    <main className="main-content dashboard-page">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Page Header */}
-      <div className="page-heading" style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span className="badge blue" style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase' }}>
-                Module 3 • Circular Waste Network
-              </span>
-              <span className={`badge ${isVerified ? 'green' : 'amber'}`} style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <ShieldCheck size={13} />
-                <span>{isVerified ? 'Verified Facility' : 'Awaiting Review'}</span>
-              </span>
-            </div>
-            <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', margin: '0 0 6px 0' }}>
-              {stats.organizationName || user?.name || 'Recycling & Composting Facility'}
-            </h1>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <MapPin size={15} color="#0284c7" />
-              <span>{user?.district || 'Colombo'} Service District • {user?.email}</span>
-            </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-200">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold tracking-wide uppercase bg-sky-100 text-sky-800">
+              Module 3 • Circular Waste Network
+            </span>
+            <span className="text-xs text-slate-500 font-medium">
+              Material Recovery & Diversion Certification
+            </span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            {stats.organizationName || user?.name || 'Recycling & Upcycling Facility'}
+          </h1>
+          <p className="mt-1 text-sm text-slate-600 max-w-2xl flex items-center gap-1.5">
+            <MapPin size={15} className="text-sky-600 shrink-0" />
+            <span>{user?.district || 'Colombo'} Service District • {user?.email}</span>
+          </p>
+        </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={() => {
-                setActiveTab('classifier');
-                setClassifierInput('PET bottles and cardboard boxes');
-                handleRunClassifier('PET bottles and cardboard boxes');
-              }}
-              className="btn btn-outline"
-              style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Sparkles size={16} color="#0284c7" />
-              <span>Waste Classifier</span>
-            </button>
-            <button
-              onClick={loadDashboardData}
-              className="btn btn-outline"
-              style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <RotateCw size={15} />
-              <span>Refresh</span>
-            </button>
-          </div>
+        <div className="flex items-center gap-2.5">
+          {isVerified ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+              <ShieldCheck size={16} className="text-emerald-600" />
+              Verified Processing Facility
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
+              <Clock size={16} className="text-amber-600" />
+              Awaiting Verification
+            </span>
+          )}
+
+          <button
+            onClick={() => {
+              setActiveTab('classifier');
+              setClassifierInput('PET bottles and corrugated cardboard packaging');
+              handleRunClassifier('PET bottles and corrugated cardboard packaging');
+            }}
+            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <Sparkles size={14} className="text-sky-600" />
+            <span>Classifier</span>
+          </button>
+
+          <button
+            onClick={loadDashboardData}
+            className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer"
+            title="Refresh feed"
+            aria-label="Refresh feed"
+          >
+            <RotateCw size={16} className={loading ? 'animate-spin' : ''} />
+          </button>
         </div>
       </div>
 
       {/* Verification Notice Banner */}
       {!isVerified && (
-        <div
-          style={{
-            background: '#fffbeb',
-            border: '1px solid #fde68a',
-            borderRadius: '12px',
-            padding: '16px 20px',
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px'
-          }}
-        >
-          <AlertTriangle size={24} color="#d97706" style={{ flexShrink: 0 }} />
-          <div style={{ flex: 1, fontSize: '13.5px', color: '#92400e' }}>
-            <strong>Account Verification Pending:</strong> Your industrial recycling facility profile is currently under administrative KYC review. You can browse live surplus streams and test the smart classification engine; batch claiming will be activated upon approval.
+        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 flex items-start gap-3 shadow-2xs">
+          <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <h4 className="font-bold text-amber-900">Facility Verification Pending</h4>
+            <p className="text-amber-800 mt-0.5">
+              Your recycling facility license and environmental clearance documents are being verified by platform administrators. You can browse available waste streams, but intake claims are locked until verification is approved.
+            </p>
           </div>
         </div>
       )}
 
-      {/* Action Success / Error Notifications */}
+      {/* Success Notification Alert */}
       {actionSuccess && (
-        <div
-          style={{
-            background: '#ecfdf5',
-            border: '1px solid #a7f3d0',
-            borderRadius: '10px',
-            padding: '12px 18px',
-            marginBottom: '20px',
-            color: '#065f46',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '13.5px'
-          }}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3 text-sm font-semibold text-emerald-800 shadow-2xs"
         >
-          <CheckCircle2 size={18} />
+          <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
           <span>{actionSuccess}</span>
-        </div>
+        </motion.div>
       )}
 
+      {/* Error Alert */}
       {error && (
-        <div
-          style={{
-            background: '#fee2e2',
-            border: '1px solid #fca5a5',
-            borderRadius: '10px',
-            padding: '12px 18px',
-            marginBottom: '20px',
-            color: '#991b1b',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '13.5px'
-          }}
-        >
-          <AlertCircle size={18} />
-          <span>{error}</span>
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 flex items-start gap-3 text-sm text-rose-800 shadow-2xs">
+          <AlertCircle size={18} className="text-rose-600 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold">Error:</span> {error}
+          </div>
         </div>
       )}
 
-      {/* KPI Metrics Summary Grid */}
-      <div
-        className="kpi-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px',
-          marginBottom: '28px'
-        }}
-      >
-        <div className="card stat-card" style={{ padding: '20px', borderLeft: '4px solid #0284c7' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>
-              Landfill Diversion
-            </span>
-            <Recycle size={20} color="#0284c7" />
+      {/* KPI Stats Grid - 100% Truthful Metrics from Database */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Verified Landfill Diversion</span>
+            <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600">
+              <Recycle size={18} />
+            </div>
           </div>
-          <div style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a' }}>
-            <AnimatedCounter value={stats.totalWeightKg || 0} decimals={1} suffix=" kg" />
+          <div className="text-3xl font-extrabold text-slate-900">
+            <AnimatedCounter value={stats.totalDivertedKg || stats.totalWeightKg || 0} decimals={1} suffix=" kg" />
           </div>
-          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#059669', fontWeight: '600' }}>
-            100% Circular Feedstock
+          <p className="mt-1 text-xs font-semibold text-sky-600">
+            100% Database-Audited Diversion
           </p>
         </div>
 
-        <div className="card stat-card" style={{ padding: '20px', borderLeft: '4px solid #059669' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>
-              CO₂e Avoided
-            </span>
-            <Leaf size={20} color="#059669" />
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Active Collections</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+              <Truck size={18} />
+            </div>
           </div>
-          <div style={{ fontSize: '26px', fontWeight: '800', color: '#059669' }}>
-            <AnimatedCounter value={stats.totalCo2eSavedKg || 0} decimals={1} suffix=" kg" />
-          </div>
-          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-            ~{stats.treeEquivalents || 0} urban tree seedlings
-          </p>
-        </div>
-
-        <div className="card stat-card" style={{ padding: '20px', borderLeft: '4px solid #d97706' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>
-              Active Collections
-            </span>
-            <Truck size={20} color="#d97706" />
-          </div>
-          <div style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a' }}>
+          <div className="text-3xl font-extrabold text-slate-900">
             <AnimatedCounter value={stats.activeBatches || 0} />
           </div>
-          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-            In-flight courier pipeline
+          <p className="mt-1 text-xs font-semibold text-amber-600">
+            Scheduled / In-Flight Intake
           </p>
         </div>
 
-        <div className="card stat-card" style={{ padding: '20px', borderLeft: '4px solid #7c3aed' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>
-              Certified Batches
-            </span>
-            <Award size={20} color="#7c3aed" />
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Certified Batches</span>
+            <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+              <Award size={18} />
+            </div>
           </div>
-          <div style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a' }}>
+          <div className="text-3xl font-extrabold text-slate-900">
             <AnimatedCounter value={stats.completedBatches || 0} />
           </div>
-          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-            ESG audited completions
+          <p className="mt-1 text-xs font-semibold text-purple-600">
+            ESG Diversion Certificates Issued
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs hover:shadow-xs transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Facility District</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <Building2 size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-extrabold text-slate-900 truncate">
+            {user?.district || 'Colombo'}
+          </div>
+          <p className="mt-1 text-xs text-slate-500">
+            Primary Sourcing Radius
           </p>
         </div>
       </div>
 
-      {/* Navigation Tabs Bar */}
-      <div
-        style={{
-          display: 'flex',
-          borderBottom: '2px solid #e2e8f0',
-          marginBottom: '24px',
-          gap: '8px',
-          overflowX: 'auto'
-        }}
-      >
+      {/* Tabs Navigation */}
+      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-px">
         <button
           onClick={() => setActiveTab('available')}
-          className="tab-btn"
-          style={{
-            padding: '12px 18px',
-            border: 'none',
-            background: 'none',
-            fontSize: '14.5px',
-            fontWeight: activeTab === 'available' ? '700' : '500',
-            color: activeTab === 'available' ? '#0284c7' : '#64748b',
-            borderBottom: activeTab === 'available' ? '3px solid #0284c7' : '3px solid transparent',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            whiteSpace: 'nowrap'
-          }}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
+            activeTab === 'available'
+              ? 'border-sky-600 text-sky-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          }`}
         >
-          <Recycle size={18} />
+          <Recycle size={17} />
           <span>Available Waste Streams</span>
-          {feed.length > 0 && (
-            <span
-              style={{
-                background: '#e0f2fe',
-                color: '#0369a1',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                fontSize: '11px',
-                fontWeight: '700'
-              }}
-            >
-              {feed.length}
-            </span>
-          )}
+          <span className={`px-2 py-0.5 rounded-full text-xs ${
+            activeTab === 'available' ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-600'
+          }`}>
+            {feed.length}
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('active_claims')}
-          className="tab-btn"
-          style={{
-            padding: '12px 18px',
-            border: 'none',
-            background: 'none',
-            fontSize: '14.5px',
-            fontWeight: activeTab === 'active_claims' ? '700' : '500',
-            color: activeTab === 'active_claims' ? '#0284c7' : '#64748b',
-            borderBottom: activeTab === 'active_claims' ? '3px solid #0284c7' : '3px solid transparent',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            whiteSpace: 'nowrap'
-          }}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
+            activeTab === 'active_claims'
+              ? 'border-sky-600 text-sky-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          }`}
         >
-          <Truck size={18} />
+          <Truck size={17} />
           <span>Active Collections ({stats.activeBatches || 0})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('history')}
-          className="tab-btn"
-          style={{
-            padding: '12px 18px',
-            border: 'none',
-            background: 'none',
-            fontSize: '14.5px',
-            fontWeight: activeTab === 'history' ? '700' : '500',
-            color: activeTab === 'history' ? '#0284c7' : '#64748b',
-            borderBottom: activeTab === 'history' ? '3px solid #0284c7' : '3px solid transparent',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            whiteSpace: 'nowrap'
-          }}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
+            activeTab === 'history'
+              ? 'border-sky-600 text-sky-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          }`}
         >
-          <Award size={18} />
+          <Award size={17} />
           <span>Certified History</span>
         </button>
 
         <button
           onClick={() => setActiveTab('classifier')}
-          className="tab-btn"
-          style={{
-            padding: '12px 18px',
-            border: 'none',
-            background: 'none',
-            fontSize: '14.5px',
-            fontWeight: activeTab === 'classifier' ? '700' : '500',
-            color: activeTab === 'classifier' ? '#0284c7' : '#64748b',
-            borderBottom: activeTab === 'classifier' ? '3px solid #0284c7' : '3px solid transparent',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            whiteSpace: 'nowrap'
-          }}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
+            activeTab === 'classifier'
+              ? 'border-sky-600 text-sky-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+          }`}
         >
-          <Sparkles size={18} />
-          <span>Smart Classifier</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('profile')}
-          className="tab-btn"
-          style={{
-            padding: '12px 18px',
-            border: 'none',
-            background: 'none',
-            fontSize: '14.5px',
-            fontWeight: activeTab === 'profile' ? '700' : '500',
-            color: activeTab === 'profile' ? '#0284c7' : '#64748b',
-            borderBottom: activeTab === 'profile' ? '3px solid #0284c7' : '3px solid transparent',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Building2 size={18} />
-          <span>Facility Profile</span>
+          <Sparkles size={17} />
+          <span>AI Waste Classifier</span>
         </button>
       </div>
 
-      {/* =========================================================================
-          TAB 1: AVAILABLE WASTE STREAMS (LIVE SOURCING FEED)
-         ========================================================================= */}
+      {/* Tab 1: Available Waste Streams Feed */}
       {activeTab === 'available' && (
-        <section>
-          {/* Filter Pills & Sourcing Toolbar */}
-          <div className="card" style={{ padding: '18px', marginBottom: '22px' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
-              {/* Category Filter Pills */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {WASTE_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.key}
-                    onClick={() => setSelectedCategory(cat.key)}
-                    className="btn"
-                    style={{
-                      padding: '6px 14px',
-                      fontSize: '12.5px',
-                      borderRadius: '20px',
-                      border: selectedCategory === cat.key ? '2px solid #0284c7' : '1px solid #cbd5e1',
-                      background: selectedCategory === cat.key ? '#e0f2fe' : '#ffffff',
-                      color: selectedCategory === cat.key ? '#0369a1' : '#475569',
-                      fontWeight: selectedCategory === cat.key ? '700' : '500',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
+        <div className="space-y-6">
+          {/* Controls & Filter Bar */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search material type, commercial generator, or location..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && loadDashboardData()}
+                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-800 placeholder-slate-400 bg-slate-50/50"
+              />
+            </div>
 
-              {/* District & Sort Dropdowns */}
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {/* Dropdown Filters */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
+              >
+                {WASTE_CATEGORIES.map((cat) => (
+                  <option key={cat.key} value={cat.key}>{cat.label}</option>
+                ))}
+              </select>
+
+              <div className="flex items-center gap-1.5">
+                <MapPin size={15} className="text-sky-600 shrink-0" />
                 <select
                   value={selectedDistrict}
                   onChange={(e) => setSelectedDistrict(e.target.value)}
-                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                  className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-200 bg-white text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
                 >
-                  {SRI_LANKA_DISTRICTS.map((d) => (
-                    <option key={d} value={d}>{d}</option>
+                  {SRI_LANKA_DISTRICTS.map((dist) => (
+                    <option key={dist} value={dist}>
+                      {dist} {dist === user?.district ? '(My District)' : ''}
+                    </option>
                   ))}
                 </select>
-
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
-                >
-                  <option value="urgency">Sort: Pickup Deadline (Urgent First)</option>
-                  <option value="distance">Sort: Nearest Distance (km)</option>
-                  <option value="quantity">Sort: Largest Batch (kg)</option>
-                </select>
               </div>
+
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 py-2 text-xs sm:text-sm rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
+              >
+                <option value="urgency">⏳ Expiring Soonest</option>
+                <option value="distance">📍 Nearest Proximity</option>
+                <option value="quantity">⚖ Highest Quantity</option>
+              </select>
             </div>
           </div>
 
-          {/* Feed Content */}
+          {/* Feed Cards or Empty State */}
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
-              <RotateCw className="animate-spin" size={32} style={{ margin: '0 auto 12px auto' }} />
-              <p>Scanning district waste streams...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-4 animate-pulse">
+                  <div className="h-5 bg-slate-200 rounded w-2/3" />
+                  <div className="h-4 bg-slate-100 rounded w-1/2" />
+                  <div className="h-10 bg-slate-100 rounded-xl" />
+                </div>
+              ))}
             </div>
           ) : feed.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: '48px 24px', background: '#f8fafc' }}>
-              <Recycle size={44} color="#94a3b8" style={{ margin: '0 auto 14px auto' }} />
-              <h3 style={{ fontSize: '18px', color: '#334155', margin: '0 0 6px 0' }}>
-                No open waste batches currently available in {selectedDistrict}
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center max-w-xl mx-auto space-y-4">
+              <div className="w-14 h-14 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center mx-auto">
+                <Recycle size={28} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">
+                No open waste batches found in {selectedDistrict}
               </h3>
-              <p style={{ color: '#64748b', fontSize: '13.5px', maxWidth: '420px', margin: '0 auto 18px auto' }}>
-                Commercial donors post recyclable plastics, paper, metals, and organics regularly. Try expanding to adjacent districts or clearing filters.
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Commercial generators have not posted unclaimed recyclable or compostable streams in this district currently. Check neighbouring districts or check back shortly.
               </p>
               <button
-                onClick={() => { setSelectedCategory('all'); setSelectedDistrict('Colombo'); }}
-                className="btn btn-outline"
-                style={{ fontSize: '13px' }}
+                onClick={() => setSelectedDistrict('Colombo')}
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
               >
-                Reset Sourcing Filters
+                Switch to Colombo District
               </button>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
-              {feed.map((batch) => {
-                const streamLabels = {
-                  plastic: { name: 'Plastic & Polymers', badge: 'blue' },
-                  glass: { name: 'Glass & Cullet', badge: 'green' },
-                  paper: { name: 'Paper & Cardboard', badge: 'amber' },
-                  metal: { name: 'Scrap Metals', badge: 'purple' },
-                  organic: { name: 'Organic Food Scraps', badge: 'green' },
-                  non_recyclable: { name: 'General Waste', badge: 'red' }
-                };
-                const info = streamLabels[batch.wasteCategory] || { name: batch.wasteCategory, badge: 'blue' };
-
-                return (
-                  <div
-                    key={batch._id}
-                    className="card"
-                    style={{
-                      borderRadius: '14px',
-                      padding: '20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      border: '1px solid #e2e8f0',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <div>
-                      {/* Top Badges */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span className={`badge ${info.badge}`} style={{ fontSize: '11.5px', fontWeight: '700' }}>
-                          {info.name}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {feed.map((batch) => (
+                <motion.div
+                  key={batch._id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden"
+                >
+                  <div className="p-5 pb-4 border-b border-slate-100 bg-slate-50/40">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="inline-block px-2.5 py-0.5 rounded text-2xs font-bold uppercase bg-sky-100 text-sky-800 mb-1.5">
+                          {batch.wasteCategory}
                         </span>
-                        {batch.isUrgent ? (
-                          <span className="badge red" style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Clock size={12} />
-                            <span>Urgent • ~{batch.hoursRemaining}h left</span>
-                          </span>
-                        ) : (
-                          <span style={{ fontSize: '11.5px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Clock size={13} />
-                            <span>~{batch.hoursRemaining}h remaining</span>
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Quantity & Impact */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
-                        <h3 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#0f172a' }}>
-                          {batch.quantity}
+                        <h3 className="text-base font-bold text-slate-900 leading-snug">
+                          {batch.foodType || batch.title || `${batch.wasteCategory} Stream`}
                         </h3>
-                        {batch.impact && (
-                          <span style={{ fontSize: '13px', fontWeight: '700', color: '#059669' }}>
-                            +{batch.impact.co2eSavedKg} kg CO₂e
-                          </span>
-                        )}
                       </div>
+                      <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-extrabold text-slate-800 shadow-2xs shrink-0">
+                        {batch.quantity}
+                      </span>
+                    </div>
+                  </div>
 
-                      {/* Location & Donor */}
-                      <div style={{ fontSize: '13px', color: '#475569', marginBottom: '14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <MapPin size={15} color="#0284c7" />
-                          <span>
-                            <strong>{batch.district}</strong> • ~{batch.distanceKm} km away {batch.isSameDistrict ? '(Local)' : ''}
-                          </span>
-                        </div>
-                        {batch.donor && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b' }}>
-                            <Building2 size={15} />
-                            <span>Premise: {batch.donor.name || 'Commercial Donor'}</span>
-                          </div>
-                        )}
+                  <div className="p-5 space-y-4 flex-1">
+                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <MapPin size={14} className="text-sky-600 shrink-0" />
+                        <span className="truncate">{batch.district} ({batch.distanceKm ? `${batch.distanceKm} km` : 'Local'})</span>
                       </div>
-
-                      {/* Pathway preview */}
-                      <div
-                        style={{
-                          background: '#f8fafc',
-                          padding: '10px 12px',
-                          borderRadius: '8px',
-                          border: '1px solid #f1f5f9',
-                          fontSize: '12px',
-                          color: '#334155',
-                          marginBottom: '16px'
-                        }}
-                      >
-                        <div style={{ fontWeight: '600', color: '#0284c7', marginBottom: '2px' }}>
-                          Pathway: {batch.pathwayTitle}
-                        </div>
-                        <div style={{ color: '#64748b', fontSize: '11.5px' }}>
-                          Facility: {batch.facilityType === 'composting_facility' ? 'Composting Plant' : 'Industrial Recycler'}
-                        </div>
+                      <div className="flex items-center gap-1.5">
+                        <Clock size={14} className="text-slate-400 shrink-0" />
+                        <span>{batch.hoursRemaining ? `${batch.hoursRemaining}h window` : 'Available'}</span>
                       </div>
                     </div>
 
-                    {/* Bottom Action Button */}
+                    <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600 space-y-1 border border-slate-100">
+                      <div>
+                        <strong className="text-slate-800">Generator:</strong> {batch.donor?.name || 'Commercial Partner'}
+                      </div>
+                      {batch.handlingRequirements && (
+                        <div className="text-slate-500 italic">
+                          "Handling: {batch.handlingRequirements}"
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="p-4 px-5 border-t border-slate-100 bg-slate-50/30 flex items-center justify-between">
+                    <span className="text-xs text-slate-500 font-medium">
+                      Intake Ready
+                    </span>
                     <button
                       onClick={() => handleOpenClaimModal(batch)}
                       disabled={!isVerified}
-                      className="btn btn-primary"
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        fontSize: '13.5px',
-                        background: isVerified ? '#0284c7' : '#94a3b8',
-                        borderColor: isVerified ? '#0284c7' : '#94a3b8',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        cursor: isVerified ? 'pointer' : 'not-allowed'
-                      }}
+                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
+                        isVerified
+                          ? 'bg-sky-600 hover:bg-sky-700 text-white'
+                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      }`}
                     >
-                      <CheckCircle2 size={16} />
-                      <span>{isVerified ? 'Accept & Claim Batch' : 'Verification Required'}</span>
+                      <Recycle size={14} />
+                      Claim Batch
                     </button>
                   </div>
-                );
-              })}
+                </motion.div>
+              ))}
             </div>
           )}
-        </section>
+        </div>
       )}
 
-      {/* =========================================================================
-          TAB 2: ACTIVE COLLECTIONS (LOGISTICS & LIFECYCLE)
-         ========================================================================= */}
+      {/* Tab 2: Active Collections */}
       {activeTab === 'active_claims' && (
-        <section>
-          {claims.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: '48px 24px', background: '#f8fafc' }}>
-              <Truck size={44} color="#94a3b8" style={{ margin: '0 auto 14px auto' }} />
-              <h3 style={{ fontSize: '18px', color: '#334155', margin: '0 0 6px 0' }}>
-                No active collections in transit
+        <div className="space-y-5">
+          {loading ? (
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500 animate-pulse">
+              <RotateCw size={24} className="animate-spin mx-auto mb-2 text-slate-400" />
+              <p className="text-sm">Fetching active collection logistics...</p>
+            </div>
+          ) : claims.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center max-w-xl mx-auto space-y-4">
+              <div className="w-14 h-14 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center mx-auto">
+                <Truck size={28} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">
+                No active waste claims
               </h3>
-              <p style={{ color: '#64748b', fontSize: '13.5px', maxWidth: '420px', margin: '0 auto 18px auto' }}>
-                When you accept waste batches from donors, they appear here with real-time pickup status pipeline and volunteer courier telemetry.
+              <p className="text-sm text-slate-500">
+                Browse available waste streams to source organic feedstocks, glass, metal, paper, or plastic batches.
               </p>
-              <button onClick={() => setActiveTab('available')} className="btn btn-primary" style={{ background: '#0284c7', borderColor: '#0284c7' }}>
-                Browse Available Waste Streams
+              <button
+                onClick={() => setActiveTab('available')}
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-sky-600 hover:bg-sky-700 text-white transition-colors cursor-pointer"
+              >
+                Browse Available Streams
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {claims.map((claim) => (
-                <div key={claim._id} className="card" style={{ padding: '20px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+            claims.map((batch) => {
+              const isDeliveredOrArrived = batch.status === 'picked_up' || batch.statusPipeline === 'delivered_or_recycled' || batch.status === 'delivered';
+              return (
+                <div
+                  key={batch._id}
+                  className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span className="badge blue" style={{ fontSize: '12px', fontWeight: '700' }}>
-                          {claim.wasteCategory.toUpperCase()}
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-2xs font-extrabold uppercase tracking-wide bg-sky-100 text-sky-800">
+                          Status: {batch.status || batch.statusPipeline}
                         </span>
-                        <span className="badge amber" style={{ fontSize: '11px', textTransform: 'capitalize' }}>
-                          Pipeline: {claim.status.replace(/_/g, ' ')}
+                        <span className="text-2xs font-bold text-slate-500 uppercase">
+                          {batch.wasteCategory} Stream
                         </span>
                       </div>
-                      <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
-                        {claim.quantity} from {claim.donor?.name || 'Verified Donor'}
+                      <h3 className="text-lg font-extrabold text-slate-900">
+                        {batch.foodType || batch.title || 'Recovered Material Batch'}
                       </h3>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748b' }}>
-                        District: {claim.district} • Claimed on: {new Date(claim.updatedAt).toLocaleDateString()}
+                      <p className="text-xs text-slate-500">
+                        Generator: <strong className="text-slate-700">{batch.donor?.name || 'Commercial Donor'}</strong> • District: {batch.district || 'Colombo'}
                       </p>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button
-                        onClick={() => handleConfirmRecycled(claim)}
-                        disabled={processingId === claim._id}
-                        className="btn btn-primary"
-                        style={{
-                          fontSize: '13px',
-                          background: '#059669',
-                          borderColor: '#059669',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <Award size={15} />
-                        <span>{processingId === claim._id ? 'Processing...' : 'Confirm Recycled & Certify'}</span>
-                      </button>
-                      <button
-                        onClick={() => handleCancelClaim(claim._id)}
-                        className="btn btn-outline"
-                        style={{ fontSize: '13px', color: '#991b1b', borderColor: '#fca5a5' }}
-                      >
-                        Release Claim
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 5-Stage Status Pipeline Visualization */}
-                  <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '12px', textTransform: 'uppercase' }}>
-                      Circular Logistics Pipeline
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center', fontSize: '12px' }}>
-                      <div style={{ padding: '8px', borderRadius: '6px', background: '#ecfdf5', color: '#065f46', fontWeight: '700' }}>
-                        ✓ 1. Matched
-                      </div>
-                      <div style={{ padding: '8px', borderRadius: '6px', background: claim.status === 'pickup_scheduled' || claim.status === 'picked_up' ? '#ecfdf5' : '#f1f5f9', color: '#334155', fontWeight: '600' }}>
-                        2. Scheduled
-                      </div>
-                      <div style={{ padding: '8px', borderRadius: '6px', background: claim.status === 'picked_up' ? '#ecfdf5' : '#f1f5f9', color: '#334155', fontWeight: '600' }}>
-                        3. Picked Up
-                      </div>
-                      <div style={{ padding: '8px', borderRadius: '6px', background: '#f1f5f9', color: '#64748b' }}>
-                        4. Recycled & Certified
-                      </div>
-                    </div>
-
-                    {/* Volunteer Info if assigned */}
-                    {claim.pickup?.volunteer && (
-                      <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#0369a1' }}>
-                        <Truck size={16} />
-                        <span>
-                          <strong>Assigned Courier:</strong> {claim.pickup.volunteer.name} ({claim.pickup.volunteer.contactNumber})
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* =========================================================================
-          TAB 3: CERTIFIED RECYCLING HISTORY & ESG CERTIFICATES
-         ========================================================================= */}
-      {activeTab === 'history' && (
-        <section>
-          {claims.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: '48px 24px', background: '#f8fafc' }}>
-              <Award size={44} color="#94a3b8" style={{ margin: '0 auto 14px auto' }} />
-              <h3 style={{ fontSize: '18px', color: '#334155', margin: '0 0 6px 0' }}>
-                No completed certificates yet
-              </h3>
-              <p style={{ color: '#64748b', fontSize: '13.5px', maxWidth: '420px', margin: '0 auto' }}>
-                Once you accept batches and confirm circular reprocessing, your verified ESG Landfill Diversion Certificates will be catalogued here.
-              </p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {claims.map((batch) => (
-                <div
-                  key={batch._id}
-                  className="card"
-                  style={{
-                    padding: '18px 22px',
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '12px'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <span className="badge green" style={{ fontSize: '11px', fontWeight: '700' }}>
-                        ✓ RECYCLED & AUDITED
+                    <div className="flex items-center gap-3">
+                      <span className="px-3 py-1 rounded-lg bg-slate-100 text-slate-800 text-sm font-bold">
+                        {batch.quantity}
                       </span>
-                      <span style={{ fontSize: '11px', color: '#64748b' }}>
-                        Ref: FB-REC-{(batch._id).slice(-6).toUpperCase()}
-                      </span>
+                      {batch.status === 'matched' && (
+                        <button
+                          onClick={() => handleCancelClaim(batch._id)}
+                          className="px-3 py-1 text-xs font-semibold rounded-lg bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors cursor-pointer"
+                        >
+                          Release Batch
+                        </button>
+                      )}
                     </div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '17px', fontWeight: '700', color: '#0f172a' }}>
-                      {batch.quantity} ({batch.wasteCategory}) from {batch.donor?.name || 'Commercial Donor'}
-                    </h4>
-                    <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b' }}>
-                      Pathway: {batch.pathwayTitle || 'Industrial Polymer Reprocessing'} • Completed: {new Date(batch.updatedAt).toLocaleDateString()}
-                    </p>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    {batch.impact && (
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>MITIGATED</span>
-                        <span style={{ fontSize: '15px', fontWeight: '700', color: '#059669' }}>
-                          {batch.impact.co2eSavedKg} kg CO₂e
-                        </span>
-                      </div>
-                    )}
-
+                  {/* Processing / Certification Action */}
+                  <div className="bg-sky-50/60 border border-sky-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="text-xs text-sky-900">
+                      <strong className="block mb-0.5">Facility Material Intake</strong>
+                      Once the batch has arrived at your facility and completed decontamination/shredding/composting, record the processing outcome to generate an audited ESG diversion certificate.
+                    </div>
                     <button
                       onClick={() => {
-                        setActiveCertificate(null); // Will generate from batch
-                        setSelectedBatchForClaim(batch);
-                        setIsCertModalOpen(true);
+                        setCertifyingBatch(batch);
+                        setCertifyingNotes('Passed facility contamination inspection. Reprocessed into circular feedstock.');
                       }}
-                      className="btn btn-outline"
-                      style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                      className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
                     >
-                      <Eye size={15} />
-                      <span>View ESG Certificate</span>
+                      <Award size={14} /> Certify Recycling
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })
           )}
-        </section>
+        </div>
       )}
 
-      {/* =========================================================================
-          TAB 4: SMART WASTE CLASSIFIER & ROUTING TOOL
-         ========================================================================= */}
-      {activeTab === 'classifier' && (
-        <section>
-          <div className="card" style={{ padding: '24px', borderRadius: '16px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#0284c7', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Sparkles size={22} />
-              </div>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>
-                  Smart Multi-Stream Waste Classifier & Industrial Router
-                </h3>
-                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
-                  Module 3 Algorithmic Classification • Analyzes surplus items, determines facility pathways, and generates pre-treatment advisories.
-                </p>
-              </div>
+      {/* Tab 3: Certified History */}
+      {activeTab === 'history' && (
+        <div className="space-y-4">
+          {loading ? (
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-500 animate-pulse">
+              <RotateCw size={24} className="animate-spin mx-auto mb-2 text-slate-400" />
+              <p className="text-sm">Loading certified history...</p>
             </div>
-
-            {/* Quick Sample Buttons */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>
-                Try Common Material Inputs:
-              </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = 'Clean PET beverage water bottles and HDPE crates from dining hall';
-                    setClassifierInput(text);
-                    handleRunClassifier(text);
-                  }}
-                  className="btn btn-outline"
-                  style={{ fontSize: '12px', padding: '6px 12px' }}
-                >
-                  🧴 PET Bottles & Crates
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = 'Used amber beer bottles and clear glass sauce jars';
-                    setClassifierInput(text);
-                    handleRunClassifier(text);
-                  }}
-                  className="btn btn-outline"
-                  style={{ fontSize: '12px', padding: '6px 12px' }}
-                >
-                  🍾 Amber Glass Bottles
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = 'Corrugated cardboard delivery boxes and shredded office paper';
-                    setClassifierInput(text);
-                    handleRunClassifier(text);
-                  }}
-                  className="btn btn-outline"
-                  style={{ fontSize: '12px', padding: '6px 12px' }}
-                >
-                  📦 Corrugated Boxes & Paper
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = 'Empty aluminum soda cans and steel food tins';
-                    setClassifierInput(text);
-                    handleRunClassifier(text);
-                  }}
-                  className="btn btn-outline"
-                  style={{ fontSize: '12px', padding: '6px 12px' }}
-                >
-                  🥫 Aluminum Cans & Tins
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = 'Kitchen vegetable peelings, spoiled fruit trimmings, and coffee grounds';
-                    setClassifierInput(text);
-                    handleRunClassifier(text);
-                  }}
-                  className="btn btn-outline"
-                  style={{ fontSize: '12px', padding: '6px 12px' }}
-                >
-                  🥬 Kitchen Organic Scraps
-                </button>
+          ) : claims.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center max-w-xl mx-auto space-y-4">
+              <div className="w-14 h-14 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center mx-auto">
+                <Award size={28} />
               </div>
+              <h3 className="text-lg font-bold text-slate-900">
+                No certified recycling batches yet
+              </h3>
+              <p className="text-sm text-slate-500">
+                When active waste collections are processed and certified, they will be archived here with immutable ESG diversion records.
+              </p>
             </div>
-
-            {/* Custom Input */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter waste item description, keywords, or material title..."
-                value={classifierInput}
-                onChange={(e) => setClassifierInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleRunClassifier(); }}
-                style={{ flex: 1, padding: '12px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-              />
-              <button
-                type="button"
-                onClick={() => handleRunClassifier()}
-                disabled={classifierLoading}
-                className="btn btn-primary"
-                style={{ padding: '12px 24px', fontSize: '14px', background: '#0284c7', borderColor: '#0284c7', display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                {classifierLoading ? <RotateCw className="animate-spin" size={16} /> : <Sparkles size={16} />}
-                <span>Classify Stream</span>
-              </button>
-            </div>
-
-            {/* Classifier Results Card */}
-            {classifierResult?.classification && (
+          ) : (
+            claims.map((batch) => (
               <div
-                style={{
-                  background: '#f0f9ff',
-                  border: '1px solid #bae6fd',
-                  borderRadius: '12px',
-                  padding: '20px'
-                }}
+                key={batch._id}
+                className="bg-white rounded-xl border border-slate-200/80 p-4 sm:p-5 flex items-center justify-between gap-4 shadow-2xs hover:shadow-xs transition-shadow"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
-                  <div>
-                    <span className="badge blue" style={{ fontSize: '12px', fontWeight: '700' }}>
-                      CLASSIFICATION: {classifierResult.classification.categoryLabel.toUpperCase()}
-                    </span>
-                    <h4 style={{ margin: '8px 0 2px 0', fontSize: '19px', fontWeight: '800', color: '#0369a1' }}>
-                      {classifierResult.classification.pathwayTitle}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <CheckCheck size={16} className="text-emerald-600 shrink-0" />
+                    <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                      {batch.foodType || batch.title || `${batch.wasteCategory} Batch`}
                     </h4>
-                    <p style={{ margin: 0, fontSize: '12.5px', color: '#0284c7' }}>
-                      Recommended Destination: <strong>{classifierResult.classification.facilityTypeLabel}</strong>
-                    </p>
-                  </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>
-                      Algorithm Confidence
+                    <span className="px-2 py-0.5 rounded text-2xs font-extrabold bg-purple-100 text-purple-800">
+                      ESG Certified
                     </span>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#059669' }}>
-                      {(classifierResult.classification.confidence * 100).toFixed(0)}%
-                    </div>
                   </div>
+                  <p className="text-xs text-slate-500">
+                    Generator: {batch.donor?.name || 'Commercial Partner'} • Category: {batch.wasteCategory}
+                  </p>
                 </div>
 
-                <p style={{ fontSize: '13px', color: '#334155', lineHeight: '1.5', marginBottom: '16px' }}>
-                  {classifierResult.classification.pathwayDescription}
-                </p>
-
-                {/* Pre-Treatment Guidelines */}
-                {Array.isArray(classifierResult.classification.handlingGuidelines) && (
-                  <div style={{ background: '#ffffff', padding: '14px 18px', borderRadius: '10px', border: '1px solid #e0f2fe', marginBottom: '16px' }}>
-                    <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#0369a1', marginBottom: '6px' }}>
-                      Facility Intake & Pre-Treatment Standards:
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="text-right">
+                    <div className="text-sm font-extrabold text-slate-900">
+                      {batch.quantity}
                     </div>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12.5px', color: '#475569', lineHeight: '1.5' }}>
-                      {classifierResult.classification.handlingGuidelines.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
+                    <span className="text-2xs text-slate-400">
+                      {new Date(batch.updatedAt || batch.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
-                )}
-
-                {/* Circular Impact Metrics */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', fontSize: '12.5px' }}>
-                  <div style={{ background: '#ffffff', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e0f2fe' }}>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '11px' }}>Landfill Diversion Rate</span>
-                    <strong style={{ color: '#0f172a', fontSize: '14px' }}>{(classifierResult.classification.landfillDivertRate * 100).toFixed(0)}%</strong>
-                  </div>
-                  <div style={{ background: '#ffffff', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e0f2fe' }}>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '11px' }}>CO₂e Factor per kg</span>
-                    <strong style={{ color: '#059669', fontSize: '14px' }}>+{classifierResult.classification.co2FactorKg} kg CO₂e / kg</strong>
-                  </div>
-                  <div style={{ background: '#ffffff', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e0f2fe' }}>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '11px' }}>Standard 50kg Batch Yield</span>
-                    <strong style={{ color: '#0284c7', fontSize: '14px' }}>~{classifierResult.impact?.co2eSavedKg || 90} kg CO₂e saved</strong>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================================
-          TAB 5: FACILITY PROFILE & SETTINGS
-         ========================================================================= */}
-      {activeTab === 'profile' && (
-        <section>
-          <div className="card" style={{ padding: '24px', borderRadius: '16px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', marginBottom: '16px' }}>
-              Facility Profile & Licensed Material Streams
-            </h3>
-
-            <dl className="report-breakdown" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '13.5px' }}>
-              <div>
-                <dt style={{ color: '#64748b', fontSize: '12px' }}>Facility Name</dt>
-                <dd style={{ fontWeight: '700', color: '#0f172a' }}>{stats.organizationName || user?.name || 'Recycling Plant'}</dd>
-              </div>
-              <div>
-                <dt style={{ color: '#64748b', fontSize: '12px' }}>Verification Status</dt>
-                <dd>
-                  <span className={`badge ${isVerified ? 'green' : 'amber'}`}>
-                    {isVerified ? 'Approved & Licensed' : 'Under Review'}
-                  </span>
-                </dd>
-              </div>
-              <div>
-                <dt style={{ color: '#64748b', fontSize: '12px' }}>Primary Service District</dt>
-                <dd style={{ fontWeight: '600' }}>{user?.district || 'Colombo'}</dd>
-              </div>
-              <div>
-                <dt style={{ color: '#64748b', fontSize: '12px' }}>Contact Email</dt>
-                <dd>{user?.email}</dd>
-              </div>
-            </dl>
-
-            <div style={{ marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #e2e8f0' }}>
-              <h4 style={{ fontSize: '14.5px', fontWeight: '700', color: '#0f172a', marginBottom: '12px' }}>
-                Handled Material Capabilities:
-              </h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {WASTE_CATEGORIES.filter((c) => c.key !== 'all').map((cat) => (
-                  <span
-                    key={cat.key}
-                    className="badge blue"
-                    style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '600' }}
+                  <button
+                    onClick={() => handleViewCertificate(batch)}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    {cat.label}
-                  </span>
-                ))}
+                    <Eye size={13} />
+                    <span>View Certificate</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
-        </section>
+            ))
+          )}
+        </div>
       )}
 
-      {/* Claim Batch Confirmation Modal */}
+      {/* Tab 4: AI Waste Classifier */}
+      {activeTab === 'classifier' && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs max-w-2xl mx-auto space-y-6">
+          <div>
+            <div className="flex items-center gap-2 text-sky-600 font-bold text-xs uppercase tracking-wider mb-1">
+              <Sparkles size={16} /> Intelligent Stream Classification
+            </div>
+            <h3 className="text-xl font-bold text-slate-900">
+              Rule-Based Material Sorter
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Type or paste material descriptions to classify waste into standard circular streams: plastic, glass, metal, paper, or organic.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Material Description
+            </label>
+            <textarea
+              rows={3}
+              value={classifierInput}
+              onChange={(e) => setClassifierInput(e.target.value)}
+              placeholder="e.g. 50 kg of HDPE plastic drums with residue cleaned out and stacked."
+              className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-slate-800"
+            />
+            <button
+              onClick={() => handleRunClassifier()}
+              disabled={classifierLoading || !classifierInput.trim()}
+              className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-2xs transition-all cursor-pointer flex items-center gap-2 disabled:bg-slate-200 disabled:cursor-not-allowed"
+            >
+              {classifierLoading ? <RotateCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              <span>Classify Material</span>
+            </button>
+          </div>
+
+          {classifierResult && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl bg-sky-50/70 border border-sky-200 p-4 space-y-2 text-xs text-sky-900"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-bold uppercase tracking-wider text-2xs text-sky-700">Classification Result</span>
+                <span className="px-2 py-0.5 rounded bg-sky-200 text-sky-900 font-extrabold uppercase">
+                  {classifierResult.category}
+                </span>
+              </div>
+              <p className="text-sm font-semibold text-slate-900">
+                Recommended Stream: <strong className="capitalize">{classifierResult.category}</strong>
+              </p>
+              {classifierResult.handling && (
+                <p className="text-slate-600">
+                  <strong>Handling:</strong> {classifierResult.handling}
+                </p>
+              )}
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {/* Sourcing Modal */}
       <ClaimWasteModal
         isOpen={isClaimModalOpen}
         onClose={() => setIsClaimModalOpen(false)}
@@ -1138,13 +797,83 @@ export default function RecyclerDashboard() {
         onClaimSuccess={handleClaimSuccess}
       />
 
-      {/* Printable ESG Recycling Certificate Modal */}
+      {/* Recycled Certification Dialog Modal (Replacing prompt) */}
+      <AnimatePresence>
+        {certifyingBatch && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full overflow-hidden"
+            >
+              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="flex items-center gap-2">
+                  <Award size={20} className="text-purple-600" />
+                  <h3 className="font-bold text-slate-900 text-base">
+                    Certify Circular Material Recycling
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setCertifyingBatch(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                >
+                  <XCircle size={18} />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div className="text-xs text-slate-600 space-y-1">
+                  <p>
+                    <strong className="text-slate-900">Stream:</strong> {certifyingBatch.foodType || certifyingBatch.wasteCategory} ({certifyingBatch.quantity})
+                  </p>
+                  <p>
+                    <strong className="text-slate-900">Generator:</strong> {certifyingBatch.donor?.name || 'Commercial Partner'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                    Facility Processing / Sorting Notes
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={certifyingNotes}
+                    onChange={(e) => setCertifyingNotes(e.target.value)}
+                    placeholder="e.g. Passed facility contamination inspection. Reprocessed into circular feedstock."
+                    className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2.5 pt-2">
+                  <button
+                    onClick={() => setCertifyingBatch(null)}
+                    disabled={submittingCertification}
+                    className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitRecycleCertification}
+                    disabled={submittingCertification}
+                    className="px-4 py-2 text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    {submittingCertification ? <RotateCw size={13} className="animate-spin" /> : <Award size={14} />}
+                    Issue Diversion Certificate
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ESG Recycling Certificate Modal */}
       <RecyclingCertificateModal
         isOpen={isCertModalOpen}
         onClose={() => setIsCertModalOpen(false)}
         certificate={activeCertificate}
-        batch={selectedBatchForClaim}
       />
-    </main>
+    </div>
   );
 }

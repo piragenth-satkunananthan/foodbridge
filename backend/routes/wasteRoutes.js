@@ -14,7 +14,8 @@ const {
   getRecyclerClaims,
   confirmWasteRecycled,
   getRecyclerStats,
-  getEligibleCollectorsForWaste
+  getEligibleCollectorsForWaste,
+  getWasteCertificate
 } = require('../controllers/wasteController');
 
 // All waste routes require authentication
@@ -35,6 +36,7 @@ router.get('/recycler/stats', authorize('recycler', 'admin'), getRecyclerStats);
 router.post('/:id/claim', authorize('recycler', 'admin'), claimWasteRequest);
 router.put('/:id/cancel-claim', authorize('recycler', 'admin'), cancelWasteClaim);
 router.put('/:id/confirm-recycled', authorize('recycler', 'admin'), confirmWasteRecycled);
+router.get('/:id/certificate', getWasteCertificate);
 router.get('/:id/collectors', getEligibleCollectorsForWaste);
 
 // ==========================================================

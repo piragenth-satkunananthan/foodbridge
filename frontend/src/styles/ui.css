@@ -1,3 +1,4 @@
+@layer components {
 .fb-button { display: inline-flex; justify-content: center; align-items: center; gap: var(--space-2); min-height: 44px; padding: 10px 20px; border: 1px solid transparent; border-radius: var(--radius-sm); font-size: var(--text-sm); font-weight: 600; line-height: 1.5; cursor: pointer; text-decoration: none; transition: background-color var(--duration-fast), border-color var(--duration-fast); }
 .fb-button--primary { background: var(--color-primary); color: white; }
 .fb-button--primary:hover { background: var(--color-primary-hover); }
@@ -35,3 +36,4 @@
 .toast-container .toast-success .toast-icon { color: var(--color-primary); }
 .toast-container .toast-error .toast-icon { color: var(--color-danger); }
 @media (prefers-reduced-motion: reduce) { .fb-skeleton-line { animation: none; } .fb-button { transition: none; } }
+}
