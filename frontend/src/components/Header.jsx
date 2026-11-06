@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 import { Utensils, Menu, X, ArrowRight, ShieldCheck, LogOut, LayoutDashboard } from 'lucide-react';
 
 export default function Header() {
@@ -59,6 +60,7 @@ export default function Header() {
 
         {/* Right CTA / Auth Controls */}
         <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle className="theme-toggle-desktop" />
           {user ? (
             <div className="flex items-center gap-2.5">
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold capitalize bg-slate-100 text-slate-700 border border-slate-200/60">
@@ -101,6 +103,8 @@ export default function Header() {
             </div>
           )}
         </div>
+
+        <ThemeToggle className="theme-toggle-mobile" />
 
         {/* Mobile Hamburger Toggle */}
         <button

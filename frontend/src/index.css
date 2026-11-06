@@ -1356,3 +1356,31 @@
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 }
+
+/* Dark theme surfaces shared by token-based components. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --primary: #047857;
+  --primary-dark: #065f46;
+  --primary-light: #12352e;
+  --primary-border: #23614d;
+  --accent: #38bdf8;
+  --bg-main: #0b1220;
+  --card-bg: #111c2d;
+  --border: #334155;
+  --border-subtle: #1e293b;
+  --text-main: #e2e8f0;
+  --text-muted: #b1bdcc;
+  --text-subtle: #94a3b8;
+  --danger: #f87171;
+  --danger-light: #3b1c25;
+  --warning: #fbbf24;
+  --warning-light: #352b16;
+  --success: #4ade80;
+  --success-light: #123329;
+}
+
+html[data-theme="dark"] body { background: var(--bg-main); color: var(--text-main); }
+html[data-theme="dark"] :is(h1,h2,h3,h4,h5,h6) { color: #f1f5f9; }
+html[data-theme="dark"] :is(input,select,textarea) { color-scheme: dark; background-color: #111c2d; color: #e2e8f0; border-color: #475569; }
+html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::placeholder { color: #94a3b8; }
