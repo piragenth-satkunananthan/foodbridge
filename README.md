@@ -176,3 +176,34 @@ Public impact uses confirmed, non-demo activity. Meal conversions are estimates 
 ## 📄 License & Intellectual Property
 
 FoodBridge is released under the **MIT License**. Engineered for transparent, non-profit community food rescue networks and enterprise ESG compliance.
+
+---
+
+## Subdirectories & System Boundaries
+
+- [backend](./backend/README.md) — Express 5 + Mongoose API (CommonJS, port 5000): `config`, `controllers`, `middleware`, `models`, `routes`, `scripts`, `services`, `test`, `utils`. Owns auth/RBAC, posting lifecycle, eligibility + smart matching, allocation/claims, pickup pipeline, cron, and impact aggregation. Each subdirectory has its own contract README.
+- [frontend](./frontend/README.md) — React 18 + Vite SPA (port 5173 dev, `/api` proxied to the backend): `src/api`, `src/context`, `src/components`, `src/pages`, `src/modules/{admin,donor,recipient,recycler,volunteer}`, `src/utils`. Each subdirectory has its own contract README.
+
+## Global Invariants
+
+- Backend standalone start requires `JWT_SECRET` and `MONGO_URI`; there is no automatic fallback database, and DB connect failure stops startup [backend/server.js, backend/config/db.js].
+- Multi-document mutations (claims, verification, complaints, org saves) require a MongoDB **replica set**; otherwise the transaction helper returns 503 [backend/utils/transaction.js].
+- Public registration can never create an `admin` account; admin self-suspension/self-deletion is rejected; user deletion is a soft delete [backend/controllers/authController.js, backend/controllers/adminController.js].
+- Only `/api/impact` is public; every other router applies `protect`, with role gates via `authorize` [backend/routes/*].
+- Rate limits: 500 req/15 min/IP globally, 50 req/15 min/IP on `/api/auth`; CORS is an explicit allowlist (localhost defaults + `ALLOWED_ORIGINS`) [backend/server.js].
+- All impact/reporting math excludes demo records (`isDemo: {$ne: true}`) and requires a real `completedAt` date; meals are estimated at 2.5 per kg; CO₂e/water figures are never invented [backend/controllers/impactController.js, backend/utils/quantity.js].
+- `npm run seed` is guarded: it requires `ALLOW_DEMO_SEED=true` and a demo/test/local database name, and it deletes collections — never run it against shared data [backend/seed-module5.js].
+- Frontend: all module routes are wrapped in `ProtectedRoute` (admin may enter every module route); `/api` dev proxy targets `http://localhost:5000` [frontend/src/App.jsx, frontend/src/components/ProtectedRoute.jsx, frontend/vite.config.js].
+- CSV exports guard against formula injection and never invent metric values (fallback `0`, methodology note hard-coded) [frontend/src/utils/exportUtils.js].
+
+## Global Side Effects
+
+- MongoDB (replica set) is the single datastore; all persistence flows through the Mongoose models listed in [backend/models](./backend/models/README.md).
+- Notification documents are written on verification/claim/pickup/complaint events [backend/utils/notificationService.js]; cron timers (15 min) expire overdue posts and take monthly impact snapshots [backend/services/cronService.js].
+- Client-side: JWT + cached user persist in `localStorage` under `foodbridge_token` / `foodbridge_user` [frontend/src/api/client.js].
+- Deployment: `docker compose up --build` (Caddy HTTPS stack) or `docker-compose.local.yml` (local HTTP on :8080); CI deploys to EC2 on `production`/`main` pushes [.github/workflows/ci.yml, docker-compose.yml].
+
+## System Verification
+
+- Run: `cd backend && npm run test:all` (module checks + disposable-Docker API suite)
+- Run: `cd frontend && npm test && npm run build`
