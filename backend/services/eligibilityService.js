@@ -45,6 +45,8 @@ function eligibility(post, org, kind) {
   let reason = null;
   if (org.verificationStatus !== 'verified' || !org.accepting)
     reason = 'Organization is not available and verified';
+  else if (Boolean(post.isDemo) !== Boolean(org.isDemo))
+    reason = 'Demonstration and real records cannot be mixed';
   else if (!q || (kind === 'wasteRequest' && q.estimatedWeight))
     reason = 'A supported measured quantity is required';
   else if (
@@ -106,4 +108,6 @@ function eligibility(post, org, kind) {
     estimatedWeight: q?.estimatedWeight || false
   };
 }
-module.exports = { organizationFor, eligibility, distanceFor };
+// Discovery shows demonstration posts only to demonstration accounts, and real posts only to real ones.
+const sameDemoScope = (account) => (account?.isDemo ? true : { $ne: true });
+module.exports = { organizationFor, eligibility, distanceFor, sameDemoScope };

@@ -137,6 +137,8 @@ const seedData = async () => {
       isDemo: true,
       name: 'Sister Mary Care Home',
       type: 'shelter',
+      capacityKg: 500,
+      storageConditions: ['refrigerated', 'room_temperature', 'frozen'],
       registrationInfo: 'NGO-COL-2021-049',
       district: 'Colombo',
       verificationStatus: 'verified',
@@ -151,6 +153,8 @@ const seedData = async () => {
       isDemo: true,
       name: 'Community Food Shelter',
       type: 'charity',
+      capacityKg: 300,
+      storageConditions: ['room_temperature'],
       registrationInfo: 'REG-KDY-2024-912',
       district: 'Kandy',
       verificationStatus: 'pending',
@@ -163,6 +167,7 @@ const seedData = async () => {
       isDemo: true,
       name: 'EcoCycle Lanka (Pvt) Ltd',
       type: 'recycler',
+      capacityKg: 2000,
       registrationInfo: 'WST-PVT-2023-887',
       district: 'Colombo',
       materialTypesHandled: ['plastic', 'glass', 'paper', 'metal'],
@@ -178,6 +183,7 @@ const seedData = async () => {
       isDemo: true,
       name: 'GreenEarth BioCompost Facility',
       type: 'composting_facility',
+      capacityKg: 1500,
       registrationInfo: 'ENV-GMP-2025-110',
       district: 'Gampaha',
       materialTypesHandled: ['organic'],
@@ -200,6 +206,7 @@ const seedData = async () => {
       specialInstructions:
         'Ready in commercial food containers at back reception.',
       status: 'completed',
+      completedAt: new Date(),
       matchedRecipient: org1._id
     });
 
@@ -240,6 +247,9 @@ const seedData = async () => {
     // 9. Pickups
     await Pickup.create({
       isDemo: true,
+      active: false,
+      completionConfirmedAt: new Date(),
+      sourceSnapshot: require('./utils/pickupHistory').snapshotSource(donation1),
       donation: donation1._id,
       volunteer: volunteer1._id,
       receivingOrganization: org1._id,

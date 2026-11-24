@@ -69,3 +69,27 @@ test('admin search treats input literally and the public feed hides donors', asy
   assert.ok(own.length);
   assert.ok(own.every((n) => !/available in your district/.test(n.message)));
 });
+
+test('demonstration and real activity stay separate in discovery and claims', async () => {
+  const { foodBody, User, Organization } = require('./helpers');
+  const demoDonor = await user('donor'),
+    demoOrg = await user('recipient', 'ngo'),
+    realOrg = await user('recipient', 'ngo');
+  await User.updateMany({ _id: { $in: [demoDonor._id, demoOrg._id] } }, { isDemo: true });
+  await Organization.updateOne({ linkedUser: demoOrg._id }, { isDemo: true });
+  demoDonor.isDemo = true;
+  const post = await api('POST', '/donations', demoDonor, foodBody());
+  assert.equal(post.status, 201, JSON.stringify(post.body));
+  const ids = async (who) =>
+    (await api('GET', '/match/nearby-donations', who)).body.donations.map((d) => d._id);
+  assert.ok((await ids(demoOrg)).includes(post.body._id), 'demo org sees demo post');
+  assert.ok(!(await ids(realOrg)).includes(post.body._id), 'real org does not');
+  assert.equal(
+    (await api('POST', `/match/${post.body._id}/claim`, realOrg, {})).status,
+    409
+  );
+  assert.equal(
+    (await api('POST', `/match/${post.body._id}/claim`, demoOrg, {})).status,
+    200
+  );
+});

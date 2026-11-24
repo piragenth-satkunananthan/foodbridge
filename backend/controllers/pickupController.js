@@ -6,7 +6,7 @@ const {
   getDistrictDistanceKm,
   estimateTransitMinutes
 } = require('../utils/routeUtils');
-const { distanceFor } = require('../services/eligibilityService');
+const { distanceFor, sameDemoScope } = require('../services/eligibilityService');
 const service = require('../services/pickupService');
 function parseQuantityMetrics(value) {
   const q = parseQuantity(value);
@@ -75,7 +75,12 @@ function enrich(doc, user) {
 }
 const getOpenPickupJobs = endpoint(async (req, res) => {
   let pickups = await populate(
-    Pickup.find({ statusPipeline: 'matched', volunteer: null, active: true })
+    Pickup.find({
+      statusPipeline: 'matched',
+      volunteer: null,
+      active: true,
+      isDemo: sameDemoScope(req.user)
+    })
   );
   pickups = pickups.filter((p) => {
     const source = p.donation || p.wasteRequest,

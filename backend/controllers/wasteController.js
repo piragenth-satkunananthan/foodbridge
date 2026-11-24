@@ -97,7 +97,8 @@ const getWasteRequestById = endpoint(async (req, res) => {
 
 const {
   organizationFor,
-  eligibility
+  eligibility,
+  sameDemoScope
 } = require('../services/eligibilityService');
 const allocation = require('../services/allocationService');
 const pickupService = require('../services/pickupService');
@@ -120,7 +121,7 @@ const getRecyclerFeed = endpoint(async (req, res) => {
   const raw = await WasteRequest.find({
     status: 'posted',
     pickupDeadline: { $gt: new Date() },
-    isDemo: { $ne: true }
+    isDemo: sameDemoScope(org)
   })
     .populate('donor', 'name district status')
     .lean();

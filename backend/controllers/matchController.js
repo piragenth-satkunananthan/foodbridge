@@ -7,7 +7,8 @@ const { parseMealsCount } = require('../utils/quantity');
 const { calculateSmartMatchScore } = require('../utils/distanceUtils');
 const {
   organizationFor,
-  eligibility
+  eligibility,
+  sameDemoScope
 } = require('../services/eligibilityService');
 const allocation = require('../services/allocationService');
 const { canReadPost } = require('../services/postingService');
@@ -16,7 +17,7 @@ const getNearbyDonations = endpoint(async (req, res) => {
   const query = {
     status: 'posted',
     pickupDeadline: { $gt: new Date() },
-    isDemo: { $ne: true }
+    isDemo: sameDemoScope(org)
   };
   if (req.query.storageCondition && req.query.storageCondition !== 'all')
     query.storageCondition = req.query.storageCondition;
@@ -145,7 +146,7 @@ const getRecipientStats = endpoint(async (req, res) => {
   const available = {
     status: 'posted',
     pickupDeadline: { $gt: new Date() },
-    isDemo: { $ne: true }
+    isDemo: sameDemoScope(org || req.user)
   };
   res.json({
     success: true,

@@ -77,6 +77,8 @@ async function accept(id, user) {
       fail(409, 'Pickup has already been assigned or closed');
     if (source.pickupDeadline <= new Date())
       fail(409, 'Pickup deadline has passed');
+    if (Boolean(pickup.isDemo) !== Boolean(user.isDemo))
+      fail(409, 'Demonstration and real records cannot be mixed');
     await receivingOrganization(pickup, session);
     const donor = await User.findById(source.donor).session(session);
     if (!donor || donor.status !== 'active') fail(409, 'Donor is unavailable');
