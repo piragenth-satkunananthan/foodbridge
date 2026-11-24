@@ -148,7 +148,7 @@ function ActiveJob({ job, onChanged }) {
             <div className="eyebrow mb-2">1 · Collect from</div>
             <div className="font-semibold">{donor.name}</div>
             <div className="text-sm muted">{[src.address, src.area, src.city, src.district].filter(Boolean).join(', ')}</div>
-            {donor.contactNumber && <a href={`tel:${donor.contactNumber}`} className="inline-flex items-center gap-1 text-sm text-[var(--primary)] mt-2"><Phone size={13} aria-hidden="true" />{donor.contactNumber}</a>}
+            {donor.contactNumber && <a href={`tel:${donor.contactNumber}`} className="tap inline-flex items-center gap-1 text-sm text-[var(--leaf)] mt-2"><Phone size={13} aria-hidden="true" />{donor.contactNumber}</a>}
             <div className="text-sm mt-2"><Clock size={13} className="inline" aria-hidden="true" /> Deadline {fmtDate(src.pickupDeadline)}</div>
             {src.specialInstructions && <p className="text-sm mt-2 mb-0"><span className="muted">Instructions:</span> {src.specialInstructions}</p>}
           </div>
@@ -156,7 +156,7 @@ function ActiveJob({ job, onChanged }) {
             <div className="eyebrow mb-2">2 · Deliver to</div>
             <div className="font-semibold">{org.name}</div>
             <div className="text-sm muted">{[org.address, org.area, org.city, org.district].filter(Boolean).join(', ')}</div>
-            {org.linkedUser?.contactNumber && <a href={`tel:${org.linkedUser.contactNumber}`} className="inline-flex items-center gap-1 text-sm text-[var(--primary)] mt-2"><Phone size={13} aria-hidden="true" />{org.linkedUser.contactNumber}</a>}
+            {org.linkedUser?.contactNumber && <a href={`tel:${org.linkedUser.contactNumber}`} className="tap inline-flex items-center gap-1 text-sm text-[var(--leaf)] mt-2"><Phone size={13} aria-hidden="true" />{org.linkedUser.contactNumber}</a>}
             <div className="text-sm muted mt-2">~{fmtNum(r.routeDistanceKm, 1)} km · ~{fmtNum(r.transitTimeMinutes)} min ({r.distanceBasis})</div>
           </div>
         </div>

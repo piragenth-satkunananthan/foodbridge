@@ -30,7 +30,7 @@ export function StatusBadge({ status }) {
 
 export function Stat({ icon: Icon, label, value, note }) {
   return (
-    <div className="card stat">
+    <div className="stat">
       <div className="stat-label">{Icon && <Icon size={15} aria-hidden="true" />}{label}</div>
       <div className="stat-value">{value}</div>
       {note && <div className="stat-note">{note}</div>}

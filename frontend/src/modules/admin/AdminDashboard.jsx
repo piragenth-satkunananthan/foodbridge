@@ -17,11 +17,11 @@ const NAV = [
   { to: '/admin/reports', label: 'Reports', icon: FileBarChart }
 ];
 
-function Bar({ label, value, total, tone = 'var(--primary)' }) {
+function Bar({ label, value, total, tone = 'var(--leaf)' }) {
   return (
     <div className="grid gap-1">
       <div className="flex justify-between text-sm"><span>{label}</span><span className="num font-semibold">{fmtNum(value)}</span></div>
-      <div style={{ height: 6, borderRadius: 6, background: 'var(--surface-2)' }}><div style={{ height: 6, borderRadius: 6, background: tone, width: `${total ? Math.max(value ? 2 : 0, (value / total) * 100) : 0}%` }} /></div>
+      <div style={{ height: 6, borderRadius: 6, background: 'var(--sheet-2)' }}><div style={{ height: 6, borderRadius: 6, background: tone, width: `${total ? Math.max(value ? 2 : 0, (value / total) * 100) : 0}%` }} /></div>
     </div>
   );
 }
@@ -48,7 +48,7 @@ function Overview() {
       <div className="grid gap-5 lg:grid-cols-3">
         <Card title="Pickup pipeline">
           <div className="grid gap-3">
-            {PIPELINE.map(([key, label]) => <Bar key={key} label={label} value={data.pickupsByStatus[key] || 0} total={pickupTotal} tone="var(--info)" />)}
+            {PIPELINE.map(([key, label]) => <Bar key={key} label={label} value={data.pickupsByStatus[key] || 0} total={pickupTotal} tone="var(--indigo)" />)}
             {['cancelled', 'expired', 'rejected'].map((s) => <Bar key={s} label={statusInfo(s)[0]} value={data.pickupsByStatus[s] || 0} total={pickupTotal} tone="var(--control)" />)}
           </div>
         </Card>
@@ -56,10 +56,10 @@ function Overview() {
           <div className="grid gap-3">{Object.entries(data.donationsByStatus).map(([s, n]) => <Bar key={s} label={statusInfo(s)[0]} value={n} total={k.totalDonations} />)}</div>
         </Card>
         <Card title="Waste by material">
-          <div className="grid gap-3">{Object.entries(data.wasteByCategory).map(([s, n]) => <Bar key={s} label={s.replace('_', '-')} value={n} total={k.totalWasteRequests} tone="var(--accent)" />)}</div>
+          <div className="grid gap-3">{Object.entries(data.wasteByCategory).map(([s, n]) => <Bar key={s} label={s.replace('_', '-')} value={n} total={k.totalWasteRequests} tone="var(--terra)" />)}</div>
         </Card>
       </div>
-      <Card title="Recent organisation registrations" pad={false} action={<Link to="/admin/verification" className="text-sm font-semibold text-[var(--primary)]">Review all</Link>}>
+      <Card title="Recent organisation registrations" pad={false} action={<Link to="/admin/verification" className="link tap text-sm">Review all</Link>}>
         <div className="table-wrap"><table className="table">
           <thead><tr><th>Organisation</th><th>Type</th><th>Contact</th><th>Status</th><th>Registered</th></tr></thead>
           <tbody>{data.recentActivity.organizations.map((o) => (

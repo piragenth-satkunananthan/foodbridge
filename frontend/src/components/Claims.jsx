@@ -76,7 +76,7 @@ export function ClaimItem({ pickup, onChanged }) {
         </div>
         {pickup.active && <Pipeline status={stage} />}
         {pickup.volunteer && pickup.active && (
-          <div className="meta"><span><User size={13} aria-hidden="true" />{pickup.volunteer.name}</span>{pickup.volunteer.contactNumber && <a href={`tel:${pickup.volunteer.contactNumber}`} className="text-[var(--primary)] inline-flex items-center gap-1"><Phone size={13} aria-hidden="true" />{pickup.volunteer.contactNumber}</a>}</div>
+          <div className="meta"><span><User size={13} aria-hidden="true" />{pickup.volunteer.name}</span>{pickup.volunteer.contactNumber && <a href={`tel:${pickup.volunteer.contactNumber}`} className="tap text-[var(--leaf)] inline-flex items-center gap-1"><Phone size={13} aria-hidden="true" />{pickup.volunteer.contactNumber}</a>}</div>
         )}
         {pickup.active && stage === 'matched' && <p className="hint m-0">Waiting for a volunteer to accept the pickup.</p>}
       </div>

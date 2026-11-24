@@ -1,137 +1,135 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Bike, Building2, HandHeart, Leaf, MapPin, Recycle, ShieldCheck, Truck, Utensils } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowRight, Bike, HandHeart, Leaf, MapPin, Recycle, ShieldCheck, Utensils } from 'lucide-react';
 import { fetchPublicImpact, fetchLiveFeed } from '../api/client';
 import useAsync from '../lib/useAsync';
-import { fmtNum, fmtDate, STORAGE_LABEL, WASTE_LABEL } from '../lib/format';
+import { fmtNum, STORAGE_LABEL, WASTE_LABEL } from '../lib/format';
 import PublicLayout from '../components/PublicLayout';
-import { Card, Empty, ErrorState, Loading, StatusBadge } from '../components/ui';
+import { Empty, ErrorState, Loading, StatusBadge } from '../components/ui';
 
 const ROLES = [
-  [Utensils, 'Donors', 'Hotels, wedding halls, restaurants, bakeries and households post surplus in under a minute.'],
-  [HandHeart, 'Recipients', 'Verified NGOs, charities and shelters claim nearby food that fits their storage and capacity.'],
-  [Bike, 'Volunteers', 'Accept a pickup, record collection and arrival — every step is time-stamped.'],
-  [Recycle, 'Recyclers', 'Licensed recyclers and composting facilities collect sorted material they can process.'],
-  [ShieldCheck, 'Administrators', 'Verify organisations, handle reports and remove fake accounts.']
+  [Utensils, 'Donors', 'Hotels, wedding halls, restaurants, bakeries and households post what is left over.', '/register?role=donor'],
+  [HandHeart, 'Recipients', 'Verified NGOs, charities and shelters claim food that suits their storage and capacity.', '/register?role=recipient'],
+  [Bike, 'Volunteers', 'Pick up a job, collect, deliver — each step is time-stamped for everyone involved.', '/register?role=volunteer'],
+  [Recycle, 'Recyclers', 'Licensed recyclers and composting yards collect sorted material they can process.', '/register?role=recycler'],
+  [ShieldCheck, 'Administrators', 'Verify organisations, answer reports and remove fake accounts.', null]
 ];
 
-function Metric({ label, value, unit, note }) {
+const time = new Intl.DateTimeFormat('en-LK', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+
+function Board() {
+  const { data, error, loading } = useAsync(fetchLiveFeed);
+  if (error) return <ErrorState message="The activity board is unavailable right now." />;
+  if (loading && !data) return <Loading rows={5} />;
+  if (!data.items.length) return <Empty title="The board is empty">New posts appear here as soon as donors publish them.</Empty>;
   return (
-    <div className="card stat">
-      <div className="stat-label">{label}</div>
-      <div className="stat-value">{value}<span className="text-base font-semibold muted"> {unit}</span></div>
-      {note && <div className="stat-note">{note}</div>}
-    </div>
+    <ol className="list p-0 m-0" style={{ listStyle: 'none' }}>
+      {data.items.slice(0, 7).map((i) => (
+        <li key={i.id} className="grid grid-cols-[64px_1fr_auto] gap-3 py-3 items-start">
+          <span className="mono text-xs muted pt-1">{time.format(new Date(i.createdAt))}</span>
+          <span className="min-w-0">
+            <span className="block font-semibold truncate">{i.type === 'waste' ? `${WASTE_LABEL[i.wasteCategory]} for collection` : i.itemTitle}</span>
+            <span className="meta"><span>{i.quantity}</span><span><MapPin size={12} aria-hidden="true" />{i.district}</span>{i.storageCondition && <span>{STORAGE_LABEL[i.storageCondition]}</span>}</span>
+          </span>
+          <StatusBadge status={i.status} />
+        </li>
+      ))}
+    </ol>
   );
 }
 
 function Impact() {
   const { data, error, loading, reload } = useAsync(fetchPublicImpact);
   if (error) return <ErrorState message={`Impact figures are unavailable right now (${error}).`} onRetry={reload} />;
-  if (loading && !data) return <Card><Loading rows={3} /></Card>;
+  if (loading && !data) return <Loading rows={3} />;
   const s = data.summary, e = data.ecosystem;
   return (
     <div className="grid gap-4">
       <div className="stat-grid">
-        <Metric label="Meals rescued" value={fmtNum(s.mealsRescued)} unit="meals" note="Estimated from confirmed quantities" />
-        <Metric label="Recycled" value={fmtNum(s.totalKgRecycled, 1)} unit="kg" note="Plastic, glass, paper, metal" />
-        <Metric label="Organic composted" value={fmtNum(s.kgOrganicDiverted, 1)} unit="kg" />
-        <Metric label="Districts covered" value={fmtNum(s.districtsCoveredCount)} unit="of 25" />
+        <div className="stat"><div className="stat-label">Meals rescued</div><div className="stat-value">{fmtNum(s.mealsRescued)}</div><div className="stat-note">From confirmed deliveries</div></div>
+        <div className="stat"><div className="stat-label">Recycled</div><div className="stat-value">{fmtNum(s.totalKgRecycled, 1)} <small>kg</small></div><div className="stat-note">Plastic, glass, paper, metal</div></div>
+        <div className="stat"><div className="stat-label">Composted</div><div className="stat-value">{fmtNum(s.kgOrganicDiverted, 1)} <small>kg</small></div><div className="stat-note">Organic waste kept from landfill</div></div>
+        <div className="stat"><div className="stat-label">Districts reached</div><div className="stat-value">{fmtNum(s.districtsCoveredCount)} <small>of 25</small></div></div>
       </div>
-      <div className="meta">
-        <span><Building2 size={14} aria-hidden="true" />{fmtNum(e.verifiedNGOs)} verified food organisations</span>
-        <span><Recycle size={14} aria-hidden="true" />{fmtNum(e.verifiedRecyclers)} verified recyclers & composters</span>
-        <span><Bike size={14} aria-hidden="true" />{fmtNum(e.activeVolunteers)} active volunteers</span>
-      </div>
-      <p className="hint m-0">Counts only organisation-confirmed, non-demonstration activity. Meals use declared portions, or 2.5 per kg.</p>
-    </div>
-  );
-}
-
-function LiveFeed() {
-  const { data, error, loading } = useAsync(fetchLiveFeed);
-  if (error) return <ErrorState message="Recent activity is unavailable." />;
-  if (loading && !data) return <Loading rows={4} />;
-  if (!data.items.length) return <Empty title="No activity yet">The first posts will appear here.</Empty>;
-  return (
-    <div className="list">
-      {data.items.slice(0, 6).map((i) => (
-        <div key={i.id} className="row-item">
-          <span className={`icon-tile ${i.type === 'waste' ? 'waste' : ''}`}>{i.type === 'waste' ? <Recycle size={18} aria-hidden="true" /> : <Utensils size={18} aria-hidden="true" />}</span>
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2"><strong className="truncate">{i.type === 'waste' ? WASTE_LABEL[i.wasteCategory] : i.itemTitle}</strong><StatusBadge status={i.status} /></div>
-            <div className="meta"><span>{i.quantity}</span><span><MapPin size={13} aria-hidden="true" />{i.district}</span>{i.storageCondition && <span>{STORAGE_LABEL[i.storageCondition]}</span>}<span>{fmtDate(i.createdAt)}</span></div>
-          </div>
-        </div>
-      ))}
+      <p className="m-0 text-sm muted">
+        Today the network counts <strong className="text-[var(--ink)]">{fmtNum(e.verifiedNGOs)}</strong> verified food organisations, <strong className="text-[var(--ink)]">{fmtNum(e.verifiedRecyclers)}</strong> recyclers and composters, and <strong className="text-[var(--ink)]">{fmtNum(e.activeVolunteers)}</strong> active volunteers.
+        Only receiver-confirmed, non-demonstration activity is counted; meals use declared portions, or 2.5 per kg.
+      </p>
     </div>
   );
 }
 
 export default function LandingPage() {
+  const { hash } = useLocation();
+  useEffect(() => { if (hash) document.getElementById(hash.slice(1))?.scrollIntoView(); }, [hash]);
   return (
     <PublicLayout>
-      <section className="hero">
-        <div className="wrap grid gap-10 lg:grid-cols-[1.15fr_1fr] items-center">
+      <div className="wrap">
+        <section className="front">
           <div>
-            <p className="eyebrow">Food rescue · Waste routing · Sri Lanka</p>
-            <h1 className="mt-3">Every surplus finds the <em>right place</em> before it spoils.</h1>
-            <p className="lead mt-5">FoodBridge sorts each surplus post into edible food or a waste stream, then routes it to a verified NGO, recycler or composting facility nearby — with a volunteer to carry it.</p>
+            <p className="eyebrow">From kitchens to communities</p>
+            <h1 className="headline mt-4">Good food should feed people, <em>not landfill.</em></h1>
+            <p className="dek mt-6">When a wedding, hotel or bakery has food left over, FoodBridge puts it in front of a verified shelter nearby — and finds a volunteer to carry it. Whatever can't be eaten is sorted and sent to the recycler or compost yard that can actually take it.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/register" className="btn btn-primary btn-lg">Start posting surplus <ArrowRight size={18} aria-hidden="true" /></Link>
+              <Link to="/register" className="btn btn-primary btn-lg">Post your surplus <ArrowRight size={18} aria-hidden="true" /></Link>
               <Link to="/register?role=recipient" className="btn btn-secondary btn-lg">Register an organisation</Link>
             </div>
           </div>
-          <Card title="Recent activity" pad={false}><LiveFeed /></Card>
-        </div>
-      </section>
+          <aside aria-labelledby="board-title">
+            <div className="flex items-baseline justify-between border-b border-[var(--ink)] pb-2">
+              <h2 id="board-title" className="text-xl">On the board</h2>
+              <span className="eyebrow">Latest posts</span>
+            </div>
+            <Board />
+          </aside>
+        </section>
 
-      <section className="section" id="impact" style={{ background: 'var(--surface)', borderBlock: '1px solid var(--border)' }}>
-        <div className="wrap grid gap-6">
-          <div><p className="eyebrow">Public impact</p><h2 className="mt-2">Recorded outcomes, not estimates dressed up as facts</h2></div>
+        <section className="section" id="impact">
+          <div className="section-title"><h2>What has been recorded so far</h2><span className="eyebrow">Public impact ledger</span></div>
           <Impact />
-        </div>
-      </section>
+        </section>
 
-      <section className="section">
-        <div className="wrap grid gap-8">
-          <div><p className="eyebrow">How it works</p><h2 className="mt-2">One post, two pathways</h2></div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="card pathway food">
-              <span className="icon-tile"><Utensils size={20} aria-hidden="true" /></span>
-              <h3 className="mt-4 text-lg">Edible food → people</h3>
-              <ol className="mt-4 grid gap-3 p-0" style={{ listStyle: 'none' }}>
-                {['Donor declares food, storage and pickup deadline', 'Verified recipients nearby see it ranked by distance and freshness', 'A volunteer collects and delivers; the recipient confirms receipt'].map((t, i) => <li key={t} className="flex gap-3 items-start"><span className="step-num">{i + 1}</span><span className="pt-1">{t}</span></li>)}
+        <section className="section" id="how">
+          <div className="section-title"><h2>One post, sorted two ways</h2><span className="eyebrow">How it works</span></div>
+          <div className="columns">
+            <div>
+              <h3 className="pathway-title"><span className="icon-tile"><Utensils size={18} aria-hidden="true" /></span>If it can be eaten</h3>
+              <ol className="numbered">
+                <li><span>1</span><span>The donor notes what it is, how it's stored, and when it must be collected by.</span></li>
+                <li><span>2</span><span>Verified recipients nearby see it, ranked by distance and how fresh it is.</span></li>
+                <li><span>3</span><span>A volunteer collects and delivers it. The recipient confirms it arrived in good condition.</span></li>
               </ol>
             </div>
-            <div className="card pathway waste">
-              <span className="icon-tile waste"><Leaf size={20} aria-hidden="true" /></span>
-              <h3 className="mt-4 text-lg">Waste → the right facility</h3>
-              <ol className="mt-4 grid gap-3 p-0" style={{ listStyle: 'none' }}>
-                {['Material is classified: plastic, glass, paper, metal, organic or residual', 'Only collectors that process that material can claim it', 'After collection, the facility records recycling, composting or disposal'].map((t, i) => <li key={t} className="flex gap-3 items-start"><span className="step-num" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>{i + 1}</span><span className="pt-1">{t}</span></li>)}
+            <div>
+              <h3 className="pathway-title"><span className="icon-tile waste"><Leaf size={18} aria-hidden="true" /></span>If it can't</h3>
+              <ol className="numbered waste">
+                <li><span>1</span><span>It is sorted: plastic, glass, paper, metal, organic, or residual waste.</span></li>
+                <li><span>2</span><span>Only a collector that processes that material can claim it.</span></li>
+                <li><span>3</span><span>After collection, the facility records whether it was recycled, composted or disposed of.</span></li>
               </ol>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {ROLES.map(([Icon, title, text]) => (
-              <div key={title} className="card card-pad">
-                <Icon size={20} className="text-[var(--primary)]" aria-hidden="true" />
-                <h3 className="mt-3 text-base">{title}</h3>
-                <p className="text-sm muted mt-1 mb-0">{text}</p>
+        </section>
+
+        <section className="section">
+          <div className="section-title"><h2>Who keeps it moving</h2><span className="eyebrow">Five roles, one network</span></div>
+          <div className="directory">
+            {ROLES.map(([Icon, title, text, to]) => (
+              <div key={title}>
+                <Icon size={20} className="text-[var(--leaf)]" aria-hidden="true" />
+                <h3>{title}</h3>
+                <p className="text-sm muted mt-1 mb-2">{text}</p>
+                {to && <Link to={to} className="link tap text-sm">Join as {title.slice(0, -1).toLowerCase()}</Link>}
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="section pt-0">
-        <div className="wrap">
-          <div className="card card-pad flex flex-wrap items-center justify-between gap-4" style={{ background: 'var(--primary)', color: 'var(--on-primary)', borderColor: 'transparent' }}>
-            <div><h2 style={{ color: 'inherit' }} className="text-2xl">Have surplus today?</h2><p className="m-0 mt-1 opacity-90">Post it now; matching organisations are notified straight away.</p></div>
-            <Link to="/register" className="btn btn-lg" style={{ background: 'var(--surface)', color: 'var(--primary)' }}><Truck size={18} aria-hidden="true" />Create a free account</Link>
-          </div>
-        </div>
-      </section>
+        <section className="closing">
+          <div><h2>Something left over today?</h2><p className="m-0 mt-2 muted">Post it in under a minute. Matching organisations nearby are told straight away.</p></div>
+          <Link to="/register" className="btn btn-primary btn-lg">Create a free account <ArrowRight size={18} aria-hidden="true" /></Link>
+        </section>
+      </div>
     </PublicLayout>
   );
 }

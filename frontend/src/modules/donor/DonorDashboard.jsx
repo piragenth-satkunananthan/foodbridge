@@ -25,7 +25,7 @@ function PostRow({ post, kind, onOpen, onEdit, onCancel }) {
       <span className={`icon-tile ${food ? '' : 'waste'}`}>{food ? <Utensils size={18} aria-hidden="true" /> : <Recycle size={18} aria-hidden="true" />}</span>
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" onClick={onOpen} className="font-bold text-left hover:underline underline-offset-4" style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}>{food ? post.foodType : WASTE_LABEL[post.wasteCategory]}</button>
+          <button type="button" onClick={onOpen} className="tap font-bold text-left hover:underline underline-offset-4" style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}>{food ? post.foodType : WASTE_LABEL[post.wasteCategory]}</button>
           <StatusBadge status={post.status} />
         </div>
         <div className="meta mt-1">
@@ -132,7 +132,7 @@ function AllPosts() {
           )}
         </form>
         {list.error && <div className="px-5 pb-5"><ErrorState message={list.error} onRetry={list.reload} /></div>}
-        {list.loading ? <Loading /> : !list.data?.length ? <Empty title="No posts match" /> : <div className="list border-t border-[var(--border)]">{list.data.map((p) => row(p, tab))}</div>}
+        {list.loading ? <Loading /> : !list.data?.length ? <Empty title="No posts match" /> : <div className="list border-t border-[var(--rule)]">{list.data.map((p) => row(p, tab))}</div>}
       </Card>
       {modals}
     </>

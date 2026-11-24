@@ -90,7 +90,7 @@ function Available() {
           </form>
           {list.error && <div className="px-5 pb-5"><ErrorState message={list.error} onRetry={list.reload} /></div>}
           {list.loading && !list.data ? <Loading /> : donations.length === 0 ? <Empty title="No matching food right now">You'll be notified when a compatible post appears in your district.</Empty> : (
-            <div className="list border-t border-[var(--border)]">
+            <div className="list border-t border-[var(--rule)]">
               {donations.map((d) => (
                 <div key={d._id} className="row-item">
                   <span className="icon-tile"><Utensils size={18} aria-hidden="true" /></span>

@@ -40,8 +40,9 @@ export default function RegisterPage() {
     <PublicLayout>
       <div className="auth-wrap">
         <div className="card auth-card" style={{ width: 'min(640px, 100%)' }}>
-          <h1 className="text-2xl">Create your account</h1>
-          <p className="muted mt-1 mb-6">Already registered? <Link to="/login" className="font-semibold text-[var(--primary)] underline underline-offset-4">Sign in</Link></p>
+          <p className="eyebrow">Join the network</p>
+          <h1 className="text-4xl mt-2">Create your account</h1>
+          <p className="muted mt-1 mb-6">Already registered? <Link to="/login" className="font-semibold text-[var(--leaf)] underline underline-offset-4">Sign in</Link></p>
           <form onSubmit={submit} className="grid gap-5">
             {error && <ErrorState message={error} />}
             <fieldset className="grid gap-2 border-0 p-0 m-0">

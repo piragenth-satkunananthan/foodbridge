@@ -84,6 +84,7 @@ export default function OrgProfile({ role }) {
         {org && <StatusBadge status={org.verificationStatus} />}
       </PageHead>
       {error && <ErrorState message={error} onRetry={reload} />}
+      {org?.verificationStatus !== 'verified' && <VerificationBanner org={org} />}
       {org?.verificationStatus === 'verified' && <div className="alert alert-success"><ShieldCheck size={18} aria-hidden="true" /><div>Verified {org.verifiedAt ? `on ${fmtDate(org.verifiedAt)}` : ''}. <strong>Saving changes sends the profile back for review</strong> and pauses claiming until re-verified.</div></div>}
       {org?.reservedKg > 0 && <div className="alert alert-warning">Profile changes are locked while {org.reservedKg} kg is reserved by active claims.</div>}
       <form onSubmit={submit} className="grid gap-5">

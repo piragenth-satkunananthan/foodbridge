@@ -54,12 +54,12 @@ export default function PostDetails({ id, kind, onClose }) {
               <dt>Reference</dt><dd className="num text-xs">{post._id}</dd>
             </dl>
             <div className="grid gap-4 content-start">
-              {post.photo && <img src={post.photo} alt="Donor-provided photo of the post" className="w-full max-h-48 object-cover rounded-lg border border-[var(--border)]" loading="lazy" referrerPolicy="no-referrer" />}
+              {post.photo && <img src={post.photo} alt="Donor-provided photo of the post" className="w-full max-h-48 object-cover rounded-lg border border-[var(--rule)]" loading="lazy" referrerPolicy="no-referrer" />}
               {org && <div className="card card-pad"><div className="eyebrow mb-1">Receiving organisation</div><div className="font-semibold">{org.name}</div><div className="text-sm muted">{ORG_TYPE_LABEL[org.type]} · {org.district}</div></div>}
               {pickup?.volunteer && (
                 <div className="card card-pad"><div className="eyebrow mb-1">Volunteer</div>
                   <div className="flex items-center gap-2 font-semibold"><User size={15} aria-hidden="true" />{pickup.volunteer.name}</div>
-                  {pickup.volunteer.contactNumber && <a className="flex items-center gap-2 text-sm text-[var(--primary)] mt-1" href={`tel:${pickup.volunteer.contactNumber}`}><Phone size={14} aria-hidden="true" />{pickup.volunteer.contactNumber}</a>}
+                  {pickup.volunteer.contactNumber && <a className="tap flex items-center gap-2 text-sm text-[var(--leaf)] mt-1" href={`tel:${pickup.volunteer.contactNumber}`}><Phone size={14} aria-hidden="true" />{pickup.volunteer.contactNumber}</a>}
                 </div>
               )}
             </div>

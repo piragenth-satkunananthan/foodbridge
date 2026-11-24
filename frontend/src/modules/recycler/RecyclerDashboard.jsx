@@ -91,7 +91,7 @@ function Feed() {
           </form>
           {feed.error && <div className="px-5 pb-5"><ErrorState message={feed.error} onRetry={feed.reload} /></div>}
           {feed.loading && !feed.data ? <Loading /> : items.length === 0 ? <Empty icon={Recycle} title="No compatible requests right now">You'll be notified when matching material is posted in your district.</Empty> : (
-            <div className="list border-t border-[var(--border)]">
+            <div className="list border-t border-[var(--rule)]">
               {items.map((p) => (
                 <div key={p._id} className="row-item">
                   <span className="icon-tile waste"><Recycle size={18} aria-hidden="true" /></span>
@@ -116,7 +116,7 @@ function Feed() {
             {Object.entries(s.materialBreakdown).filter(([, v]) => v.count).map(([k, v]) => (
               <div key={k} className="grid gap-1">
                 <div className="flex justify-between text-sm"><span className="font-semibold">{WASTE_LABEL[k]}</span><span className="num muted">{fmtNum(v.weightKg, 1)} kg · {v.count} batches</span></div>
-                <div style={{ height: 6, borderRadius: 6, background: 'var(--surface-2)' }}><div style={{ height: 6, borderRadius: 6, background: 'var(--accent)', width: `${Math.max(2, (v.weightKg / (s.totalWeightKg || 1)) * 100)}%` }} /></div>
+                <div style={{ height: 6, borderRadius: 6, background: 'var(--sheet-2)' }}><div style={{ height: 6, borderRadius: 6, background: 'var(--terra)', width: `${Math.max(2, (v.weightKg / (s.totalWeightKg || 1)) * 100)}%` }} /></div>
               </div>
             ))}
           </div>

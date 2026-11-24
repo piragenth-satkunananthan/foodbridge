@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, Menu, Sprout, LifeBuoy, CheckCheck } from 'lucide-react';
+import { Bell, LogOut, Sprout, LifeBuoy, CheckCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from '../api/client';
 import { ROLE_LABEL, initials } from '../lib/format';
 import { Button, Empty } from './ui';
+
+export function Wordmark({ to = '/' }) {
+  return <Link to={to} className="wordmark"><Sprout size={24} aria-hidden="true" />FoodBridge</Link>;
+}
 
 function Notifications() {
   const [open, setOpen] = useState(false);
@@ -29,23 +33,24 @@ function Notifications() {
   return (
     <div className="bell" ref={ref}>
       <Button variant="ghost" className="btn-icon" icon={Bell} aria-expanded={open} aria-label={`Notifications, ${data.unreadCount} unread`} onClick={() => setOpen((o) => !o)} />
-      {data.unreadCount > 0 && <span className="bell-dot num" aria-hidden="true">{data.unreadCount > 99 ? '99+' : data.unreadCount}</span>}
+      {data.unreadCount > 0 && <span className="bell-dot" aria-hidden="true">{data.unreadCount > 99 ? '99+' : data.unreadCount}</span>}
       {open && (
         <div className="card popover" role="dialog" aria-label="Notifications">
           <div className="card-head">
-            <h3>Notifications</h3>
+            <h3>Notices</h3>
             {data.unreadCount > 0 && <Button variant="ghost" size="sm" icon={CheckCheck} onClick={readAll}>Mark all read</Button>}
           </div>
-          {data.notifications.length === 0 ? <Empty icon={Bell} title="You're all caught up" /> : (
+          {data.notifications.length === 0 ? <Empty icon={Bell} title="Nothing new" /> : (
             <ul className="list" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {data.notifications.map((n) => (
                 <li key={n._id}>
-                  <button type="button" onClick={() => read(n)} className="row-item w-full text-left" style={{ border: 0, background: 'none', cursor: 'pointer', padding: '12px 16px' }}>
-                    <span aria-hidden="true" style={{ marginTop: 7, width: 7, height: 7, borderRadius: 9, flex: 'none', background: n.readStatus ? 'transparent' : 'var(--primary)' }} />
+                  <button type="button" onClick={() => read(n)} className="row-item w-full text-left" style={{ border: 0, background: 'none', cursor: n.readStatus ? 'default' : 'pointer', padding: '12px 16px' }}>
+                    <span aria-hidden="true" style={{ marginTop: 7, width: 7, height: 7, borderRadius: 9, flex: 'none', background: n.readStatus ? 'transparent' : 'var(--terra)' }} />
                     <span>
                       <span className={`block text-sm ${n.readStatus ? 'muted' : 'font-semibold'}`}>{n.message}</span>
-                      <span className="block text-xs muted mt-1">{new Date(n.createdAt).toLocaleString()}</span>
+                      <span className="block text-xs muted mt-1 mono">{new Date(n.createdAt).toLocaleString()}</span>
                     </span>
+                    {!n.readStatus && <span className="sr-only">Unread — activate to mark as read</span>}
                   </button>
                 </li>
               ))}
@@ -57,50 +62,43 @@ function Notifications() {
   );
 }
 
+const today = new Intl.DateTimeFormat('en-LK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
 export default function AppShell({ nav, children }) {
   const { user, logout } = useAuth();
-  const [navOpen, setNavOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  useEffect(() => setNavOpen(false), [location.pathname]);
   const base = location.pathname.split('/')[1];
+  useEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
   const signOut = () => { logout(); navigate('/login'); };
+  const items = user?.role === 'admin' ? nav : [...nav, { to: `/${base}/support`, label: 'Support', icon: LifeBuoy }];
   return (
-    <div className={`shell ${navOpen ? 'nav-open' : ''}`}>
-      <button className="scrim" aria-label="Close menu" onClick={() => setNavOpen(false)} />
-      <aside className="sidebar" aria-label="Main navigation">
-        <Link to="/" className="brand"><span className="brand-mark"><Sprout size={18} aria-hidden="true" /></span>FoodBridge</Link>
-        <div className="nav-label">{ROLE_LABEL[user?.role]}</div>
-        {nav.map(({ to, label, icon: Icon, end }) => (
-          <NavLink key={to} to={to} end={end} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            <Icon size={18} aria-hidden="true" />{label}
-          </NavLink>
-        ))}
-        {user?.role !== 'admin' && (
-          <>
-            <div className="nav-label">Account</div>
-            <NavLink to={`/${base}/support`} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}><LifeBuoy size={18} aria-hidden="true" />Support & reports</NavLink>
-          </>
-        )}
-        <div className="sidebar-foot">
-          <div className="user-chip">
-            <span className="avatar" aria-hidden="true">{initials(user?.name)}</span>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-bold truncate">{user?.name}</div>
-              <div className="text-xs muted truncate">{user?.district}</div>
+    <>
+      <a href="#main" className="skip">Skip to content</a>
+      <header className="masthead">
+        <div className="wrap">
+          <div className="masthead-top">
+            <Wordmark to={`/${base}`} />
+            <span className="desk">{ROLE_LABEL[user?.role]} desk</span>
+            <div className="flex-1" />
+            <span className="mono text-xs muted hidden lg:inline">{today.format(new Date())} · {user?.district}</span>
+            <Notifications />
+            <div className="user-chip">
+              <span className="avatar" aria-hidden="true">{initials(user?.name)}</span>
+              <span className="hidden md:block text-sm font-semibold max-w-[180px] truncate">{user?.name}</span>
+              <Button variant="ghost" className="btn-icon" icon={LogOut} onClick={signOut} aria-label="Sign out" title="Sign out" />
             </div>
-            <Button variant="ghost" className="btn-icon" icon={LogOut} onClick={signOut} aria-label="Sign out" />
           </div>
+          <nav className="masthead-nav" aria-label="Sections">
+            {items.map(({ to, label, icon: Icon, end }) => (
+              <NavLink key={to} to={to} end={end} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <Icon size={16} aria-hidden="true" />{label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
-      </aside>
-      <div className="main">
-        <header className="topbar">
-          <Button variant="ghost" className="btn-icon menu-btn" icon={Menu} onClick={() => setNavOpen(true)} aria-label="Open menu" />
-          <div className="flex-1" />
-          <Notifications />
-        </header>
-        <main className="content" id="main">{children}</main>
-      </div>
-    </div>
+      </header>
+      <main className="content" id="main">{children}</main>
+    </>
   );
 }
