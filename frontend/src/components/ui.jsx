@@ -51,6 +51,7 @@ const MODULE = {
 export function PageHead({ title, subtitle, children }) {
   const { user } = useAuth();
   const role = useLocation().pathname.split('/')[1];
+  useEffect(() => { document.title = `${title} · FoodBridge`; }, [title]);
   return (
     <div className="page-head">
       <div>
@@ -89,7 +90,7 @@ export function Empty({ icon: Icon = Inbox, title, children, action }) {
   return (
     <div className="empty">
       <Icon size={32} aria-hidden="true" />
-      <h3>{title}</h3>
+      <h2>{title}</h2>
       {children && <p>{children}</p>}
       {action && <div className="mt-2">{action}</div>}
     </div>
@@ -122,6 +123,7 @@ export function Modal({ open, onClose, title, children, footer, wide }) {
     if (!open || !dialog) return;
     const previous = document.activeElement;
     dialog.showModal();
+    dialog.querySelector('.modal-body :is(input:not([type=hidden]):not([disabled]), select, textarea)')?.focus();
     return () => { dialog.close(); previous?.focus?.(); };
   }, [open]);
   if (!open) return null;

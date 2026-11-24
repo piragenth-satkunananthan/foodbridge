@@ -15,6 +15,8 @@ export default function Header() {
   }, [pathname]);
 
   return (
+    <>
+    <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-emerald-700 focus:text-white focus:text-sm focus:font-semibold">Skip to main content</a>
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand Logo */}
@@ -34,18 +36,18 @@ export default function Header() {
 
         {/* Desktop Nav Links */}
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
-          <a href="/#how-it-works" className="hover:text-emerald-800 transition-colors">
+          <Link to="/#how-it-works" className="py-2 hover:text-emerald-800 transition-colors">
             How It Works
-          </a>
-          <a href="/#portals" className="hover:text-emerald-800 transition-colors">
+          </Link>
+          <Link to="/#portals" className="py-2 hover:text-emerald-800 transition-colors">
             5 Portals
-          </a>
-          <a href="/#districts" className="hover:text-emerald-800 transition-colors">
+          </Link>
+          <Link to="/#districts" className="py-2 hover:text-emerald-800 transition-colors">
             25 Districts
-          </a>
+          </Link>
           <Link
             to="/impact"
-            className={`transition-colors ${
+            className={`py-2 transition-colors ${
               pathname === '/impact' ? 'text-emerald-800 font-semibold' : 'hover:text-emerald-800'
             }`}
           >
@@ -74,7 +76,7 @@ export default function Header() {
                   logout();
                   navigate('/login');
                 }}
-                className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
                 title="Sign out"
               >
                 <LogOut size={16} />
@@ -114,15 +116,15 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
           <nav className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-            <a href="/#how-it-works" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-50">
+            <Link to="/#how-it-works" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-50">
               How It Works
-            </a>
-            <a href="/#portals" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-50">
+            </Link>
+            <Link to="/#portals" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-50">
               5 Portals
-            </a>
-            <a href="/#districts" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-50">
+            </Link>
+            <Link to="/#districts" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-50">
               25 Districts
-            </a>
+            </Link>
             <Link to="/impact" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-50">
               Public Impact
             </Link>
@@ -136,7 +138,7 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full py-2.5 rounded-lg bg-emerald-700 text-white font-semibold text-xs text-center shadow-xs"
                 >
-                  Open {user.role.toUpperCase()} Portal
+                  Open {user.role} portal
                 </Link>
                 <button
                   onClick={() => {
@@ -171,5 +173,6 @@ export default function Header() {
         </div>
       )}
     </header>
+    </>
   );
 }

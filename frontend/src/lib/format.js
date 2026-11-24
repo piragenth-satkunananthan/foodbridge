@@ -55,7 +55,7 @@ export function timeLeft(deadline) {
   if (!Number.isFinite(ms)) return '—';
   if (ms <= 0) return 'Deadline passed';
   const h = Math.floor(ms / 3600000);
-  if (h >= 48) return `${Math.floor(h / 24)} days left`;
+  if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h left`;
   if (h >= 1) return `${h}h ${Math.floor((ms % 3600000) / 60000)}m left`;
   return `${Math.max(1, Math.floor(ms / 60000))}m left`;
 }

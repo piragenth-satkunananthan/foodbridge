@@ -18,6 +18,8 @@
 .auth-page { display: flex; justify-content: center; align-items: flex-start; min-height: calc(100vh - 64px); padding: 48px 20px 72px; background: #f8fafc; }
 .auth-card { width: min(480px, 100%); background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05); }
 .auth-intro { margin-bottom: 24px; }
+.auth-card form { display: grid; gap: 18px; }
+.auth-card form .auth-submit { justify-self: start; margin-top: 4px; }
 .auth-intro h1 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: #0f172a; margin-bottom: 6px; }
 .auth-intro p { font-size: 14px; color: #475569; }
 .auth-intro a { color: var(--primary, #047857); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }

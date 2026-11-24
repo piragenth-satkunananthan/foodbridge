@@ -23,7 +23,7 @@ export default function RegisterPage() {
     finally { setSubmitting(false); }
   };
   return (
-    <main className="auth-page">
+    <main id="main" className="auth-page">
       <div className="fb-card auth-card">
         <div className="auth-intro">
           <h1>Create your account</h1>
@@ -57,7 +57,8 @@ export default function RegisterPage() {
               type="password"
               autoComplete="new-password"
               required
-              hint="At least 6 characters."
+              minLength={8}
+              hint="At least 8 characters."
               value={form.password}
               onChange={change}
             />
@@ -97,7 +98,7 @@ export default function RegisterPage() {
               onChange={change}
             />
             {['recipient', 'recycler'].includes(form.role) && (
-              <p className="auth-role-note">Organisation accounts require admin verification. Requests and claims are not yet available in these dashboards.</p>
+              <p className="auth-role-note">Next you'll complete your organisation profile. An administrator verifies it before you can claim posts.</p>
             )}
             <Button type="submit" variant="primary" className="auth-submit" disabled={submitting}>
               {submitting ? 'Creating account…' : 'Create account'}

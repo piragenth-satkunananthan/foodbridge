@@ -35,7 +35,7 @@ export function Notifications() {
       {open && (
         <div role="dialog" aria-label="Notifications" className="absolute right-0 top-full mt-2 w-[min(380px,calc(100vw-24px))] max-h-[460px] overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-xl z-50">
           <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-slate-900">Notifications</h3>
+            <h2 className="text-sm font-bold text-slate-900">Notifications</h2>
             {data.unreadCount > 0 && <button type="button" onClick={readAll} className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800 px-2 py-1.5 rounded-md hover:bg-emerald-50 cursor-pointer"><CheckCheck size={14} aria-hidden="true" />Mark all read</button>}
           </div>
           {data.notifications.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">You're all caught up.</p> : (
@@ -46,7 +46,7 @@ export function Notifications() {
                     <span aria-hidden="true" className={`mt-1.5 w-2 h-2 rounded-full flex-none ${n.readStatus ? 'bg-transparent' : 'bg-emerald-600'}`} />
                     <span>
                       <span className={`block text-sm ${n.readStatus ? 'text-slate-500' : 'text-slate-900 font-semibold'}`}>{n.message}</span>
-                      <span className="block text-xs text-slate-400 mt-1">{new Date(n.createdAt).toLocaleString()}</span>
+                      <span className="block text-xs text-slate-500 mt-1">{new Date(n.createdAt).toLocaleString()}</span>
                     </span>
                     {!n.readStatus && <span className="sr-only">Unread — activate to mark as read</span>}
                   </button>
@@ -65,7 +65,6 @@ export default function AppShell({ nav, children }) {
   const { user } = useAuth();
   const location = useLocation();
   const base = location.pathname.split('/')[1];
-  useEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
   const items = user?.role === 'admin' ? nav : [...nav, { to: `/${base}/support`, label: 'Support', icon: LifeBuoy }];
   return (
     <main className="portal" id="main">

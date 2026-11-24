@@ -27,7 +27,7 @@ export default function LandingPage() {
   useEffect(() => { if (pathname === '/impact') loadImpact(); }, [pathname]);
   if (pathname === '/') return <HomePage />;
   return (
-    <main className="main-content impact-page">
+    <main id="main" className="main-content impact-page">
       <section aria-labelledby="impact-title">
         <div className="report-heading">
           <div>

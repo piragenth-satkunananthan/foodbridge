@@ -30,39 +30,39 @@ export default function Footer() {
               <MapPin size={12} className="text-emerald-700 shrink-0" />
               <span>Active across 25 Sri Lankan Districts</span>
             </div>
-            <p className="text-xs text-slate-400 pt-1">
+            <p className="text-xs text-slate-500 pt-1">
               &copy; {new Date().getFullYear()} FoodBridge. Open Civic Infrastructure.
             </p>
           </div>
 
           {/* Portals & Roles */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900">
               Community Portals
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-600">
+            </h2>
+            <ul className="space-y-0.5 text-xs text-slate-600">
               <li>
-                <Link to="/donor" className="hover:text-emerald-700 transition-colors">
+                <Link to="/donor" className="inline-flex items-center min-h-7 hover:text-emerald-700 transition-colors">
                   Commercial Food Donors
                 </Link>
               </li>
               <li>
-                <Link to="/recipient" className="hover:text-emerald-700 transition-colors">
+                <Link to="/recipient" className="inline-flex items-center min-h-7 hover:text-emerald-700 transition-colors">
                   Verified Charities &amp; Shelters
                 </Link>
               </li>
               <li>
-                <Link to="/recycler" className="hover:text-emerald-700 transition-colors">
+                <Link to="/recycler" className="inline-flex items-center min-h-7 hover:text-emerald-700 transition-colors">
                   Circular Recyclers &amp; Composters
                 </Link>
               </li>
               <li>
-                <Link to="/volunteer" className="hover:text-emerald-700 transition-colors">
+                <Link to="/volunteer" className="inline-flex items-center min-h-7 hover:text-emerald-700 transition-colors">
                   Volunteer Courier Logistics
                 </Link>
               </li>
               <li>
-                <Link to="/admin" className="hover:text-emerald-700 transition-colors">
+                <Link to="/admin" className="inline-flex items-center min-h-7 hover:text-emerald-700 transition-colors">
                   Administrative Governance
                 </Link>
               </li>
@@ -71,27 +71,27 @@ export default function Footer() {
 
           {/* Standards & Protocols */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900">
               Food Safety Standards
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-600">
+            </h2>
+            <ul className="space-y-0.5 text-xs text-slate-600">
               <li>
-                <a href="/#how-it-works" className="hover:text-emerald-700 transition-colors">
+                <Link to="/#how-it-works" className="inline-flex items-center min-h-7 hover:text-emerald-700 transition-colors">
                   4-Stage Custody Protocol
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#streams" className="hover:text-emerald-700 transition-colors">
+                <Link to="/#streams" className="inline-flex items-center min-h-7 hover:text-emerald-700 transition-colors">
                   Dual-Stream Separation
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#districts" className="hover:text-emerald-700 transition-colors">
+                <Link to="/#districts" className="inline-flex items-center min-h-7 hover:text-emerald-700 transition-colors">
                   District Proximity Radius
-                </a>
+                </Link>
               </li>
               <li>
-                <Link to="/impact" className="hover:text-emerald-700 transition-colors">
+                <Link to="/impact" className="inline-flex items-center min-h-7 hover:text-emerald-700 transition-colors">
                   Audited Ledger &amp; Public Feed
                 </Link>
               </li>
@@ -100,9 +100,9 @@ export default function Footer() {
 
           {/* Platform Truth & Audit Guarantee */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900">
               Anti-Greenwashing Pledge
-            </h4>
+            </h2>
             <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-900">
                 <ShieldCheck size={15} className="text-emerald-700 shrink-0" />
@@ -114,7 +114,7 @@ export default function Footer() {
             </div>
             <Link
               to="/impact"
-              className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 underline underline-offset-4"
+              className="inline-flex items-center gap-1 min-h-7 text-xs font-bold text-emerald-700 hover:text-emerald-800 underline underline-offset-4"
             >
               <FileText size={13} />
               <span>View Public Ledger</span>

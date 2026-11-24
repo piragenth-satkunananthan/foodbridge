@@ -21,7 +21,7 @@ export default function LoginPage() {
     finally { setSubmitting(false); }
   };
   return (
-    <main className="auth-page">
+    <main id="main" className="auth-page">
       <div className="fb-card auth-card">
         <div className="auth-intro">
           <h1>Sign in</h1>

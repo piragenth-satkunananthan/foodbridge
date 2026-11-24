@@ -158,7 +158,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50/40 text-slate-900">
+    <main id="main" className="min-h-screen bg-slate-50/40 text-slate-900">
       {/* 1. Hero Section (Option A: The Public Record Office Civic Architecture) */}
       <section className="relative pt-10 pb-16 lg:pt-14 lg:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
@@ -228,9 +228,9 @@ export default function HomePage() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#3c7959] block mb-1">
                   Community Directory
                 </span>
-                <h3 className="text-xl font-black text-[#163e32] tracking-tight">
+                <h2 className="text-xl font-black text-[#163e32] tracking-tight">
                   Select Your Role to Enter
-                </h3>
+                </h2>
                 <p className="text-xs text-[#48675c] mt-0.5">
                   Direct entry into specialized logistics and coordination portals
                 </p>
@@ -430,7 +430,7 @@ export default function HomePage() {
             <div className="pt-5 mt-6 border-t border-slate-100">
               <Link
                 to="/donor"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+                className="inline-flex items-center gap-1.5 min-h-7 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
               >
                 <span>Post Edible Surplus</span>
                 <ArrowRight size={14} />
@@ -473,7 +473,7 @@ export default function HomePage() {
             <div className="pt-5 mt-6 border-t border-slate-100">
               <Link
                 to="/recycler"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 hover:text-amber-800"
+                className="inline-flex items-center gap-1.5 min-h-7 text-xs font-semibold text-amber-700 hover:text-amber-800"
               >
                 <span>Explore Recycler Network</span>
                 <ArrowRight size={14} />
@@ -499,7 +499,7 @@ export default function HomePage() {
             <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center border border-slate-200/60">
               01
             </div>
-            <h4 className="font-bold text-base text-slate-900">List Surplus</h4>
+            <h3 className="font-bold text-base text-slate-900">List Surplus</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               Donors input food details, portion quantities, preparation time, and storage temperature in seconds.
             </p>
@@ -509,7 +509,7 @@ export default function HomePage() {
             <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center border border-slate-200/60">
               02
             </div>
-            <h4 className="font-bold text-base text-slate-900">Smart Proximity Match</h4>
+            <h3 className="font-bold text-base text-slate-900">Smart Proximity Match</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               The matching algorithm automatically alerts the closest verified shelter with matching refrigerator space.
             </p>
@@ -519,7 +519,7 @@ export default function HomePage() {
             <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center border border-slate-200/60">
               03
             </div>
-            <h4 className="font-bold text-base text-slate-900">Volunteer Courier Run</h4>
+            <h3 className="font-bold text-base text-slate-900">Volunteer Courier Run</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               A community courier accepts the route, picks up the insulated containers, and transports them safely.
             </p>
@@ -529,7 +529,7 @@ export default function HomePage() {
             <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center border border-slate-200/60">
               04
             </div>
-            <h4 className="font-bold text-base text-slate-900">Receipt Sign-Off</h4>
+            <h3 className="font-bold text-base text-slate-900">Receipt Sign-Off</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               The receiving shelter inspects the food condition and confirms digital sign-off, closing the loop.
             </p>
@@ -625,26 +625,26 @@ export default function HomePage() {
           {/* Selected District Info Card (Database-Backed) */}
           <div className="bg-slate-50/80 rounded-xl p-6 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-4 gap-6 text-center sm:text-left">
             <div>
-              <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Active Cluster</span>
-              <h4 className="text-base font-bold text-slate-900">{selectedDistrict.name} Hub</h4>
+              <span className="text-[11px] font-bold uppercase text-slate-500 block mb-1">Active Cluster</span>
+              <h3 className="text-base font-bold text-slate-900">{selectedDistrict.name} Hub</h3>
               <p className="text-xs text-slate-500 mt-1">{selectedDistrict.hubs}</p>
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Verified Charities</span>
+              <span className="text-[11px] font-bold uppercase text-slate-500 block mb-1">Verified Charities</span>
               <div className="text-2xl font-bold tabular-nums text-emerald-800">
                 {districtStats[selectedDistrict.name]?.organizations || 0}
               </div>
               <p className="text-xs text-slate-500 mt-1">Active registered partners</p>
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Active Couriers</span>
+              <span className="text-[11px] font-bold uppercase text-slate-500 block mb-1">Active Couriers</span>
               <div className="text-2xl font-bold tabular-nums text-indigo-700">
                 {districtStats[selectedDistrict.name]?.volunteers || 0}
               </div>
               <p className="text-xs text-slate-500 mt-1">Community transit fleet</p>
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Surplus Dispatched</span>
+              <span className="text-[11px] font-bold uppercase text-slate-500 block mb-1">Surplus Dispatched</span>
               <div className="text-2xl font-bold tabular-nums text-slate-900">
                 {districtStats[selectedDistrict.name]?.donations || 0}
               </div>
@@ -670,7 +670,7 @@ export default function HomePage() {
 
         <div className="bg-white rounded-xl border border-slate-200/90 p-6 shadow-xs max-w-3xl mx-auto space-y-3">
           {loadingFeed ? (
-            <div className="py-8 text-center text-xs text-slate-400">Loading live activity feed from database...</div>
+            <div className="py-8 text-center text-xs text-slate-500">Loading live activity feed from database...</div>
           ) : liveFeed.length === 0 ? (
             <div className="py-8 text-center text-xs text-slate-500">
               No recent public milestones recorded yet today. Active deliveries appear here once completed.
@@ -703,7 +703,7 @@ export default function HomePage() {
                   }`}>
                     {item.status ? item.status.toUpperCase() : 'RECORDED'}
                   </span>
-                  <div className="text-[10px] text-slate-400 mt-1">
+                  <div className="text-[11px] text-slate-500 mt-1">
                     {item.createdAt ? new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recently'}
                   </div>
                 </div>
@@ -734,7 +734,7 @@ export default function HomePage() {
                 <span>{faq.q}</span>
                 <ChevronDown
                   size={16}
-                  className={`text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`}
+                  className={`text-slate-500 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`}
                 />
               </button>
               {openFaq === idx && (
@@ -773,6 +773,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-    </div>
+    </main>
   );
 }
