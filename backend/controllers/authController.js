@@ -73,6 +73,9 @@ const registerUser = async (req, res) => {
       token: generateToken(user._id, user.role)
     });
   } catch (error) {
+    // Unique index catches the race the findOne pre-check cannot.
+    if (error.code === 11000)
+      return res.status(400).json({ message: 'Email is already registered' });
     res.status(error.status || 500).json({
       message: error.status
         ? error.message

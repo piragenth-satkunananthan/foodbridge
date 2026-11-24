@@ -13,6 +13,7 @@ const {
   parseWeightKg,
   confirmedFilter
 } = require('./impactController');
+const { literalRegex } = require('../utils/domain');
 
 // ==========================================
 // 1. DASHBOARD & STATS
@@ -163,7 +164,7 @@ const getAdminStats = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -190,8 +191,8 @@ const getOrganizations = async (req, res) => {
     }
     if (search) {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { registrationInfo: { $regex: search, $options: 'i' } }
+        { name: { $regex: literalRegex(search), $options: 'i' } },
+        { registrationInfo: { $regex: literalRegex(search), $options: 'i' } }
       ];
     }
 
@@ -205,7 +206,7 @@ const getOrganizations = async (req, res) => {
 
     res.json(organizations);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -243,7 +244,7 @@ const getOrganizationById = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -269,6 +270,19 @@ const verifyOrganization = async (req, res) => {
       const current = await Organization.findById(organization._id).session(
         session
       );
+      if (
+        verificationStatus === 'rejected' &&
+        (await Pickup.exists({
+          receivingOrganization: current._id,
+          active: true
+        }).session(session))
+      ) {
+        const error = new Error(
+          'Release this organization\'s active claims before rejecting it'
+        );
+        error.status = 409;
+        throw error;
+      }
       current.verificationStatus = verificationStatus;
       current.verificationRemarks = remarks || '';
       current.verifiedAt = new Date();
@@ -294,7 +308,7 @@ const verifyOrganization = async (req, res) => {
       organization
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -313,11 +327,11 @@ const getAllDonations = async (req, res) => {
     if (status && status !== 'all') filter.status = status;
     if (district && district !== 'all') filter.district = district;
     if (foodType && foodType !== 'all')
-      filter.foodType = { $regex: foodType, $options: 'i' };
+      filter.foodType = { $regex: literalRegex(foodType), $options: 'i' };
     if (search) {
       filter.$or = [
-        { foodType: { $regex: search, $options: 'i' } },
-        { specialInstructions: { $regex: search, $options: 'i' } }
+        { foodType: { $regex: literalRegex(search), $options: 'i' } },
+        { specialInstructions: { $regex: literalRegex(search), $options: 'i' } }
       ];
     }
 
@@ -328,7 +342,7 @@ const getAllDonations = async (req, res) => {
 
     res.json(donations);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -344,7 +358,7 @@ const getAllWasteRequests = async (req, res) => {
     if (status && status !== 'all') filter.status = status;
     if (district && district !== 'all') filter.district = district;
     if (search) {
-      filter.quantity = { $regex: search, $options: 'i' };
+      filter.quantity = { $regex: literalRegex(search), $options: 'i' };
     }
 
     const wasteRequests = await WasteRequest.find(filter)
@@ -354,7 +368,7 @@ const getAllWasteRequests = async (req, res) => {
 
     res.json(wasteRequests);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -385,7 +399,7 @@ const getAllPickups = async (req, res) => {
 
     res.json(pickups);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -408,9 +422,9 @@ const getAllUsers = async (req, res) => {
       filter.verificationStatus = verificationStatus;
     if (search) {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { contactNumber: { $regex: search, $options: 'i' } }
+        { name: { $regex: literalRegex(search), $options: 'i' } },
+        { email: { $regex: literalRegex(search), $options: 'i' } },
+        { contactNumber: { $regex: literalRegex(search), $options: 'i' } }
       ];
     }
 
@@ -421,7 +435,7 @@ const getAllUsers = async (req, res) => {
 
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -473,7 +487,7 @@ const updateUserStatus = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 
@@ -500,7 +514,7 @@ const deleteUser = async (req, res) => {
       message: 'Account disabled; transaction and organization history retained'
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.status || 500).json({ message: error.message });
   }
 };
 

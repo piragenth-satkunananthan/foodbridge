@@ -1,9 +1,6 @@
 const WasteRequest = require('../models/WasteRequest');
 const Organization = require('../models/Organization');
 const Pickup = require('../models/Pickup');
-const User = require('../models/User');
-const { createNotification } = require('../utils/notificationService');
-const { getDistrictDistanceKm } = require('../utils/distanceUtils');
 const {
   WASTE_STREAMS,
   parseWasteWeightKg,
@@ -12,14 +9,6 @@ const {
   rankEligibleCollectors
 } = require('../utils/wasteClassifier');
 
-const validCategories = new Set([
-  'plastic',
-  'glass',
-  'paper',
-  'metal',
-  'organic',
-  'non_recyclable'
-]);
 
 // =========================================================================
 // 1. Smart Waste Classification & Category-to-Pathway Routing (Module 3)
@@ -68,7 +57,7 @@ const getWasteRequests = endpoint(async (req, res) => {
     query.status = req.query.status;
   if (req.query.category && req.query.category !== 'all')
     query.wasteCategory = req.query.category;
-  if (req.query.search)
+  else if (req.query.search)
     query.wasteCategory = {
       $regex: literalRegex(req.query.search),
       $options: 'i'
@@ -333,28 +322,35 @@ const getEligibleCollectorsForWaste = endpoint(async (req, res) => {
 });
 
 const getWasteCertificate = endpoint(async (req, res) => {
-  const wasteRequest = await WasteRequest.findById(req.params.id).populate('donor', 'name district contactNumber');
+  const wasteRequest = await WasteRequest.findById(req.params.id);
   if (!wasteRequest) fail(404, 'Waste request not found');
-
-  const pickup = await Pickup.findOne({ wasteRequest: wasteRequest._id }).populate('receivingOrganization');
-  const org = pickup?.receivingOrganization || (wasteRequest.claimedBy ? await Organization.findById(wasteRequest.claimedBy) : null);
-
+  if (!(await canReadPost(wasteRequest, req.user, 'wasteRequest')))
+    fail(403, 'Not a participant in this waste request');
+  // Only an organization-confirmed outcome produces a record; nothing is defaulted.
+  const pickup = await Pickup.findOne({
+    wasteRequest: wasteRequest._id,
+    statusPipeline: 'completed',
+    completionConfirmedAt: { $type: 'date' }
+  }).populate('receivingOrganization', 'name district registrationInfo');
+  if (wasteRequest.status !== 'completed' || !pickup)
+    fail(409, 'A processing record exists only after confirmed processing');
+  await wasteRequest.populate('donor', 'name');
+  const org = pickup.receivingOrganization;
   res.json({
     success: true,
     certificate: {
       certificateId: `FB-DIV-${String(wasteRequest._id).slice(-6).toUpperCase()}`,
-      issuedAt: wasteRequest.processedAt || pickup?.completedAt || wasteRequest.updatedAt,
-      donorName: wasteRequest.donor?.name || 'Verified FoodBridge Donor',
-      donorDistrict: wasteRequest.district || 'Colombo',
-      facilityName: org?.name || 'Authorized Recycling Partner',
-      facilityLicense: org?.registrationInfo || 'LIC-REC-CERTIFIED',
-      facilityDistrict: org?.district || wasteRequest.district || 'Colombo',
+      recordType: 'organization-reported processing outcome',
+      issuedAt: pickup.completionConfirmedAt,
+      donorName: wasteRequest.donor?.name || null,
+      donorDistrict: wasteRequest.district,
+      facilityName: org?.name || null,
+      facilityLicense: org?.registrationInfo || null,
+      facilityDistrict: org?.district || null,
       wasteCategory: wasteRequest.wasteCategory,
       quantity: wasteRequest.quantity,
-      amount: wasteRequest.amount || 0,
-      unit: wasteRequest.unit || 'kg',
-      processingOutcome: wasteRequest.processingOutcome || 'recycled',
-      processingNotes: wasteRequest.processingNotes || 'Processed per registered facility diversion guidelines',
+      processingOutcome: wasteRequest.processingOutcome,
+      processingNotes: wasteRequest.processingNotes,
       status: wasteRequest.status
     }
   });

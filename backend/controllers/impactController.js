@@ -132,39 +132,36 @@ const recordMonthlySnapshot = endpoint(async (req, res) => {
 const getLiveFeed = endpoint(async (req, res) => {
   const [recentDonations, recentWaste] = await Promise.all([
     Donation.find({ isDemo: { $ne: true } })
-      .populate('donor', 'name district')
       .sort({ createdAt: -1 })
       .limit(6)
       .lean(),
     WasteRequest.find({ isDemo: { $ne: true } })
-      .populate('donor', 'name district')
       .sort({ createdAt: -1 })
       .limit(6)
       .lean()
   ]);
 
   const items = [
+    // Public, unauthenticated feed: no donor identities and no invented fallbacks.
     ...recentDonations.map((d) => ({
       id: d._id,
       type: 'food',
       itemTitle: d.foodType,
       quantity: d.quantity,
-      origin: d.donor?.name || 'Commercial Donor',
-      district: d.district || 'Colombo',
+      district: d.district,
       status: d.status,
-      spec: d.storageCondition ? `${d.storageCondition.toUpperCase()} storage` : 'Ambient',
+      storageCondition: d.storageCondition,
       createdAt: d.createdAt,
       deadline: d.pickupDeadline
     })),
     ...recentWaste.map((w) => ({
       id: w._id,
       type: 'waste',
-      itemTitle: `${w.wasteCategory.toUpperCase()} Recovery`,
+      itemTitle: w.wasteCategory,
       quantity: w.quantity,
-      origin: w.donor?.name || 'Commercial Donor',
-      district: w.district || 'Colombo',
+      district: w.district,
       status: w.status,
-      spec: `Category: ${w.wasteCategory}`,
+      wasteCategory: w.wasteCategory,
       createdAt: w.createdAt,
       deadline: w.pickupDeadline
     }))

@@ -46,8 +46,8 @@ router.get('/:id', getPickupById);
 
 // @route   POST /api/pickups/:id/accept
 // @desc    Volunteer accepts an open pickup assignment
-// @access  Private (Volunteer, Admin)
-router.post('/:id/accept', authorize('volunteer', 'admin'), acceptPickupJob);
+// @access  Private (Volunteer) — an admin must not become the courier of record
+router.post('/:id/accept', authorize('volunteer'), acceptPickupJob);
 
 // @route   PUT /api/pickups/:id/status
 // @desc    Advance status milestone (picked_up -> delivered_or_recycled -> completed)

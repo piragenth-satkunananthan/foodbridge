@@ -153,7 +153,14 @@ async function notifyPosted(post, kind, session) {
     .select('_id')
     .session(session);
   await queueNotifications(
-    [post.donor, ...users.map((u) => u._id)],
+    [post.donor],
+    'Your surplus post is live and visible to matching organizations.',
+    kind,
+    post._id,
+    session
+  );
+  await queueNotifications(
+    users.map((u) => u._id).filter((id) => !sameId(id, post.donor)),
     'A new surplus post is available in your district.',
     kind,
     post._id,

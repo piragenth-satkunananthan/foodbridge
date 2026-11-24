@@ -242,6 +242,21 @@ async function cancelAssignment(id, user, body = {}) {
     source.activePickup = replacement._id;
     await source.save({ session });
     await notify(result, session);
+    const volunteers = await User.find({
+      role: 'volunteer',
+      status: 'active',
+      district: source.district,
+      _id: { $ne: pickup.volunteer }
+    })
+      .select('_id')
+      .session(session);
+    await queueNotifications(
+      volunteers.map((u) => u._id),
+      'A released pickup needs a volunteer in your district.',
+      'pickup',
+      replacement._id,
+      session
+    );
     return result;
   });
   return result;
@@ -304,6 +319,14 @@ async function expireOverdue() {
         source.statusHistory.push({ status: 'expired', timestamp: new Date() });
         await source.save({ session });
         if (pickup) await notify({ pickup, source }, session);
+        else
+          await queueNotifications(
+            [source.donor],
+            'Your surplus post expired before it was claimed.',
+            kind,
+            source._id,
+            session
+          );
         return pickup ? { pickup, source } : null;
       });
     }
