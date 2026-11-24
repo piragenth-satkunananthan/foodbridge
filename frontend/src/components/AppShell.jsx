@@ -1,16 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LogOut, Sprout, LifeBuoy, CheckCheck } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Bell, CheckCheck, LifeBuoy } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from '../api/client';
-import { ROLE_LABEL, initials } from '../lib/format';
-import { Button, Empty } from './ui';
 
-export function Wordmark({ to = '/' }) {
-  return <Link to={to} className="wordmark"><Sprout size={24} aria-hidden="true" />FoodBridge</Link>;
-}
-
-function Notifications() {
+/** Bell + dropdown, styled like the original header controls. Used by Header for every signed-in role. */
+export function Notifications() {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState({ notifications: [], unreadCount: 0 });
   const ref = useRef(null);
@@ -31,24 +26,27 @@ function Notifications() {
   const read = async (n) => { if (!n.readStatus) { await markNotificationRead(n._id).catch(() => {}); load(); } };
   const readAll = async () => { await markAllNotificationsRead().catch(() => {}); load(); };
   return (
-    <div className="bell" ref={ref}>
-      <Button variant="ghost" className="btn-icon" icon={Bell} aria-expanded={open} aria-label={`Notifications, ${data.unreadCount} unread`} onClick={() => setOpen((o) => !o)} />
-      {data.unreadCount > 0 && <span className="bell-dot" aria-hidden="true">{data.unreadCount > 99 ? '99+' : data.unreadCount}</span>}
+    <div className="relative" ref={ref}>
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={`Notifications, ${data.unreadCount} unread`}
+        className="relative p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer">
+        <Bell size={18} aria-hidden="true" />
+        {data.unreadCount > 0 && <span aria-hidden="true" className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold leading-[18px] text-center">{data.unreadCount > 99 ? '99+' : data.unreadCount}</span>}
+      </button>
       {open && (
-        <div className="card popover" role="dialog" aria-label="Notifications">
-          <div className="card-head">
-            <h3>Notices</h3>
-            {data.unreadCount > 0 && <Button variant="ghost" size="sm" icon={CheckCheck} onClick={readAll}>Mark all read</Button>}
+        <div role="dialog" aria-label="Notifications" className="absolute right-0 top-full mt-2 w-[min(380px,calc(100vw-24px))] max-h-[460px] overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-xl z-50">
+          <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-100">
+            <h3 className="text-sm font-bold text-slate-900">Notifications</h3>
+            {data.unreadCount > 0 && <button type="button" onClick={readAll} className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-800 px-2 py-1.5 rounded-md hover:bg-emerald-50 cursor-pointer"><CheckCheck size={14} aria-hidden="true" />Mark all read</button>}
           </div>
-          {data.notifications.length === 0 ? <Empty icon={Bell} title="Nothing new" /> : (
-            <ul className="list" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          {data.notifications.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">You're all caught up.</p> : (
+            <ul className="divide-y divide-slate-100">
               {data.notifications.map((n) => (
                 <li key={n._id}>
-                  <button type="button" onClick={() => read(n)} className="row-item w-full text-left" style={{ border: 0, background: 'none', cursor: n.readStatus ? 'default' : 'pointer', padding: '12px 16px' }}>
-                    <span aria-hidden="true" style={{ marginTop: 7, width: 7, height: 7, borderRadius: 9, flex: 'none', background: n.readStatus ? 'transparent' : 'var(--terra)' }} />
+                  <button type="button" onClick={() => read(n)} className={`w-full flex gap-3 text-left px-4 py-3 hover:bg-slate-50 ${n.readStatus ? 'cursor-default' : 'cursor-pointer'}`}>
+                    <span aria-hidden="true" className={`mt-1.5 w-2 h-2 rounded-full flex-none ${n.readStatus ? 'bg-transparent' : 'bg-emerald-600'}`} />
                     <span>
-                      <span className={`block text-sm ${n.readStatus ? 'muted' : 'font-semibold'}`}>{n.message}</span>
-                      <span className="block text-xs muted mt-1 mono">{new Date(n.createdAt).toLocaleString()}</span>
+                      <span className={`block text-sm ${n.readStatus ? 'text-slate-500' : 'text-slate-900 font-semibold'}`}>{n.message}</span>
+                      <span className="block text-xs text-slate-400 mt-1">{new Date(n.createdAt).toLocaleString()}</span>
                     </span>
                     {!n.readStatus && <span className="sr-only">Unread — activate to mark as read</span>}
                   </button>
@@ -62,43 +60,23 @@ function Notifications() {
   );
 }
 
-const today = new Intl.DateTimeFormat('en-LK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-
+/** Dashboard wrapper: original-style pill tabs for the role's sections, then the page. Header/Footer live in App. */
 export default function AppShell({ nav, children }) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const base = location.pathname.split('/')[1];
   useEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
-  const signOut = () => { logout(); navigate('/login'); };
   const items = user?.role === 'admin' ? nav : [...nav, { to: `/${base}/support`, label: 'Support', icon: LifeBuoy }];
   return (
-    <>
-      <a href="#main" className="skip">Skip to content</a>
-      <header className="masthead">
-        <div className="wrap">
-          <div className="masthead-top">
-            <Wordmark to={`/${base}`} />
-            <span className="desk">{ROLE_LABEL[user?.role]} desk</span>
-            <div className="flex-1" />
-            <span className="mono text-xs muted hidden lg:inline">{today.format(new Date())} · {user?.district}</span>
-            <Notifications />
-            <div className="user-chip">
-              <span className="avatar" aria-hidden="true">{initials(user?.name)}</span>
-              <span className="hidden md:block text-sm font-semibold max-w-[180px] truncate">{user?.name}</span>
-              <Button variant="ghost" className="btn-icon" icon={LogOut} onClick={signOut} aria-label="Sign out" title="Sign out" />
-            </div>
-          </div>
-          <nav className="masthead-nav" aria-label="Sections">
-            {items.map(({ to, label, icon: Icon, end }) => (
-              <NavLink key={to} to={to} end={end} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                <Icon size={16} aria-hidden="true" />{label}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-      </header>
-      <main className="content" id="main">{children}</main>
-    </>
+    <main className="portal" id="main">
+      <nav className="portal-tabs" aria-label="Sections">
+        {items.map(({ to, label, icon: Icon, end }) => (
+          <NavLink key={to} to={to} end={end} className={({ isActive }) => `portal-tab ${isActive ? 'active' : ''}`}>
+            <Icon size={15} aria-hidden="true" />{label}
+          </NavLink>
+        ))}
+      </nav>
+      {children}
+    </main>
   );
 }

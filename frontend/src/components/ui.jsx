@@ -1,5 +1,7 @@
 import React, { useEffect, useId, useRef } from 'react';
-import { AlertTriangle, Inbox, X } from 'lucide-react';
+import { AlertTriangle, Inbox, MapPin, X } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { statusInfo, PIPELINE } from '../lib/format';
 
 export function Button({ variant = 'primary', size, icon: Icon, loading, children, className = '', ...props }) {
@@ -38,10 +40,23 @@ export function Stat({ icon: Icon, label, value, note }) {
   );
 }
 
+const MODULE = {
+  donor: 'Module 1 • Donor surplus portal',
+  recipient: 'Module 2 • Recipient matching portal',
+  recycler: 'Module 3 • Recycler & collector portal',
+  volunteer: 'Module 4 • Volunteer pickup portal',
+  admin: 'Module 5 • Administration & impact'
+};
+
 export function PageHead({ title, subtitle, children }) {
+  const { user } = useAuth();
+  const role = useLocation().pathname.split('/')[1];
   return (
     <div className="page-head">
-      <div><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>
+      <div>
+        {MODULE[role] && <div className="page-eyebrow"><span className="module-pill">{MODULE[role]}</span>{user?.district && <span className="page-place"><MapPin size={13} aria-hidden="true" />{user.district}, Sri Lanka</span>}</div>}
+        <h1>{title}</h1>{subtitle && <p>{subtitle}</p>}
+      </div>
       {children && <div className="flex flex-wrap gap-2">{children}</div>}
     </div>
   );
