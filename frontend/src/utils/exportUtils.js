@@ -39,8 +39,8 @@ export function downloadCSV(filename, rows) {
 
 export function exportImpactMetricsCSV(summary, ecosystem) {
   const rows = [
-    { Metric: 'Reporting Scope', Value: 'All recorded activity; delivered/completed food and recycled/completed waste', Unit: '' },
-    { Metric: 'Quantity Method', Value: '2.5 meals per kg; explicit weight units only; unrecognised quantities excluded', Unit: '' },
+    { Metric: 'Reporting Scope', Value: 'Organisation-confirmed completions only; demonstration records excluded', Unit: '' },
+    { Metric: 'Quantity Method', Value: 'Meals: declared portions, or 2.5 per kg; weights: declared mass units only', Unit: '' },
     { Metric: 'Report Generation Timestamp', Value: new Date().toISOString(), Unit: 'ISO 8601' },
     { Metric: 'Estimated Meals Rescued', Value: summary?.mealsRescued || 0, Unit: 'Meals' },
     { Metric: 'Total Recycled Materials', Value: summary?.totalKgRecycled || 0, Unit: 'kg' },

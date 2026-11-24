@@ -1,21 +1,12 @@
-# frontend/src
+# Frontend source
 
-## Overview
-Source root of the FoodBridge React SPA (Vite entry `main.jsx`, router shell `App.jsx`). Layers: `api` (single HTTP client + token storage), `context` (auth session), `components` (chrome, guards, toasts, `ui` primitives), `pages` (public/auth views), `modules` (five role dashboards), `utils` (CSV export). CSS files (`index.css`, `design.css`, `styles/`) are pruned from this contract scope.
+React 18 + Vite + Tailwind v4, lucide-react icons. All business rules and authorisation live in the API; the UI only renders and calls it.
 
-## Interface
-- `main.jsx` [main.jsx:12-22] — `ReactDOM.createRoot(document.getElementById('root')).render(<StrictMode><BrowserRouter><AuthProvider><ToastProvider><App/></ToastProvider></AuthProvider></BrowserRouter></StrictMode>)`; imports `index.css`, `design.css`, `styles/tokens.css`, `styles/ui.css` [main.jsx:7-10].
-- `App` (default) [App.jsx:17] — renders `Header`, `Routes`, `Footer` [App.jsx:18-82]; routes: `/` and `/impact` → `LandingPage`, `/login` → `LoginPage`, `/register` → `RegisterPage` (public); `/admin/*`, `/donor/*`, `/recipient/*`, `/recycler/*`, `/volunteer/*` → module dashboards wrapped in `ProtectedRoute`; catch-all `*` → `<Navigate to="/" replace />` [App.jsx:21-79].
-- Subdirectories: [api](./api/README.md), [components](./components/README.md), [context](./context/README.md), [modules](./modules/README.md), [pages](./pages/README.md), [utils](./utils/README.md).
-
-## Invariants
-- Module routes allow `admin` in addition to their own role: `/donor`, `/recipient`, `/recycler`, `/volunteer` accept `['<role>', 'admin']`, `/admin/*` accepts `['admin']` only [App.jsx:29-76].
-- All module routes are wrapped in `ProtectedRoute`, which handles loading, unauthenticated redirect to `/login`, and role-mismatch redirect to the user's own portal [App.jsx:29-76, components/ProtectedRoute.jsx:5-32].
-- Provider order is fixed: `BrowserRouter` → `AuthProvider` → `ToastProvider` → `App` [main.jsx:13-20]; every consumer of auth (`useAuth`) or toasts (`useToast`) sits below both providers.
-
-## Side Effects
-- Boot render mounts providers: `AuthProvider` performs the boot-time `getMe()` network call and localStorage hydration when a token exists [context/AuthContext.jsx:20-39].
-- Routing side effects (navigation) occur throughout pages/components; CSS side effects are limited to class hooks (out of scope).
-
-## Verification
-- Run: `cd frontend && npm test && npm run build`
+- `styles.css` — the whole design system: tokens (light + dark via `prefers-color-scheme`), self-hosted Manrope, component classes (`.btn`, `.card`, `.badge`, `.table`, `.modal`, `.shell`…). Tailwind utilities are used only for layout.
+- `components/ui.jsx` — primitives: `Button`, `Card`, `Badge`/`StatusBadge`, `Stat`, `PageHead`, `Field`, `Tabs`, `Empty`, `ErrorState`, `Loading`, `Modal` (native `<dialog>`), `Pipeline`, `Timeline`.
+- `components/AppShell.jsx` — role sidebar, mobile drawer, notifications popover (polls every 60 s).
+- `components/OrgProfile.jsx` — recipient/recycler onboarding and verification banner; `Claims.jsx` — shared claim list with release and receipt/processing confirmation; `Support.jsx` — user complaints; `ProcessingRecord.jsx` — confirmed waste outcome record.
+- `lib/format.js` — districts, labels, status → badge mapping, date/number formatting, OSM route links. `lib/useAsync.js` — load/reload hook.
+- `api/client.js` — every API call; a 401 (or suspended 403) clears the session and fires `foodbridge:logout`.
+- `pages/` — public landing (live `/api/impact` figures, never invented), login, registration.
+- `modules/<role>/` — one routed dashboard per role (`/donor`, `/recipient`, `/volunteer`, `/recycler`, `/admin`), each with nested routes and a `support` page.

@@ -1,196 +1,89 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from './Navbar';
-import OverviewTab from './OverviewTab';
-import VerificationTab from './VerificationTab';
-import MonitoringTab from './MonitoringTab';
-import UsersTab from './UsersTab';
-import ReportsTab from './ReportsTab';
-import PublicImpactModal from './PublicImpactModal';
-import { useAuth } from '../../context/AuthContext';
-import {
-  fetchAdminStats,
-  fetchNotifications,
-  markNotificationRead,
-  markAllNotificationsRead
-} from '../../api/client';
-import { Bell, X } from 'lucide-react';
+import React from 'react';
+import { Link, Route, Routes } from 'react-router-dom';
+import { Activity, FileBarChart, LayoutDashboard, MessageSquareWarning, Recycle, ShieldCheck, Truck, Users as UsersIcon, Utensils } from 'lucide-react';
+import { fetchAdminStats } from '../../api/client';
+import useAsync from '../../lib/useAsync';
+import { ORG_TYPE_LABEL, PIPELINE, fmtDate, fmtNum, statusInfo } from '../../lib/format';
+import AppShell from '../../components/AppShell';
+import { Card, ErrorState, Loading, PageHead, Stat, StatusBadge } from '../../components/ui';
+import { Complaints, Monitoring, Reports, Users, Verification } from './AdminPages';
+
+const NAV = [
+  { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/admin/verification', label: 'Verification', icon: ShieldCheck },
+  { to: '/admin/monitoring', label: 'Monitoring', icon: Activity },
+  { to: '/admin/users', label: 'Users', icon: UsersIcon },
+  { to: '/admin/complaints', label: 'Complaints', icon: MessageSquareWarning },
+  { to: '/admin/reports', label: 'Reports', icon: FileBarChart }
+];
+
+function Bar({ label, value, total, tone = 'var(--primary)' }) {
+  return (
+    <div className="grid gap-1">
+      <div className="flex justify-between text-sm"><span>{label}</span><span className="num font-semibold">{fmtNum(value)}</span></div>
+      <div style={{ height: 6, borderRadius: 6, background: 'var(--surface-2)' }}><div style={{ height: 6, borderRadius: 6, background: tone, width: `${total ? Math.max(value ? 2 : 0, (value / total) * 100) : 0}%` }} /></div>
+    </div>
+  );
+}
+
+function Overview() {
+  const { data, error, loading, reload } = useAsync(fetchAdminStats);
+  if (error) return <ErrorState message={error} onRetry={reload} />;
+  if (loading && !data) return <Card><Loading rows={6} /></Card>;
+  const k = data.kpis;
+  const pickupTotal = Object.values(data.pickupsByStatus).reduce((a, b) => a + b, 0);
+  return (
+    <>
+      <PageHead title="Platform overview" subtitle="Live counts from platform records." />
+      {k.pendingVerifications > 0 && (
+        <Link to="/admin/verification" className="alert alert-warning no-underline"><ShieldCheck size={18} aria-hidden="true" /><span><strong>{k.pendingVerifications} organisation{k.pendingVerifications === 1 ? '' : 's'}</strong> waiting for verification →</span></Link>
+      )}
+      <div className="stat-grid">
+        <Stat icon={UsersIcon} label="Users" value={fmtNum(k.totalUsers)} note={`${data.userCounts.donor} donors · ${data.userCounts.volunteer} volunteers`} />
+        <Stat icon={Utensils} label="Donations" value={fmtNum(k.totalDonations)} />
+        <Stat icon={Recycle} label="Waste requests" value={fmtNum(k.totalWasteRequests)} />
+        <Stat icon={Utensils} label="Meals rescued" value={fmtNum(k.totalMealsRescued)} note="Confirmed, estimated" />
+        <Stat icon={Recycle} label="Recycled / composted" value={`${fmtNum(k.totalKgRecycled + k.totalOrganicKg, 1)} kg`} />
+      </div>
+      <div className="grid gap-5 lg:grid-cols-3">
+        <Card title="Pickup pipeline">
+          <div className="grid gap-3">
+            {PIPELINE.map(([key, label]) => <Bar key={key} label={label} value={data.pickupsByStatus[key] || 0} total={pickupTotal} tone="var(--info)" />)}
+            {['cancelled', 'expired', 'rejected'].map((s) => <Bar key={s} label={statusInfo(s)[0]} value={data.pickupsByStatus[s] || 0} total={pickupTotal} tone="var(--control)" />)}
+          </div>
+        </Card>
+        <Card title="Donations by status">
+          <div className="grid gap-3">{Object.entries(data.donationsByStatus).map(([s, n]) => <Bar key={s} label={statusInfo(s)[0]} value={n} total={k.totalDonations} />)}</div>
+        </Card>
+        <Card title="Waste by material">
+          <div className="grid gap-3">{Object.entries(data.wasteByCategory).map(([s, n]) => <Bar key={s} label={s.replace('_', '-')} value={n} total={k.totalWasteRequests} tone="var(--accent)" />)}</div>
+        </Card>
+      </div>
+      <Card title="Recent organisation registrations" pad={false} action={<Link to="/admin/verification" className="text-sm font-semibold text-[var(--primary)]">Review all</Link>}>
+        <div className="table-wrap"><table className="table">
+          <thead><tr><th>Organisation</th><th>Type</th><th>Contact</th><th>Status</th><th>Registered</th></tr></thead>
+          <tbody>{data.recentActivity.organizations.map((o) => (
+            <tr key={o._id}><td className="font-semibold">{o.name}</td><td>{ORG_TYPE_LABEL[o.type]}</td><td>{o.linkedUser?.email}</td><td><StatusBadge status={o.verificationStatus} /></td><td className="text-sm muted">{fmtDate(o.createdAt)}</td></tr>
+          ))}</tbody>
+        </table></div>
+      </Card>
+      <p className="hint m-0 flex items-center gap-2"><Truck size={14} aria-hidden="true" />Meals and weights count only organisation-confirmed, non-demo completions.</p>
+    </>
+  );
+}
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [stats, setStats] = useState(null);
-  const [loadingStats, setLoadingStats] = useState(true);
-  const [statsError, setStatsError] = useState('');
-  const [notificationError, setNotificationError] = useState('');
-
-  // Modals & Panels
-  const [isImpactOpen, setIsImpactOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  const loadStats = async () => {
-    setLoadingStats(true);
-    setStatsError('');
-    try {
-      const data = await fetchAdminStats();
-      setStats(data);
-    } catch (err) {
-      setStats(null);
-      setStatsError('Dashboard data could not be loaded.');
-    } finally {
-      setLoadingStats(false);
-    }
-  };
-
-  const loadNotificationsData = async () => {
-    setNotificationError('');
-    try {
-      const res = await fetchNotifications();
-      setNotifications(res.notifications || []);
-      setUnreadCount(res.unreadCount || 0);
-    } catch {
-      setNotificationError('Notifications could not be loaded.');
-      setNotifications([]);
-      setUnreadCount(0);
-    }
-  };
-
-  useEffect(() => {
-    loadStats();
-    loadNotificationsData();
-  }, []);
-
-  const handleMarkAllRead = async () => {
-    try {
-      await markAllNotificationsRead();
-    } catch { setNotificationError('The notification could not be updated. Please try again.'); return; }
-    setNotifications((prev) => prev.map((n) => ({ ...n, readStatus: true })));
-    setUnreadCount(0);
-  };
-
-  const handleNotificationClick = async (notif) => {
-    if (!notif.readStatus) {
-      try {
-        await markNotificationRead(notif._id);
-      } catch { setNotificationError('The notification could not be updated. Please try again.'); return; }
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === notif._id ? { ...n, readStatus: true } : n))
-      );
-      setUnreadCount((c) => Math.max(0, c - 1));
-    }
-    setIsNotificationsOpen(false);
-    setActiveTab(notif.relatedType === 'organization' ? 'verification' : 'monitoring');
-  };
-
   return (
-    <div className="admin-page">
-      {/* Top Admin Sub-Navbar */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        pendingCount={stats?.kpis?.pendingVerifications || 0}
-        unreadCount={unreadCount}
-        toggleNotifications={() => setIsNotificationsOpen((v) => !v)}
-        openPublicImpact={() => setIsImpactOpen(true)}
-        adminUser={user}
-        onLogout={logout}
-      />
-
-      {/* Notifications Drawer */}
-      {isNotificationsOpen && (
-        <div className="notification-drawer">
-          <div className="drawer-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Bell size={16} />
-              <span>Platform Alerts ({unreadCount})</span>
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                onClick={handleMarkAllRead}
-                style={{ background: 'none', border: 'none', color: '#059669', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
-              >
-                Mark all read
-              </button>
-              <button
-                onClick={() => setIsNotificationsOpen(false)}
-                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-
-          <div className="drawer-content">
-            {notificationError && <div role="alert" className="report-error">{notificationError} <button onClick={loadNotificationsData}>Try again</button></div>}
-            {notificationError ? null : notifications.length === 0 ? (
-              <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
-                No notifications right now.
-              </div>
-            ) : (
-              notifications.map((n) => (
-                <div
-                  key={n._id}
-                  onClick={() => handleNotificationClick(n)}
-                  className={`notification-item ${!n.readStatus ? 'unread' : ''}`}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '9999px',
-                    background: n.readStatus ? '#cbd5e1' : '#10b981',
-                    marginTop: '5px',
-                    flexShrink: 0
-                  }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ color: '#1e293b', fontWeight: n.readStatus ? '400' : '600' }}>
-                      {n.message}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '3px' }}>
-                      {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Active Tab View */}
-      <main className="main-content">
-        {activeTab === 'overview' && loadingStats && <p role="status">Loading dashboard…</p>}
-        {activeTab === 'overview' && statsError && <div className="report-error" role="alert">{statsError} <button className="btn btn-secondary" onClick={loadStats}>Try again</button></div>}
-        {activeTab === 'overview' && !loadingStats && stats && (
-          <OverviewTab
-            stats={stats}
-            setActiveTab={setActiveTab}
-            onRefresh={loadStats}
-          />
-        )}
-
-        {activeTab === 'verification' && (
-          <VerificationTab
-            onVerificationUpdated={() => {
-              loadStats();
-              loadNotificationsData();
-            }}
-          />
-        )}
-
-        {activeTab === 'monitoring' && <MonitoringTab />}
-
-        {activeTab === 'users' && <UsersTab currentAdminId={user?._id} />}
-
-        {activeTab === 'reports' && <ReportsTab />}
-      </main>
-
-      {/* Public Impact Preview Modal */}
-      <PublicImpactModal
-        isOpen={isImpactOpen}
-        onClose={() => setIsImpactOpen(false)}
-      />
-    </div>
+    <AppShell nav={NAV}>
+      <Routes>
+        <Route index element={<Overview />} />
+        <Route path="verification" element={<Verification />} />
+        <Route path="monitoring" element={<Monitoring />} />
+        <Route path="users" element={<Users />} />
+        <Route path="complaints" element={<Complaints />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="support" element={<Complaints />} />
+      </Routes>
+    </AppShell>
   );
 }

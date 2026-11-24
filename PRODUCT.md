@@ -1,6 +1,5 @@
 # FoodBridge
 
-<<<<<<< HEAD
 <!-- impeccable:product-schema 1 -->
 
 ## Platform
@@ -17,7 +16,7 @@ All five roles have equal product priority:
 - Volunteers accept pickup assignments and record collection and delivery.
 - Administrators verify organisations, moderate accounts, monitor activity, and review reports.
 
-Recipient and recycler jobs describe the intended workflow; their current dashboards do not yet provide browsing and claims. Equal priority does not imply equal implementation completeness.
+Recipient and recycler dashboards provide organisation onboarding, compatible-post discovery, claiming, and receipt or processing confirmation.
 
 ## Product Purpose
 
@@ -42,7 +41,6 @@ Success means completed, confirmed food deliveries and recorded waste processing
 - Public impact includes confirmed, non-demo activity. Demonstration records must remain distinguishable from real activity.
 - No validated emissions or water-savings model is configured. Do not invent these figures or imply environmental certification.
 - Cloud photo upload and road routing remain unconfigured integrations. Existing photo URLs do not establish an upload service.
-- Current recipient and recycler dashboard limitations must remain clear until the relevant interfaces are implemented and validated.
 - Required languages and product-specific accessibility requirements remain undecided. Current interface copy is English; this is not a confirmed English-only requirement.
 
 ## Brand Commitments
@@ -52,7 +50,7 @@ Preserve the FoodBridge name. Product communication must accurately distinguish 
 ## Evidence on Hand
 
 - `frontend/src/App.jsx`: public routes and the five role-specific dashboard routes.
-- `frontend/src/pages/HomePage.jsx` and `frontend/src/pages/RegisterPage.jsx`: current public explanation and disclosures about unavailable organisation claims.
+- `frontend/src/pages/LandingPage.jsx` and `frontend/src/pages/RegisterPage.jsx`: public explanation, live impact figures, and role selection.
 - `docs/BACKEND-API.md`: backend workflow contracts and integration limitations; backend support alone does not prove frontend readiness.
 - `docs/BACKEND-REMEDIATION.md`: recorded backend validation and rollout limitations, not a claim of current end-to-end acceptance.
 - `FoodBridge_Platform_Architecture_Proposal.pdf`: intended requirements; proposed capabilities are not evidence of implementation.
@@ -66,20 +64,3 @@ Preserve the FoodBridge name. Product communication must accurately distinguish 
 - Preserve verification, food and waste separation, and receiving-party confirmation throughout the journey.
 - Prefer truthful limitations and recoverable errors over invented results or implied capabilities.
 - Keep recorded outcomes, estimates, and demonstration data distinct.
-||||||| 2b1eacd
-=======
-## Platform
-Web application for food sharing and separate waste collection in Sri Lanka.
-
-## Audience and purpose
-Donors, recipients, recyclers, volunteers and administrators. The homepage helps visitors understand the service and find their role. The user confirmed equal visibility for all five roles and delegated visual direction.
-
-## Product truth
-Donors list surplus food or waste with quantity, storage, district and collection details. Volunteers accept available pickups and record delivery. Recipient and recycler accounts support organisation registration and review; browsing and claiming are not available yet. Admin access requires sign-in. Community impact distinguishes recorded food deliveries from waste collection. Do not invent impact figures or availability.
-
-## Stack
-Existing React/Vite frontend, React Router, Lucide icons and CSS. Preserve authentication and role routing.
-
-## Design constraints
-Build a new homepage with ample space and responsive layout. Preserve FoodBridge's name, honest limitations, accessible controls and all five roles. Previously rejected compositions are not visual authority.
->>>>>>> develop

@@ -35,6 +35,11 @@ export const apiFetch = async (endpoint, options = {}) => {
 
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
+    // Expired/invalid session or suspended account: clear it so the UI returns to sign-in.
+    if (token && (response.status === 401 || (response.status === 403 && /suspended/i.test(errData.message || '')))) {
+      removeAuthToken();
+      window.dispatchEvent(new Event('foodbridge:logout'));
+    }
     throw new Error(errData.message || `Request failed with status ${response.status}`);
   }
 
@@ -324,3 +329,27 @@ export const confirmPickupReceipt = (id, data = {}) => {
 export const fetchRecipientsForDonation = (donationId) => {
   return apiFetch(`/match/recipients-for-donation/${donationId}`);
 };
+
+// ==========================================
+// Organisation profile, complaints, surplus posting
+// ==========================================
+
+export const fetchMyOrganization = () => apiFetch('/organizations/me');
+export const saveMyOrganization = (data) =>
+  apiFetch('/organizations/me', { method: 'PUT', body: JSON.stringify(data) });
+
+export const fetchComplaints = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return apiFetch(`/complaints${query ? '?' + query : ''}`);
+};
+export const createComplaint = (data) =>
+  apiFetch('/complaints', { method: 'POST', body: JSON.stringify(data) });
+export const resolveComplaint = (id, status, note) =>
+  apiFetch(`/complaints/${id}`, { method: 'PUT', body: JSON.stringify({ status, note }) });
+
+export const createSurplus = (data) =>
+  apiFetch('/surplus', { method: 'POST', body: JSON.stringify(data) });
+export const fetchWasteRequestById = (id) => apiFetch(`/waste/${id}`);
+export const updateWasteRequest = (id, data) =>
+  apiFetch(`/waste/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteNotification = (id) => apiFetch(`/notifications/${id}`, { method: 'DELETE' });

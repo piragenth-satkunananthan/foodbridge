@@ -16,15 +16,17 @@ frontend/
 └── src/
     ├── api/                   # Shared API client
     ├── context/               # Shared AuthContext (JWT session & user state)
-    ├── components/            # Shared Header, ProtectedRoute
+    ├── components/            # App shell, UI primitives, org profile, claims, support
+    ├── lib/                   # Formatting helpers and data-loading hook
+    ├── styles.css             # Design system (tokens, light/dark, components)
     ├── pages/                 # Public Landing Page, Login & Register
     │
-    └── modules/               # Enterprise Domain Portals
-        ├── admin/             # 🛡️ Governance, Verification & ESG Impact Portal
-        ├── donor/             # 📦 Commercial Surplus Food & Waste Dispatch
-        ├── recipient/         # 🤝 Charity & NGO Proximity Allocation
-        ├── recycler/          # ♻️ Circular Waste Stream & Composting Logistics
-        └── volunteer/         # 🚚 Volunteer Courier Fleet & Route Tracking
+    └── modules/               # One routed dashboard per role
+        ├── admin/             # Verification, monitoring, users, complaints, reports
+        ├── donor/             # Post, edit and track surplus food and waste
+        ├── recipient/         # Discover, claim and confirm food
+        ├── recycler/          # Claim waste and record processing outcomes
+        └── volunteer/         # Accept pickups, record collection and arrival
 ```
 
 ---
@@ -60,7 +62,7 @@ Open **`http://localhost:5173`** in your browser.
 ## Interface
 
 - [vite.config.js](vite.config.js) — Vite config: plugins `tailwindcss()` + `react()`; dev server on port **5173** with proxy `/api` → `http://localhost:5000` (`changeOrigin: true`).
-- [package.json](package.json) — scripts: `dev` = `vite`, `build` = `vite build`, `preview` = `vite preview`, `test` = `node --test test-export.mjs`. Dependencies: `react`, `react-dom`, `react-router-dom`, `framer-motion`, `lucide-react`; devDependencies: `vite`, `@vitejs/plugin-react`, `tailwindcss`, `@tailwindcss/vite`.
+- [package.json](package.json) — scripts: `dev` = `vite`, `build` = `vite build`, `preview` = `vite preview`, `test` = `node --test test-export.mjs`. Dependencies: `react`, `react-dom`, `react-router-dom`, `lucide-react`; devDependencies: `vite`, `@vitejs/plugin-react`, `tailwindcss`, `@tailwindcss/vite`.
 - [index.html](index.html) — Vite entry document loading `src/main.jsx`.
 - [nginx.conf](nginx.conf) / [Dockerfile](Dockerfile) — container serving of the built `dist/` bundle with `/api` proxied to the backend.
 

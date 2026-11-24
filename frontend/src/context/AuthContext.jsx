@@ -36,6 +36,9 @@ export function AuthProvider({ children }) {
     };
 
     initAuth();
+    const onLogout = () => { setUser(null); setToken(null); };
+    window.addEventListener('foodbridge:logout', onLogout);
+    return () => window.removeEventListener('foodbridge:logout', onLogout);
   }, []);
 
   const login = async (email, password) => {

@@ -4,10 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './components/Toast';
 import App from './App';
-import './index.css';
-import './design.css';
-import './styles/tokens.css';
-import './styles/ui.css';
+import './styles.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

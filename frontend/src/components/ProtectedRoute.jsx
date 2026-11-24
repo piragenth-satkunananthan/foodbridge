@@ -1,33 +1,13 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ROLE_HOME } from '../lib/format';
 
 export default function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
-        Verifying user credentials...
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect to the user's appropriate role dashboard
-    const roleRoutes = {
-      admin: '/admin',
-      donor: '/donor',
-      recipient: '/recipient',
-      recycler: '/recycler',
-      volunteer: '/volunteer'
-    };
-    return <Navigate to={roleRoutes[user.role] || '/'} replace />;
-  }
-
+  const location = useLocation();
+  if (loading) return <div className="auth-wrap muted" aria-busy="true">Checking your session…</div>;
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to={ROLE_HOME[user.role] || '/'} replace />;
   return children;
 }
