@@ -37,7 +37,10 @@ services:
       mongodb:
         condition: service_healthy
     networks:
-      - foodbridge-network
+      foodbridge-network:
+      # Shared Caddy container reaches the API by this name on the external proxy network.
+      proxy:
+        aliases: [foodbridge-api]
 
   frontend:
     build:
@@ -48,7 +51,9 @@ services:
     depends_on:
       - backend
     networks:
-      - foodbridge-network
+      foodbridge-network:
+      proxy:
+        aliases: [foodbridge]
 
 
 volumes:
@@ -59,3 +64,6 @@ volumes:
 networks:
   foodbridge-network:
     driver: bridge
+  # Created once on the host (docker network create proxy); Caddy lives on it.
+  proxy:
+    external: true
