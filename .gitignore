@@ -28,3 +28,7 @@ yarn-error.log*
 
 
 Caddyfile
+
+# LibreOffice / Office lock files
+.~lock.*#
+~$*
