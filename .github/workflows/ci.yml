@@ -59,7 +59,8 @@ jobs:
   deploy-to-ec2:
     name: Continuous Deployment to AWS EC2
     needs: [backend-tests, frontend-build]
-    if: (github.ref == 'refs/heads/production' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.event_name != 'pull_request'
+    # Only the production branch deploys (a push, or a manual run on production).
+    if: github.ref == 'refs/heads/production' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Deploy Application to EC2 via SSH
